@@ -384,6 +384,9 @@ class Db {
 
 class Model {
 	private $_methods;
+	public function __construct() {
+		
+	}
 	public function json() {
 		return json_encode($this->values());
 	}

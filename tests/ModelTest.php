@@ -40,15 +40,14 @@ namespace {
 			$this->tip->model('TestModel', function() {
 				$model = [
 					'test' => function() {
-						echo 'YES';
+						return 'YES';
 					}
 				];
 				return $model;
 			});
 			
 			$model = $this->tip->model('TestModel');
-			print_r($model);
-			die('asd');
+			$this->assertEquals('YES', $model->test());
 
 		}
 					/*
