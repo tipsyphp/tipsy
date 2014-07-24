@@ -29,4 +29,6 @@ before_script:
 
 
 script:
+  - composer self-update
+  - composer install
   - phpunit --configuration tests/phpunit.xml --coverage-text
