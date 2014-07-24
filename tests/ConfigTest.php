@@ -19,5 +19,4 @@ class ConfigTest extends Tipsy_Test {
 		$this->tip->config('tests/config.ini');
 		$this->assertEquals('cake', $this->tip->config()['test']['beef']);
 	}
-
 }

@@ -126,9 +126,7 @@ $this->tip->router()
 		'controller' => 'ViewController',
 		'view' => 'test.phtml'
 	])
-	->when('instance', [
-		'controller' => $test
-	])
+
 
 $this->tip->start();
 

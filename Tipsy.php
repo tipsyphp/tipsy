@@ -17,6 +17,7 @@ class Tipsy {
 	private $_controllers;
 	private $_config;
 	private $_models;
+	private $_view;
 	
 	public function __construct() {
 		$this->_controllers = [];
@@ -126,6 +127,14 @@ class Tipsy {
 		}
 		return $this->_db;
 	}
+	public function view() {
+		if (!isset($this->_view)) {
+			$config = $this->_config['view'];
+			$config['tipsy'] = $this;
+			$this->_view = new View($config);
+		}
+		return $this->_view;
+	}
 }
 
 
@@ -152,6 +161,9 @@ class Router {
 				$route = ['controller' => $args];
 			}
 			$route['route'] = $r;
+		}
+		if (is_null($route['route'])) {
+			throw new Exception('Invalid route specified.');
 		}
 		$route['tipsy'] = $this->_tipsy;
 
@@ -211,6 +223,11 @@ class Route  {
 		
 		$pathParams = [];
 		$paths = explode('/',$this->_route);
+		
+		// index page
+		if (($this->_route === '' || $this->_route == '/') && ($page === '' || $page == '/')) {
+			return $this;
+		}
 
 		foreach ($paths as $key => $path) {
 			if (strpos($path,':') === 0) {
@@ -287,7 +304,7 @@ class Route  {
 class Controller {
 	private $_closure;
 	private $_route;
-	public $scope;
+	private $_scope;
 
 	public function __construct($args = []) {
 		if (isset($args['closure'])) {
@@ -296,16 +313,20 @@ class Controller {
 		if (isset($args['route'])) {
 			$this->_route = $args['route'];
 		}
-		$this->scope = new Scope;
+		$this->_scope = new Scope;
 	}
 	public function init() {
 		if ($this->closure()) {
+			// @todo: dont need to define all this at once, just define the once referenced
 			$exports = [
 //				'db' => $this->route()->tipsy()->db(),
-				'route' => $this->route(),
-				'params' => $this->route()->params(),
-				'tipsy' => $this->route()->tipsy()
+				'Route' => $this->route(),
+				'Params' => $this->route()->params(),
+				'Tipsy' => $this->route()->tipsy(),
+				'View' => $this->route()->tipsy()->view(),
+				'Scope' => $this->_scope
 			];
+			$this->route()->tipsy()->view()->scope($this->_scope);
 
 			foreach ($this->route()->tipsy()->models() as $name => $model) {
 				$exports[$name] = $this->route()->tipsy()->model($name);
@@ -338,12 +359,6 @@ class Controller {
 	
 }
 
-/**
- * Scope object
- */
-class Scope {
-	
-}
 
 class Db {
 	private $_db;
@@ -659,7 +674,7 @@ class DBO extends Model {
 		}
 	}
 
-	public function properties() {
+	public function &properties() {
 		return $this->_properties;
 	}
 
@@ -719,12 +734,12 @@ class DBO extends Model {
 	}
 
 	public static function l($list) {
-		$list = Cana_Model::l2a($list);
+		$list = Model::l2a($list);
 		return self::o($list);
 	}
 
 	public static function c($list) {
-		$list = Cana_Model::l2a($list, ',');
+		$list = Model::l2a($list, ',');
 		return self::o($list);
 	}
 
@@ -762,4 +777,230 @@ class Instanciator {
 
 class Exception extends \Exception {
 	
+}
+
+
+
+
+
+
+
+
+class Scope {
+	private $_properties;
+	
+	public function __construct() {
+		$this->_properties = [];
+	}
+
+	public function &__get($name) {
+		return $this->_properties[$name];
+	}
+
+	public function __set($name, $value) {
+		return $this->_properties[$name] = $value;
+	}
+	
+	public function &properties() {
+		return $this->_properties;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class View {
+	private $_layout = 'layout';
+	private $_headers;
+	private $_rendering = false;
+	private $_stack;
+	private $_path = '';
+	private $_tipsy;
+	private $_filters = [];
+	private $_extension = '.phtml';
+
+	public function __construct ($args = []) {
+		$this->headers = [];
+
+		$this->config($args);
+		
+		$this->_tipsy = $args['tipsy'];
+		$this->_scope = $scope;
+	}
+	
+	public function config($args = null) {
+		if (isset($args['layout'])) {
+			$this->_layout = $args['layout'];
+		}
+		
+		if (isset($args['stack'])) {
+			$this->_stack = $args['stack'];
+		}
+		
+		if (isset($args['path'])) {
+			$this->_path = $args['path'];
+		}
+	}
+	
+	public function stack() {
+		$stack = $this->tipsy()->config()['view']['stack'];
+		if (!$stack) {
+			$stack = [''];
+		}
+		return $stack;
+	}
+	
+	public function file($src) {
+		$stack = $this->stack();
+
+		foreach ($stack as $dir) {
+			$path = joinPaths($this->_path, $dir, $src.$this->_extension);
+			if (file_exists($path) && is_file($path)) {
+				$file = $path;
+				break;
+			}
+		}
+
+		return $file;
+	}
+	
+	public function layout() {
+		return $this->file($this->_layout);
+	}
+
+	public function render($view, $params = null) {
+		if (isset($params['set'])) {
+			foreach ($params['set'] as $key => $value) {
+				$$key = $value;
+			}
+		}
+
+		$file = $this->file($view);
+		if (!$file) {
+			throw new Exception('Could not find view file: "'.$view.'" in "'.(implode(',',$this->stack())).'"');
+		}
+		$layout = $this->layout();
+		
+
+		$p = $this->scope()->properties();
+
+		extract($this->scope()->properties(), EXTR_REFS);
+
+		if ($this->_rendering || !isset($params['display'])) {
+			
+			ob_start();
+			include($file);
+			$page = $this->filter(ob_get_contents(),$params);
+			ob_end_clean();
+			
+		} else {
+			
+			$this->_rendering = true;
+			ob_start();
+			include($file);
+			$this->content = $this->filter(ob_get_contents(),$params);
+			ob_end_clean();
+			
+			if ($layout) {
+				ob_start();
+				include($layout);
+				$page = $this->filter(ob_get_contents(),$params);
+				ob_end_clean();
+				$this->_rendering = false;
+			} else {
+				$page = $this->content;
+			}
+		}		
+		
+		if (isset($params['var'])) {
+			$this->{$params['var']} = $page;
+		}
+		return $page;	
+	}
+
+	public function display($view,$params=null) {
+	/*
+		if (!headers_sent()) {
+			foreach ($this->headers->http as $key => $value) {
+				header(isset($value['name']) ? $value['name'].': ' : '' . $value['value'],isset($value['replace']) ? $value['replace'] : true);
+			}
+		}
+		*/
+		if (is_null($params)) {
+			$params['display'] = true;
+		}
+		echo $this->render($view,$params);
+	}
+
+	public function filter($content) {
+		foreach ($this->_filters as $filter) {
+			$content = $filter::filter($content);
+		}
+		return $content;
+	}
+	
+	public function tipsy() {
+		return $this->_tipsy;
+	}
+	
+	public function scope(&$scope = null) {
+		if ($scope) {
+			$this->_scope = $scope;
+		}
+		return $this->_scope;
+	}
+}
+
+class View_Filter {
+	
+}
+
+class StripWhite extends View_Filter {
+	public static function filter($content) {
+		$find = [
+			'/^(\s?)(.*?)(\s?)$/',
+			'/\t|\n|\r/',
+			'/(\<\!\-\-)(.*?)\-\-\>/'
+		];
+		$replace = [
+			'\\2',
+			'',
+			''
+		];
+		return preg_replace($find, $replace, $content);
+	}
+}
+
+
+function joinPaths() {
+	$args = func_get_args();
+	$paths = [];
+	foreach ($args as $arg) {
+		$paths = array_merge($paths, (array)$arg);
+	}
+
+	$paths = array_map(create_function('$p', 'return trim($p, "/");'), $paths);
+	$paths = array_filter($paths);
+	return join('/', $paths);
 }

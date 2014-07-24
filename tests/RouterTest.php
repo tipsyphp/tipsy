@@ -13,8 +13,7 @@ class InstanceController extends Tipsy\Controller {
 		echo 'INSTANCE';
 	}
 }
-		
-		
+
 
 class RouterTest extends Tipsy_Test {
 
@@ -44,8 +43,8 @@ class RouterTest extends Tipsy_Test {
 		$this->ob();
 
 		$this->tip->router()
-			->when('router/file/:id', function($params) {
-				echo $params['id'];
+			->when('router/file/:id', function($Params) {
+				echo $Params['id'];
 			});
 		$this->tip->start();
 		
@@ -59,7 +58,7 @@ class RouterTest extends Tipsy_Test {
 		$this->ob();
 
 		$this->tip->router()
-			->when('router/file/:id/eat', function($params) {
+			->when('router/file/:id/eat', function() {
 				echo 'SUB';
 			});
 		$this->tip->start();
@@ -116,6 +115,70 @@ class RouterTest extends Tipsy_Test {
 		
 		$check = $this->ob(false);
 		$this->assertEquals('INSTANCE', $check);
+	}
+	
+	public function testRouterHomeOne() {
+		$_REQUEST['__url'] = '';
+
+		$this->ob();
+
+		$this->tip->router()
+			->when('', function() {
+				echo 'ONE';
+			});
+		$this->tip->start();
+		
+		$check = $this->ob(false);
+
+		$this->assertEquals('ONE', $check);
+	}
+	
+	public function testRouterHomeTwo() {
+		$_REQUEST['__url'] = '/';
+		
+		$this->ob();
+
+		$this->tip->router()
+			->when('', function() {
+				echo 'TWO';
+			});
+		$this->tip->start();
+		
+		$check = $this->ob(false);
+
+		$this->assertEquals('TWO', $check);
+	}
+	
+	public function testRouterHomeThree() {
+		$_REQUEST['__url'] = '';
+		
+		$this->ob();
+
+		$this->tip->router()
+			->when('/', function() {
+				echo 'THREE';
+			});
+		$this->tip->start();
+		
+		$check = $this->ob(false);
+
+		$this->assertEquals('THREE', $check);
+	}
+	
+	public function testRouterHomeFour() {
+		$_REQUEST['__url'] = '/';
+		
+		$this->ob();
+
+		$this->tip->router()
+			->when('/', function() {
+				echo 'FOUR';
+			});
+		$this->tip->start();
+		
+		$check = $this->ob(false);
+
+		$this->assertEquals('FOUR', $check);
 	}
 
 	

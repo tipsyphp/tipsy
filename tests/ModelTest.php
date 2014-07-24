@@ -33,11 +33,10 @@ class ModelTest extends Tipsy_Test {
 			];
 			return $model;
 		});
-		
+
 		$model = $this->tip->model('TestModel');
 		$this->assertEquals('YES', $model->test());
 	}
-
 
 	public function testModelCustomExtend() {
 		$this->tip->model('TestModelBaseProtected/TestModel', function() {
@@ -87,65 +86,4 @@ class ModelTest extends Tipsy_Test {
 
 		$this->assertEquals('YESM', $res);
 	}
-
-	/*
-
-		$this->tip->router()
-			->otherwise(function($db, $TestModel) {
-			});
-
-		
-
-
-		
-		$this->assertTrue($check == 'YES');
-	*/
-
 }
-
-
-/*
-
-$this->tip->router()
-
-	->when('file/:id', function($db, $FileModel) {
-
-//		$res = $db->fetch('select * from upload');
-//		foreach ($res as $r) {
-//			print_r($r);
-//		}
-
-	
-		// get a new instance of the filemodel by id
-	
-		
-		$test = $FileModel->create([
-			'uid' => 'bacon'	
-		]);
-		$test = $FileModel->get(1);
-		
-		echo $test->uid;
-		$test->uid = rand(1,2345454);
-		$test->save();
-		echo $test->uid;
-		
-		$FileModel->q('select * from upload where uid=?','bacon')->delete();
-	
-	exit;
-		$File->fetch(1);
-		$this->model('File')->fetch(1);
-		$this->model('File')->query('select * from file where id=1');
-		$file = File::o($this->route()->param('id'));
-		print_r($file);
-	})
-	->when('view', [
-		'controller' => 'ViewController',
-		'view' => 'test.phtml'
-	])
-	->when('instance', [
-		'controller' => $test
-	])
-
-$this->tip->start();
-
-*/

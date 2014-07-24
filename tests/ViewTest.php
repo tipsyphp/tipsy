@@ -16,59 +16,103 @@ class ViewTest extends Tipsy_Test {
 	public function setUp() {
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
-		
-		//$this->tip->config('../config.ini');
-		
-		
-/*
-$this->tip->config([
-	'db' => [
-		'host' => 'blah'
-	]
-], true);
-*/
-
 
 
 	}
+	
+	public function testViewNoLayout() {
+		$_REQUEST['__url'] = 'router/view';
 
-	public function testRouterBasic() {
-		$_REQUEST['__url'] = 'router/basic';
-		
+		$this->tip->config(['view' => [
+			'path' => 'tests'
+		]]);
+
 		$this->ob();
-
+		
 		$this->tip->router()
-			->when('router/basic', function() {
-				echo 'YES';
+			->when('router/view', function($View, $Scope) {
+				$Scope->test = 'ONE';
+				$View->display('ScopeTest');
 			});
 		$this->tip->start();
 		
-		$check = $this->ob(false);
+		$res = $this->ob(false);
+		
+		$this->assertEquals('ONE', $res);
+	}
+	
+	public function testViewLayout() {
+		$_REQUEST['__url'] = 'router/view';
+		
+		$this->tip->config([
+			'view' => [
+				'layout' => 'LayoutTest',
+				'path' => 'tests'
+			]
+		]);
+
+		
+		$this->ob();
+		
+		$this->tip->router()
+			->when('router/view', function($View, $Scope) {
+				$Scope->test = 'ONE';
+				$View->display('ScopeTest');
+			});
+		$this->tip->start();
+		
+		$res = $this->ob(false);
+		
+		$this->assertEquals('HEADERONEFOOTER', $res);
+	}
+	
+	public function testViewScope() {
+		$_REQUEST['__url'] = 'router/view';
+		
+		$this->tip->config(['view' => [
+			'path' => 'tests'
+		]]);
+		
+		$this->ob();
+		
+		$this->tip->router()
+			->when('router/view', function($View, $Scope) {
+				$Scope->test = 'ONE';
+				$View->render('ScopeTest');
+				echo $Scope->test;
+			});
+		$this->tip->start();
+		
+		$res = $this->ob(false);
+		
+		$this->assertEquals('TWO', $res);
+	}
+
+	/*
+	public function testRouterViewController() {
+		$_REQUEST['__url'] = 'router/view';
+
+		$this->tip->controller('ViewController', function() {
+			$this->scope->test = 'YES';
+		});
+		
+		ob_start();
+
+		$this->tip->router()
+			->when('router/views', function() {
+				echo 'YES';
+			})
+			->when('router/view', [
+				'controller' => 'ViewController'
+			]);
+		$this->tip->start();
+		
+		$check = ob_get_contents();
+		ob_end_clean();
 		
 		$this->assertTrue($check == 'YES');
 	}
-	
-	public function ob($start = true) {
-		if (!$this->useOb) {
-			return;
-		}
-		if ($start) {
-			ob_start();
-		} else {
-			$check = ob_get_contents();
-			if (!$this->useOb) {
-				ob_end_flush();
-			} else {
-				ob_end_clean();
-			}
-			
-			return $check;
-		}
-	}
-
-
-
-
+	*/
 
 }
 /*
