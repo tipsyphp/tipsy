@@ -1,0 +1,19 @@
+{
+	"name": "arzynik/tipsy",
+	"description": "An MVW PHP framework",
+	"authors": [
+		{
+			"name": "Devin Smith",
+			"email": "devin@tipsy.la"
+		}
+	],
+	"minimum-stability": "stable",
+	"require": {
+		"php": ">=5.4.0"
+	},
+	"autoload": {
+		"psr-0": {
+			"Tipsy": "src/"
+		}
+	}
+}
