@@ -2,8 +2,14 @@
 
 
 class TestModelBase extends Tipsy\Model {
+	public function test() {
+		return 'ONE';
+	}
+}
+
+class TestModelBaseProtected extends Tipsy\Model {
 	protected function test() {
-		echo 'ONE';
+		return 'ONE';
 	}
 }
 
@@ -57,12 +63,10 @@ class ModelTest extends Tipsy_Test {
 		$model = $this->tip->model('TestModel');
 		$model->test = 'YES';
 		$this->assertEquals('YES', $model->property('test'));
-
 	}
 	
 	public function testModelCustomExtend() {
-
-		$this->tip->model('TestModelBase/TestModel', function() {
+		$this->tip->model('TestModelBaseProtected/TestModel', function() {
 			$model = [
 				'test' => function() {
 					return 'TWO';
@@ -76,7 +80,6 @@ class ModelTest extends Tipsy_Test {
 	}
 	
 	public function testModelCustomExtendCall() {
-return;
 		$this->tip->model('TestModelBase/TestModel', function() {
 			$model = [
 
@@ -87,8 +90,7 @@ return;
 		$model = $this->tip->model('TestModel');
 		$this->assertEquals('ONE', $model->test());
 	}
-	
-	
+
 	/*
 
 		$this->tip->router()
@@ -102,8 +104,9 @@ return;
 		$this->assertTrue($check == 'YES');
 	*/
 
-
 }
+
+
 /*
 
 $this->tip->router()
