@@ -64,6 +64,29 @@ class ModelTest extends Tipsy_Test {
 		$model = $this->tip->model('TestModel');
 		$this->assertEquals('ONE', $model->test());
 	}
+	
+	public function testModelController() {
+		$this->tip->model('TestModel', function() {
+			$model = [
+				'test' => function() {
+					return 'YESM';
+				}
+			];
+			return $model;
+		});
+		
+		$this->ob();
+		
+		$this->tip->router()
+			->otherwise(function($TestModel) {
+				echo $TestModel->test();
+			});
+		$this->tip->start();
+			
+		$res = $this->ob(false);
+
+		$this->assertEquals('YESM', $res);
+	}
 
 	/*
 
