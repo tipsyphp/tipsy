@@ -1,10 +1,20 @@
 {
 	"name": "arzynik/tipsy",
 	"description": "An MVW PHP framework",
+	"license": "MIT",
+	"time": "2014-07-24",
+	"keywords": [
+		"php",
+		"mvw",
+		"mvc",
+		"framework"
+	],
 	"authors": [
 		{
 			"name": "Devin Smith",
-			"email": "devin@tipsy.la"
+			"email": "devin@tipsy.la",
+			"homepage": "http://devin.la",
+			"role": "Developer"
 		}
 	],
 	"minimum-stability": "stable",
