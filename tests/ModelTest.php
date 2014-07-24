@@ -2,7 +2,7 @@
 
 
 class TestModelBase extends Tipsy\Model {
-	public function test() {
+	protected function test() {
 		echo 'ONE';
 	}
 }
