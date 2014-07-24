@@ -50,7 +50,7 @@ namespace {
 			$this->assertEquals('YES', $model->test());
 
 		}
-					/*
+
 		public function testModelBasicExtend() {
 	
 			$this->tip->model('TestModelBase/TestModel', function() {
