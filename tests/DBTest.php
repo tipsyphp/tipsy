@@ -57,20 +57,31 @@ class DBTest extends Tipsy_Test {
 
 	}
 
-	public function testRouterBasic() {
-		$_REQUEST['__url'] = 'router/basic';
-		
-		$this->ob();
+	
 
-		$this->tip->router()
-			->when('router/basic', function() {
-				echo 'YES';
-			});
-		$this->tip->start();
-		
-		$check = $this->ob(false);
-		
-		$this->assertTrue($check == 'YES');
+	public function testModelDBOExtend() {
+		$this->tip->model('Tipsy\DBO/TestModel', function() {
+			$model = [
+				'test' => function() {
+					return 'DBOTEST';
+				}
+			];
+			return $model;
+		});
+		$model = $this->tip->model('TestModel');
+		$this->assertEquals('DBOTEST', $model->test());
+	}
+
+	public function testModelDBOExtendCall() {	
+		$this->tip->model('Tipsy\DBO/TestModel', function() {
+			$model = [
+
+			];
+			return $model;
+		});
+		$model = $this->tip->model('TestModel');
+		$model->test = 'YES';
+		$this->assertEquals('YES', $model->property('test'));
 	}
 
 

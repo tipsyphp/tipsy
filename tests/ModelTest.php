@@ -37,34 +37,8 @@ class ModelTest extends Tipsy_Test {
 		$model = $this->tip->model('TestModel');
 		$this->assertEquals('YES', $model->test());
 	}
-	
 
-	public function testModelDBOExtend() {
-		$this->tip->model('Tipsy\DBO/TestModel', function() {
-			$model = [
-				'test' => function() {
-					return 'DBOTEST';
-				}
-			];
-			return $model;
-		});
-		$model = $this->tip->model('TestModel');
-		$this->assertEquals('DBOTEST', $model->test());
-	}
 
-	public function testModelDBOExtendCall() {
-	
-		$this->tip->model('Tipsy\DBO/TestModel', function() {
-			$model = [
-
-			];
-			return $model;
-		});
-		$model = $this->tip->model('TestModel');
-		$model->test = 'YES';
-		$this->assertEquals('YES', $model->property('test'));
-	}
-	
 	public function testModelCustomExtend() {
 		$this->tip->model('TestModelBaseProtected/TestModel', function() {
 			$model = [
@@ -78,7 +52,7 @@ class ModelTest extends Tipsy_Test {
 		$model = $this->tip->model('TestModel');
 		$this->assertEquals('TWO', $model->test());
 	}
-	
+
 	public function testModelCustomExtendCall() {
 		$this->tip->model('TestModelBase/TestModel', function() {
 			$model = [
@@ -86,7 +60,7 @@ class ModelTest extends Tipsy_Test {
 			];
 			return $model;
 		});
-		
+
 		$model = $this->tip->model('TestModel');
 		$this->assertEquals('ONE', $model->test());
 	}
