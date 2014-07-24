@@ -70,6 +70,7 @@ class Tipsy {
 		}		
 	}
 	public function model($model, $args = null) {
+
 		if ($args) {
 			$model = explode('/',$model);
 			if (count($model) > 2) {
@@ -89,14 +90,20 @@ class Tipsy {
 				$extend = $this->_models[$extend];
 			}
 
+			$name = $extend ? $extend : 'Tipsy\Model';
+
 			$this->_models[$model] = [
-				'reflection' => new \ReflectionClass('Tipsy\\'.($extend ? $extend : 'Model')),
+				'reflection' => new \ReflectionClass($name),
 				'config' => $config
 			];
 			return $this;
 
 		} else {
-			$instance = $this->_models[$model]['reflection']->newInstance($this->_model[$model]['config']);
+			if ($this->_models[$model]['reflection']->hasMethod('__construct')) {
+				$instance = $this->_models[$model]['reflection']->newInstance($this->_model[$model]['config']);
+			} else {
+				$instance = $this->_models[$model]['reflection']->newInstance();
+			}
 
 			foreach ($this->_models[$model]['config'] as $name => $config) {
 				if (is_callable($config)) {
@@ -384,9 +391,6 @@ class Db {
 
 class Model {
 	private $_methods;
-	public function __construct() {
-		
-	}
 	public function json() {
 		return json_encode($this->values());
 	}
@@ -749,11 +753,6 @@ class DBO extends Model {
 
 }
 
-
-class File extends DBO {
-	private $_id_var = 'id';
-	private $_table = 'file';
-}
 
 class Instanciator {
 	public function o($id) {
