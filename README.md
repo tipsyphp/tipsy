@@ -26,6 +26,21 @@ $t->router()
 ### Instalation
 
 #### Using Composer
+Download [Composer](https://getcomposer.org/) if you havent already.
+
+
+
+1. Add tipsy to your composer.son
+```javascript
+"require": {
+  "arzynik/tipsy": "dev-master"
+}
+```
+
+2. run the composer install command
+```sh
+composer install
+```
 
 #### Manual
 
