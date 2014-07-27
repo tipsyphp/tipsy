@@ -57,8 +57,10 @@ class DBTest extends Tipsy_Test {
 
 	}
 
-	
-
+	public function testRawr() {
+		$this->assertTrue(true);
+	}
+/*
 	public function testModelDBOExtend() {
 		$this->tip->model('Tipsy\DBO/TestModel', function() {
 			$model = [
@@ -85,7 +87,7 @@ class DBTest extends Tipsy_Test {
 	}
 
 
-
+*/
 
 }
 /*

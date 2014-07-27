@@ -52,7 +52,7 @@ exit;
 
 
 //require_once('../Tipsy/Tipsy.php');
-require_once('../Tipsy.php');
+require_once '../src/Tipsy/Tipsy.php';
 
 $tipsy = new Tipsy\Tipsy;
 
