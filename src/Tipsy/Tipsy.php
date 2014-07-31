@@ -337,6 +337,7 @@ class Router {
 class Route  {
 
 	private $_tipsy;
+	private $_routeParams;
 
 	public function __construct($args) {
 		$this->_controller = $args['controller'];
@@ -345,6 +346,8 @@ class Route  {
 		$this->_route = preg_replace('/^\/?(.*?)\/?$/i','\\1',$args['route']);
 		$this->_tipsy = $args['tipsy'];
 		$this->_method = $args['method'] == 'all' ? '*' : $args['method'];
+		
+		$this->_routeParams = new RouteParams;
 	}
 	
 	public function match($page) {
@@ -364,8 +367,6 @@ class Route  {
 				return false;
 			}
 		}
-
-		$this->_routeParams = [];
 		
 		$pathParams = [];
 		$paths = explode('/',$this->_route);
@@ -388,16 +389,12 @@ class Route  {
 			$paths = explode('/',$page);
 
 			foreach ($pathParams as $key => $path) {
-				$this->_routeParams[$path] = $paths[$key];
+				$this->_routeParams->{$path} = $paths[$key];
 			}
 			
 			return $this;
 		}
 		return false;
-	}
-
-	public function param($param) {
-		return $this->_routeParams[$param];
 	}
 	
 	public function params() {
@@ -999,6 +996,10 @@ class Scope {
 	public function &properties() {
 		return $this->_properties;
 	}
+}
+
+class RouteParams extends Scope {
+	
 }
 
 

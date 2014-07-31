@@ -44,7 +44,7 @@ class RouterTest extends Tipsy_Test {
 
 		$this->tip->router()
 			->when('router/file/:id', function($Params) {
-				echo $Params['id'];
+				echo $Params->id;
 			});
 		$this->tip->start();
 		
