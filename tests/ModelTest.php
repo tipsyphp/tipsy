@@ -22,8 +22,20 @@ class ModelTest extends Tipsy_Test {
 		
 		$this->tip->config('tests/config.ini');
 	}
-
+	
 	public function testModelBasic() {
+
+		$this->tip->model('TestModel', [
+			'test' => function() {
+				return 'YES';
+			}
+		]);
+
+		$model = $this->tip->model('TestModel');
+		$this->assertEquals('YES', $model->test());
+	}
+
+	public function testModelBasicFunc() {
 
 		$this->tip->model('TestModel', function() {
 			$model = [
