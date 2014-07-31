@@ -72,7 +72,7 @@ class Tipsy {
 	}
 	public function model($model, $args = []) {
 
-		if ($args) {
+		if (!is_null($args)) {
 			$model = explode('/',$model);
 			if (count($model) > 2) {
 				throw new Exception('Cant extend more than one model.');
@@ -82,7 +82,6 @@ class Tipsy {
 			$model = array_shift($model);
 		}
 
-		
 		if (!$this->_models[$model]) {
 
 			if ($model && is_callable($args)) {
@@ -390,10 +389,15 @@ class Db {
 		$db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
 		return $db;
 	}
+	
+	public function exec($query) {
+		return $this->db()->exec($query);
+	}
 
 	public function query($query, $args = []) {
 		$stmt = $this->db()->prepare($query);
 		$stmt->execute($args);
+		//$db->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql'
 		return $stmt;
 	}
 	

@@ -4,13 +4,9 @@
 class DBTest extends Tipsy_Test {
 
 	public static function setUpBeforeClass() {
-
-
-
 	}
 
 	public static function tearDownAfterClass() {
-
 	}
 	
 	public function setUp() {
@@ -18,118 +14,119 @@ class DBTest extends Tipsy_Test {
 		$this->useOb = true; // for debug use
 		
 		$this->tip->config('tests/config.ini');
-		
-		
-		/*
+	}
 
+
+	public function testDBCreateTable() {
+	
+		$this->tip->db()->exec("
+			DROP TABLE IF EXISTS `test_user`;
+			CREATE TABLE `test_user` (
+			  `id_user` int(11) unsigned NOT NULL AUTO_INCREMENT,
+			  `name` varchar(255) DEFAULT NULL,
+			  `username` varchar(255) DEFAULT NULL,
+			  PRIMARY KEY (`id_user`),
+			  UNIQUE KEY `username` (`username`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		");
+
+		$this->assertEquals('YES', 'YES');
+	}
+
+
+	public function testModelDBOExtendCall() {
+	
+		$this->tip->model('Tipsy\DBO/TestModel', [
+			test => function() {
+				return $this->test;
+			},
+			id => 'id_test_user',
+			table => 'test_user'
+		]);
 		
-		$this->tip->model('DBO/TestModel', function() {
-			$model = [
-				'testmodel' => function() {
-					die('testing');
+		$m = $this->tip->model('TestModel');
+		$m->test = 'YES';
+
+		$this->assertEquals('YES', $m->test());
+	}
+
+
+	public function testModelDBOExtendRoute() {
+		$_REQUEST['__url'] = 'user/create';
+	
+		$this->tip->model('Tipsy\DBO/TestUser', [
+			test => function($user) {
+				return $this->test;
+			},
+			id => 'id_test_user',
+			table => 'test_user'
+		]);
+
+		$this->tip->router()
+			->when('user/create', function($Params, $TestUser) {
+				$u = $TestUser->load([
+					'username' => 'devin',
+					'name' => 'Devin Smith'
+				]);
+				$u->save();
+				echo $u->username;
+			});
+
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+
+		$this->assertEquals('devin', $check);
+	}
+
+	/*
+	public function testModelDBOAutoTable() {
+		$_REQUEST['__url'] = 'user/1';
+	
+		$this->tip->model('Tipsy\DBO/TestUser', [
+			blah => function() {
+				echo 'asd';
+			}
+		]);
+		
+		$this->tip->router()
+			->when('user/:id', function($Params, $TestUser) {
+				$u = $TestUser->load($Params['id']);
+				echo $u->username;
+			});
+			
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		
+		$this->assertEquals('devin', $check);
+	}
+	
+	public function testModelDBOQuery() {
+	
+		$_REQUEST['__url'] = 'user/devin';
+
+		$this->tip->model('Tipsy\DBO/TestUser', [
+			user => function($user) {
+				if (!$user) {
+					return false;
 				}
-			];
-			return $model;
-		});
+				return $this->q('select * from user where username=?',$user);
+			}
+		]);
 		
-		$this->tip->model('DBO/FileModel', function() {
-			$model = [
-				'filemodel' => function() {
-					die('testing');
-				},
-
-//				'construct' => function() {
-//					$this->_id_var = 'id';
-//					$this->_table = 'file';
-//				},
-
-				'id' => 'id',
-				'table' => 'upload'
-			];
-
+		$this->tip->router()
+			->when('user/:id', function($Params, $TestUser) {
+				$u = $TestUser->user($Params['id']);
+				echo $u->username;
+			});
 		
-			return $model;
-		});
-		*/
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
 		
-		
-
-
+		$this->assertEquals('devin', $check);
 	}
-
-	public function testRawr() {
-		$this->assertTrue(true);
-	}
-/*
-	public function testModelDBOExtend() {
-		$this->tip->model('Tipsy\DBO/TestModel', function() {
-			$model = [
-				'test' => function() {
-					return 'DBOTEST';
-				}
-			];
-			return $model;
-		});
-		$model = $this->tip->model('TestModel');
-		$this->assertEquals('DBOTEST', $model->test());
-	}
-
-	public function testModelDBOExtendCall() {	
-		$this->tip->model('Tipsy\DBO/TestModel', function() {
-			$model = [
-
-			];
-			return $model;
-		});
-		$model = $this->tip->model('TestModel');
-		$model->test = 'YES';
-		$this->assertEquals('YES', $model->property('test'));
-	}
-
-
-*/
+	*/
 
 }
-/*
-
-$this->tip->router()
-
-	->when('file/:id', function($db, $FileModel) {
-
-//		$res = $db->fetch('select * from upload');
-//		foreach ($res as $r) {
-//			print_r($r);
-//		}
-
-	
-		// get a new instance of the filemodel by id
-	
-		
-		$test = $FileModel->create([
-			'uid' => 'bacon'	
-		]);
-		$test = $FileModel->get(1);
-		
-		echo $test->uid;
-		$test->uid = rand(1,2345454);
-		$test->save();
-		echo $test->uid;
-		
-		$FileModel->q('select * from upload where uid=?','bacon')->delete();
-	
-	exit;
-		$File->fetch(1);
-		$this->model('File')->fetch(1);
-		$this->model('File')->query('select * from file where id=1');
-		$file = File::o($this->route()->param('id'));
-		print_r($file);
-	})
-	->when('view', [
-		'controller' => 'ViewController',
-		'view' => 'test.phtml'
-	])
-
-
-$this->tip->start();
-
-*/
