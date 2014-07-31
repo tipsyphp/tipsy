@@ -301,6 +301,25 @@ class RouterTest extends Tipsy_Test {
 		$check = $this->ob(false);
 		$this->assertEquals('YES', $check);
 	}
+	
+public function testArraySetup() {
+		$_REQUEST['__url'] = 'router/array';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+
+		$this->tip->router()
+			->when([
+				'route' => 'router/array',
+				'method' => 'post,put',
+				'controller' => function() {
+					echo 'ARRAY';
+				}
+			]);
+		
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('ARRAY', $check);
+	}
 
 	/*
 	public function testRouterViewController() {
