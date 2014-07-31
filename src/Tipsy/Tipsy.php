@@ -811,13 +811,6 @@ class DBO extends Model {
 
 }
 
-
-class Instanciator {
-	public function o($id) {
-		
-	}
-}
-
 class Exception extends \Exception {
 	
 }
