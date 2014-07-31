@@ -145,6 +145,105 @@ class Tipsy {
 		}
 		return $this->_view;
 	}
+	public function request() {
+		if (!isset($this->_request)) {
+			$this->_request = new Request;
+		}
+		return $this->_request;
+	}
+}
+
+
+class Request {
+	private $_properties;
+
+    public function __construct() {
+		$this->_properties = [];
+
+        if ($this->method()) {
+            switch ($this->method()) {
+                case 'PUT':
+                case 'DELETE':
+                    if ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
+                        parse_str($this->getContent(), $this->_properties);
+
+                    } elseif ($_SERVER['CONTENT_TYPE'] === 'application/json') {
+                        $content = $this->getContent();
+                        $request = json_decode($content,'array');
+                        if (!$request) {
+                            $this->_properties = false;
+                        } else {
+                            $this->_properties = $request;
+                        }
+                    }
+                    break;
+
+                case 'GET':
+                    if ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded' || !$_SERVER['CONTENT_TYPE']) {
+                        $this->_properties = $_GET;
+                    } elseif ($_SERVER['CONTENT_TYPE'] === 'application/json') {
+                        $this->_properties = $this->getRawRequest();
+                    }
+                    break;
+
+                case 'POST':
+                    if ($_SERVER['CONTENT_TYPE'] === 'application/json') {
+                        $this->_properties = json_decode($this->getContent(), 'array');
+                    /* Found a case where the CONTENT_TYPE was 'application/x-www-form-urlencoded; charset=UTF-8'
+                     *
+                     * @todo Is there any case where we do not set the $request to $_POST nor the json?
+                     * If not, there there should be OK to use the fallback scenario
+                     */
+                    // } elseif ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
+                    } else  {
+                        $this->_properties = $_POST;
+                    }
+                    break;
+            }
+        }
+    }
+
+    private function getContent() {
+        if (!isset($this->_content)) {
+            if (strlen(trim($this->_content = file_get_contents('php://input'))) === 0) {
+                $this->_content = false;
+            }
+        }
+        return $this->_content;
+    }
+
+    private function getRawRequest() {
+        if (!isset($this->_rawRequest)) {
+
+            $request = trim($_SERVER['REQUEST_URI']);
+            $request = substr($request,strpos($request,'?')+1);
+            $request = urldecode($request);
+            $request = json_decode($request,'array');
+
+            if (!$request) {
+                $this->_rawRequest = false;
+            } else {
+                $this->_rawRequest = $request;
+            }
+        }
+        return $this->_rawRequest;
+    }
+
+    public function method() {
+        return strtoupper($_SERVER['REQUEST_METHOD']);
+    }
+
+	public function &__get($name) {
+		return $this->_properties[$name];
+	}
+
+	public function __set($name, $value) {
+		return $this->_properties[$name] = $value;
+	}
+	
+	public function &request() {
+		return $this->_properties;
+	}
 }
 
 
@@ -160,6 +259,21 @@ class Router {
 		$this->_routes = [];
 		$this->_tipsy = $args['tipsy'];
 	}
+	
+	public function __call($method, $args = []) {
+		if (count($args) == 1) {
+			$args[0]['method'] = strtoupper($method);
+		} elseif (is_array($args[1])) {
+			$args[1]['method'] = strtoupper($method);
+		} else {
+			$args[1] = [
+				'controller' => $args[1],
+				'method' => strtoupper($method)
+			];
+		}
+		return call_user_func_array([$this, 'when'], $args);
+	}
+	
 
 	public function when($r, $args = null) {
 		if (is_array($r)) {
@@ -176,6 +290,10 @@ class Router {
 			throw new Exception('Invalid route specified.');
 		}
 		$route['tipsy'] = $this->_tipsy;
+		
+		if (!$route['method']) {
+			$route['method'] = '*';
+		}
 
 		$this->_routes[] = new Route($route);
 		
@@ -185,6 +303,7 @@ class Router {
 	public function otherwise($default) {
 		$this->_default = new Route([
 			'controller' => $default,
+			'method' => '*',
 			'tipsy' => $this->_tipsy
 		]);
 	}
@@ -225,9 +344,26 @@ class Route  {
 		$this->_view = $args['view'] ? true : false;
 		$this->_route = preg_replace('/^\/?(.*?)\/?$/i','\\1',$args['route']);
 		$this->_tipsy = $args['tipsy'];
+		$this->_method = $args['method'] == 'all' ? '*' : $args['method'];
 	}
 	
 	public function match($page) {
+	
+		if ($this->method() != '*') {
+			$methods = explode(',',strtolower($this->method()));
+			$match = false;
+
+			foreach ($methods as $method) {
+				if ($method == strtolower($this->tipsy()->request()->method())) {
+					$match = true;
+					break;
+				}
+			}
+
+			if (!$match) {
+				return false;
+			}
+		}
 
 		$this->_routeParams = [];
 		
@@ -306,6 +442,10 @@ class Route  {
 	public function tipsy() {
 		return $this->_tipsy;
 	}
+
+	public function method() {
+		return $this->_method;
+	}
 }
 
 /**
@@ -331,6 +471,7 @@ class Controller {
 			$exports = [
 //				'db' => $this->route()->tipsy()->db(),
 				'Route' => $this->route(),
+				'Request' => $this->route()->tipsy()->request(),
 				'Params' => $this->route()->params(),
 				'Tipsy' => $this->route()->tipsy(),
 				'View' => $this->route()->tipsy()->view(),
@@ -475,14 +616,7 @@ class DBO extends Model {
 	private $_model;
 	
 	public function __construct($args = []) {
-		if ($args['id']) {
-			$this->_id_var = $args['id'];
-			unset($args['id']);
-		}
-		if ($args['table']) {
-			$this->_table = $args['table'];
-			unset($args['table']);
-		}
+
 		if ($args['tipsy']) {
 			$this->_tipsy = $args['tipsy'];
 			unset($args['tipsy']);
@@ -490,6 +624,31 @@ class DBO extends Model {
 		if ($args['model']) {
 			$this->_model = $args['model'];
 			unset($args['model']);
+		}
+		/*
+		foreach ($args as $key=>$arg) {
+			echo $key."\n";
+		}
+		echo "\n\n";
+
+		if (!$args) {
+
+		die($this->_model);
+			// auto table name and id
+			$args = [
+				'id' => '',
+				'table' => ''
+			];
+		}
+		*/
+
+		if ($args['id']) {
+			$this->_id_var = $args['id'];
+			unset($args['id']);
+		}
+		if ($args['table']) {
+			$this->_table = $args['table'];
+			unset($args['table']);
 		}
 		if ($args) {
 			$this->load($args);

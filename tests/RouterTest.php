@@ -196,6 +196,111 @@ class RouterTest extends Tipsy_Test {
 		$check = $this->ob(false);
 		$this->assertEquals('404', $check);
 	}
+	
+	public function testHttpGetSuccess() {
+		$_REQUEST['__url'] = 'router/get';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+
+		$this->tip->router()
+			->get('router/get',function() {
+				echo 'YES';
+			})
+			->otherwise(function() {
+				echo 'NO';
+			});
+		
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('YES', $check);
+	}
+
+	public function testHttpGetFail() {
+		$_REQUEST['__url'] = 'router/get';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+
+		$this->tip->router()
+			->get('router/get',function() {
+				echo 'YES';
+			})
+			->otherwise(function() {
+				echo 'NO';
+			});
+		
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('NO', $check);
+	}
+	
+	public function testHttpPostSuccess() {
+		$_REQUEST['__url'] = 'router/post';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+
+		$this->tip->router()
+			->post('router/post',function() {
+				echo 'YES';
+			})
+			->otherwise(function() {
+				echo 'NO';
+			});
+		
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('YES', $check);
+	}
+	
+	public function testHttpPostFail() {
+		$_REQUEST['__url'] = 'router/post';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+
+		$this->tip->router()
+			->post('router/post',function() {
+				echo 'YES';
+			})
+			->otherwise(function() {
+				echo 'NO';
+			});
+		
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('NO', $check);
+	}
+	
+	public function testHttpGetParam() {
+		$_REQUEST['__url'] = 'router/get';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+		$_GET['test'] = 'YES';
+
+		$this->tip->router()
+			->get('router/get',function($Request) {
+				echo $Request->test;
+			});
+		
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('YES', $check);
+	}
+
+
+	public function testHttpPostParam() {
+		$_REQUEST['__url'] = 'router/post';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_POST['test'] = 'YES';
+
+		$this->tip->router()
+			->post('router/post',function($Request) {
+				echo $Request->test;
+			});
+		
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('YES', $check);
+	}
 
 	/*
 	public function testRouterViewController() {
