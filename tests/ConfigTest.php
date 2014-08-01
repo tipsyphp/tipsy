@@ -19,4 +19,9 @@ class ConfigTest extends Tipsy_Test {
 		$this->tip->config('tests/config.ini');
 		$this->assertEquals('cake', $this->tip->config()['test']['beef']);
 	}
+	
+	public function testConfigFileDir() {
+		$this->tip->config('tests/conf/*.ini');
+		$this->assertEquals('VERY', $this->tip->config()['tipsy']['howtipsy']);
+	}
 }

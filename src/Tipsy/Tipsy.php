@@ -55,11 +55,12 @@ class Tipsy {
 		$merge = ($recursive ? 'array_merge_recursive' : 'array_merge');
 		if (is_string($args)) {
 			// assume its a config file
-			$config = parse_ini_file($args, true);
-			if ($config === false) {
-				throw new Exception('Failed to read config.');
-			} else {
-				$this->_config = $merge($this->_config, $config);
+			
+			$iterator = new \GlobIterator($args);
+			
+			foreach($iterator as $file) {
+			    $config = parse_ini_file($file->getPathname(), true);
+			    $this->_config = $merge($this->_config, $config);
 			}
 			
 			return $this;
