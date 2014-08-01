@@ -3,41 +3,31 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 body {
 	font-size: 10px;
 	font-family: Georgia, Times, "Times New Roman", serif;
-	margin: 15px;
 }
-
 nav {
 	font-size: 1.8em;
 }
-
 h1 {
 	font-size: 4em;
 	color: #333;
 }
-
 h2 {
 	font-size: 2.5em;
 	color: #555;
 	margin-bottom: .5em;
 	margin-top: 1.1em;
 }
-
-
 header {
 	margin-bottom: 2em;
 }
-
-.wrapper {
-	width: 450px;
-	margin: 0 auto;
-}
-
 p {
 	color: #888;
 	font-size: 1.8em;
 	line-height: 1.8em;
 }
-
+nav a {
+	padding-right: .7em;
+}
 a {
 	color: #46c780;
 }
@@ -50,9 +40,25 @@ li {
 }
 li:before {
 	content: "\2665 \00a0 \00a0 ";
+	color: #666;
 }
 footer {
 	font-size: 1.4em;
 	margin-top: 4em;
 	color: #aaa;
+}
+.wrapper {
+	padding: 15px;
+	box-sizing: border-box;
+}
+@media (min-width: 450px) {
+	.wrapper {
+		width: 450px;
+		margin: 0 auto;
+	}
+}
+@media (max-width: 449px) {
+	.wrapper {
+		width: 100%;
+	}
 }
