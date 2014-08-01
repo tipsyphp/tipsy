@@ -70,7 +70,6 @@ $tipsy->start();
 
 ```phtml
 <h1>Welcome to my awesome website!</h1>
-
 ```
 
 ###### about.phtml
