@@ -1,7 +1,5 @@
-Tipsy
------
+Tipsy is an MVW (Model, View, Whatever) PHP framework inspired by [AngularJS](https://angularjs.org/). It provides a very lightweight, easy to use framework, capable of handling most tasks.
 
-MVW (Model, View, Whatever) PHP framework inspired by [AngularJS](https://angularjs.org/).
 
 
 **This is a dev version**. I am currently pulling in features from [Cana](http://cana.la/) and building unit tests as I go.
@@ -10,46 +8,36 @@ MVW (Model, View, Whatever) PHP framework inspired by [AngularJS](https://angula
 [![Build Status](https://travis-ci.org/arzynik/Tipsy.svg?branch=master)](https://travis-ci.org/arzynik/Tipsy)
 
 
----
-
-### Usage
-
-```php
-$t = new Tipsy;
-$t->router()
-  ->when('/', function($Scope, $View) {
-    $Scope->kitteh = 'meow';
-    $View->display('home');
-  });
-```
-
-### Instalation
-
-#### Using Composer
-Download [Composer](https://getcomposer.org/) if you havent already.
 
 
+### Example Usage
 
-1. Add tipsy to your composer.son
-```javascript
-"require": {
-  "arzynik/tipsy": "dev-master"
-}
-```
-
-2. run the composer install command
-```sh
-composer install
-```
-
-#### Manual
-
-1. Copy **Tipsy.php** to your library path.
-
-2. Include the Tipsy library:
+###### home.php
 
 ```php
 require_once 'Tipsy.php';
+use Tipsy\Tipsy;
+
+$tipsy = new Tipsy;
+
+$tipsy->router()
+  ->when('/', function($Scope, $View) {
+    $Scope->user = 'Devin';
+    $View->display('home');
+  });
+
+$tipsy->start();
 ```
 
-3. Do shit.
+###### home.phtml
+
+```phtml
+<div class="content">
+  <h1>Welcome <?=$user?>!</h1>
+</div>
+```
+
+
+### Instalation
+
+See [Installation](https://github.com/arzynik/Tipsy/wiki/Installation) for instructions on how to install.
