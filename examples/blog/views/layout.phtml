@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>awesome sauce.</title>
+		<link rel="stylesheet" type="text/css" href="<?=$Request->base()?>/style.css">
+	</head>
+	<body>
+		<div class="wrapper">
+			<header><h1>awesome sauce.</h1></header>
+			<nav>
+				<a href="<?=$Request->base()?>">home</a>
+				<a href="<?=$Request->base()?>/about">about</a>
+				<a href="<?=$Request->base()?>/blog">blog</a>
+			</nav>
+		    <section>
+		        <?=$this->content?>
+		    </section>
+			<footer>See <a href="https://github.com/arzynik/Tipsy/wiki">Documentation</a> for more info on <a href="http://tipsy.la">Tipsy</a>.</footer>
+		</div>
+	</body>
+</html>
