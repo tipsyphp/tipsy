@@ -38,58 +38,46 @@
           <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
         </div>
 
-        <h2>
-<a name="tipsy" class="anchor" href="#tipsy"><span class="octicon octicon-link"></span></a>Tipsy</h2>
-
-<p>MVW (Model, View, Whatever) PHP framework inspired by <a href="https://angularjs.org/">AngularJS</a>.</p>
+        <p>Tipsy is an MVW (Model, View, Whatever) PHP framework inspired by <a href="https://angularjs.org/">AngularJS</a>. It provides a very lightweight, easy to use framework, capable of handling most tasks.</p>
 
 <p><strong>This is a dev version</strong>. I am currently pulling in features from <a href="http://cana.la/">Cana</a> and building unit tests as I go.</p>
 
 <p><a href="https://travis-ci.org/arzynik/Tipsy"><img src="https://travis-ci.org/arzynik/Tipsy.svg?branch=master" alt="Build Status"></a></p>
 
-<hr><h3>
-<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h3>
+<h3>
+<a name="example-usage" class="anchor" href="#example-usage"><span class="octicon octicon-link"></span></a>Example Usage</h3>
 
-<div class="highlight highlight-php"><pre><span class="nv">$t</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Tipsy</span><span class="p">;</span>
-<span class="nv">$t</span><span class="o">-&gt;</span><span class="na">router</span><span class="p">()</span>
+<p>See <a href="https://github.com/arzynik/Tipsy/wiki">Documentation</a> for more information.</p>
+
+<h6>
+<a name="homephp" class="anchor" href="#homephp"><span class="octicon octicon-link"></span></a>home.php</h6>
+
+<div class="highlight highlight-php"><pre><span class="k">require_once</span> <span class="s1">'Tipsy.php'</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">Tipsy\Tipsy</span><span class="p">;</span>
+
+<span class="nv">$tipsy</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Tipsy</span><span class="p">;</span>
+
+<span class="nv">$tipsy</span><span class="o">-&gt;</span><span class="na">router</span><span class="p">()</span>
   <span class="o">-&gt;</span><span class="na">when</span><span class="p">(</span><span class="s1">'/'</span><span class="p">,</span> <span class="k">function</span><span class="p">(</span><span class="nv">$Scope</span><span class="p">,</span> <span class="nv">$View</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$Scope</span><span class="o">-&gt;</span><span class="na">kitteh</span> <span class="o">=</span> <span class="s1">'meow'</span><span class="p">;</span>
+    <span class="nv">$Scope</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s1">'Devin'</span><span class="p">;</span>
     <span class="nv">$View</span><span class="o">-&gt;</span><span class="na">display</span><span class="p">(</span><span class="s1">'home'</span><span class="p">);</span>
   <span class="p">});</span>
+
+<span class="nv">$tipsy</span><span class="o">-&gt;</span><span class="na">start</span><span class="p">();</span>
+</pre></div>
+
+<h6>
+<a name="homephtml" class="anchor" href="#homephtml"><span class="octicon octicon-link"></span></a>home.phtml</h6>
+
+<div class="highlight highlight-phtml"><pre><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"content"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;h1&gt;</span>Welcome <span class="cp">&lt;?</span><span class="o">=</span><span class="nv">$user</span><span class="cp">?&gt;</span>!<span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
 </pre></div>
 
 <h3>
 <a name="instalation" class="anchor" href="#instalation"><span class="octicon octicon-link"></span></a>Instalation</h3>
 
-<h4>
-<a name="using-composer" class="anchor" href="#using-composer"><span class="octicon octicon-link"></span></a>Using Composer</h4>
-
-<p>Download <a href="https://getcomposer.org/">Composer</a> if you havent already.</p>
-
-<ol>
-<li>Add tipsy to your composer.son</li>
-</ol><div class="highlight highlight-javascript"><pre><span class="s2">"require"</span><span class="o">:</span> <span class="p">{</span>
-  <span class="s2">"arzynik/tipsy"</span><span class="o">:</span> <span class="s2">"dev-master"</span>
-<span class="p">}</span>
-</pre></div>
-
-<ol>
-<li>run the composer install command</li>
-</ol><div class="highlight highlight-sh"><pre>composer install
-</pre></div>
-
-<h4>
-<a name="manual" class="anchor" href="#manual"><span class="octicon octicon-link"></span></a>Manual</h4>
-
-<ol>
-<li><p>Copy <strong>Tipsy.php</strong> to your library path.</p></li>
-<li><p>Include the Tipsy library:</p></li>
-</ol><div class="highlight highlight-php"><pre><span class="k">require_once</span> <span class="s1">'Tipsy.php'</span><span class="p">;</span>
-</pre></div>
-
-<ol>
-<li>Do shit.</li>
-</ol>
+<p>See <a href="https://github.com/arzynik/Tipsy/wiki/Installation">Installation</a> for instructions on how to install.</p>
       </section>
 
     </div>
