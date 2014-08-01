@@ -193,8 +193,12 @@ class Request {
 	private $_rawRequest;
 	private $_content;
 
-    public function __construct() {
+    public function __construct($args = []) {
 		$this->_properties = [];
+		
+		if ($args['tipsy']) {
+			$this->_tipsy = $args['tipsy'];
+		}
 
         if ($this->method()) {
             switch ($this->method()) {
@@ -239,18 +243,27 @@ class Request {
         }
     }
     
+    public function base() {
+	    if (!isset($this->_base)) {
+		    
+	    }
+	    return $this->_base;
+    }
+    
     public function path($url = null) {
+
     	if (!isset($this->_path)) {
 			if (!$url) {
 				if ($_REQUEST['__url']) {
 					$url = $_REQUEST['__url'];
 				} else {
 					$request = explode('?', $_SERVER['REQUEST_URI'], 2)[0];
-					$dir = str_replace('/','\\/',(dirname($_SERVER['SCRIPT_NAME'])));
-					$url = preg_replace('/^.*'.$dir.'/','',$request);
+					$dir = dirname($_SERVER['SCRIPT_NAME']);
+					$this->_base = $dir;
+					$url = preg_replace('/^.*'.str_replace('/','\\/',$dir).'/','',$request);
 				}
 			}
-			
+
 			while (strpos($url, '//') !== false) {
 				$url = str_replace('//', '/', $url);
 			}
@@ -1179,6 +1192,9 @@ class View {
 		$p = $this->scope()->properties();
 
 		extract($this->scope()->properties(), EXTR_REFS);
+		
+		// @todo: add all the other services
+		$Request = $this->tipsy()->request();
 
 		if ($this->_rendering || !isset($params['display'])) {
 			
