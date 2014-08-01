@@ -4,40 +4,30 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Tipsy by arzynik</title>
+
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/arzynik/Tipsy">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/arzynik/Tipsy/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/arzynik/Tipsy/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
-
     <div class="wrapper">
+      <header>
+        <h1>Tipsy</h1>
+        <p>MVW PHP framework</p>
 
+        <p class="view"><a href="https://github.com/arzynik/Tipsy">View the Project on GitHub <small>arzynik/Tipsy</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/arzynik/Tipsy/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/arzynik/Tipsy/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/arzynik/Tipsy">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
       <section>
-        <div id="title">
-          <h1>Tipsy</h1>
-          <p>MVW PHP framework</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/arzynik">arzynik</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
-        </div>
-
         <p>Tipsy is an MVW (Model, View, Whatever) PHP framework inspired by <a href="https://angularjs.org/">AngularJS</a>. It provides a very lightweight, easy to use framework, capable of handling most tasks.</p>
 
 <p><strong>This is a dev version</strong>. I am currently pulling in features from <a href="http://cana.la/">Cana</a> and building unit tests as I go.</p>
@@ -50,7 +40,7 @@
 <p>See <a href="https://github.com/arzynik/Tipsy/wiki">Documentation</a> for more information.</p>
 
 <h6>
-<a name="homephp" class="anchor" href="#homephp"><span class="octicon octicon-link"></span></a>home.php</h6>
+<a name="hellophp" class="anchor" href="#hellophp"><span class="octicon octicon-link"></span></a>hello.php</h6>
 
 <div class="highlight highlight-php"><pre><span class="k">require_once</span> <span class="s1">'Tipsy.php'</span><span class="p">;</span>
 <span class="k">use</span> <span class="nx">Tipsy\Tipsy</span><span class="p">;</span>
@@ -58,30 +48,39 @@
 <span class="nv">$tipsy</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Tipsy</span><span class="p">;</span>
 
 <span class="nv">$tipsy</span><span class="o">-&gt;</span><span class="na">router</span><span class="p">()</span>
-  <span class="o">-&gt;</span><span class="na">when</span><span class="p">(</span><span class="s1">'/'</span><span class="p">,</span> <span class="k">function</span><span class="p">(</span><span class="nv">$Scope</span><span class="p">,</span> <span class="nv">$View</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$Scope</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s1">'Devin'</span><span class="p">;</span>
-    <span class="nv">$View</span><span class="o">-&gt;</span><span class="na">display</span><span class="p">(</span><span class="s1">'home'</span><span class="p">);</span>
-  <span class="p">});</span>
+    <span class="o">-&gt;</span><span class="na">home</span><span class="p">(</span><span class="k">function</span><span class="p">(</span><span class="nv">$View</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$View</span><span class="o">-&gt;</span><span class="na">display</span><span class="p">(</span><span class="s1">'home'</span><span class="p">);</span>
+    <span class="p">});</span>
+    <span class="o">-&gt;</span><span class="na">when</span><span class="p">(</span><span class="s1">'user'</span><span class="p">,</span> <span class="k">function</span><span class="p">(</span><span class="nv">$Scope</span><span class="p">,</span> <span class="nv">$View</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$Scope</span><span class="o">-&gt;</span><span class="na">user</span> <span class="o">=</span> <span class="s1">'Devin'</span><span class="p">;</span>
+        <span class="nv">$View</span><span class="o">-&gt;</span><span class="na">display</span><span class="p">(</span><span class="s1">'user'</span><span class="p">);</span>
+    <span class="p">})</span>
+    <span class="o">-&gt;</span><span class="na">otherwise</span><span class="p">(</span><span class="k">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="s1">'404'</span><span class="p">;</span>
+    <span class="p">});</span>
 
 <span class="nv">$tipsy</span><span class="o">-&gt;</span><span class="na">start</span><span class="p">();</span>
 </pre></div>
 
 <h6>
-<a name="homephtml" class="anchor" href="#homephtml"><span class="octicon octicon-link"></span></a>home.phtml</h6>
+<a name="userphtml" class="anchor" href="#userphtml"><span class="octicon octicon-link"></span></a>user.phtml</h6>
 
 <div class="highlight highlight-phtml"><pre><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"content"</span><span class="nt">&gt;</span>
-  <span class="nt">&lt;h1&gt;</span>Welcome <span class="cp">&lt;?</span><span class="o">=</span><span class="nv">$user</span><span class="cp">?&gt;</span>!<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>Welcome <span class="cp">&lt;?</span><span class="o">=</span><span class="nv">$user</span><span class="cp">?&gt;</span>!<span class="nt">&lt;/h1&gt;</span>
 <span class="nt">&lt;/div&gt;</span>
 </pre></div>
 
 <h3>
-<a name="instalation" class="anchor" href="#instalation"><span class="octicon octicon-link"></span></a>Instalation</h3>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
 
 <p>See <a href="https://github.com/arzynik/Tipsy/wiki/Installation">Installation</a> for instructions on how to install.</p>
       </section>
-
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/arzynik">arzynik</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    <script src="javascripts/scale.fix.js"></script>
               <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
