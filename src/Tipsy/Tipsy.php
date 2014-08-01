@@ -18,11 +18,13 @@ class Tipsy {
 	private $_config;
 	private $_models;
 	private $_view;
+	private $_services;
 	
 	public function __construct() {
 		$this->_controllers = [];
 		$this->_config = [];
 		$this->_models = [];
+		$this->_services = [];
 	}
 
 	public function start() {
@@ -70,24 +72,32 @@ class Tipsy {
 			return $this->_config;
 		}		
 	}
-	public function model($model, $args = []) {
+	
+	public function service($service, $args = []) {
+		list($model, $extend) = $this->_modelName($service, $args);
 
-		if (!is_null($args)) {
-			$model = explode('/',$model);
-			if (count($model) > 2) {
-				throw new Exception('Cant extend more than one model.');
-			} elseif (count($model) > 1) {
-				$extend = array_shift($model);
-			}
-			$model = array_shift($model);
+		if (!$this->_services[$model]) {
+			$this->model($service, $args);
+			$this->_services[$model] = $this->model($service, $args);;
 		}
+		return $this->_services[$model];
+
+	}
+	
+	public function model($model, $args = []) {
+		list($model, $extend) = $this->_modelName($model, $args);
 
 		if (!$this->_models[$model]) {
 
 			if ($model && is_callable($args)) {
 				$config = call_user_func_array($args, []);
+
+			} elseif ($model && !$args && class_exists($model)) {
+				$extend = $model;
+
 			} elseif ($model && is_array($args)) {
 				$config = $args;
+
 			}
 			
 			if ($this->_models[$extend]) {
@@ -101,6 +111,7 @@ class Tipsy {
 				'reflection' => new \ReflectionClass($name),
 				'config' => $config
 			];
+
 			return $this;
 
 		} else {
@@ -114,7 +125,7 @@ class Tipsy {
 			}
 
 			foreach ($this->_models[$model]['config'] as $name => $config) {
-				if (is_callable($config)) {
+				if (is_callable($config) && method_exists($instance, 'addMethod')) {
 					$instance->addMethod($name, $config);
 				} else {
 					$instance->{$name} = $config;
@@ -130,6 +141,12 @@ class Tipsy {
 			return $this->_models[$model] ? true : false;
 		}
 		return $this->_models;
+	}
+	public function services($service = null) {
+		if ($service) {
+			return $this->_services[$service] ? true : false;
+		}
+		return $this->_services;
 	}
 	public function db() {
 		if (!isset($this->_db)) {
@@ -151,6 +168,24 @@ class Tipsy {
 		}
 		return $this->_request;
 	}
+
+	private function _modelName($model, $args = []) {
+		if (!is_null($args)) {
+			$model = explode('/',$model);
+			if (count($model) > 2) {
+				throw new Exception('Cant extend more than one model.');
+			} elseif (count($model) > 1) {
+				$extend = array_shift($model);
+			}
+			$model = array_shift($model);
+		}
+		return [$model, $extend];
+	}
+}
+
+
+class Service extends Model {
+	
 }
 
 
@@ -261,6 +296,7 @@ class Router {
 	}
 	
 	public function __call($method, $args = []) {
+
 		if (count($args) == 1) {
 			$args[0]['method'] = strtoupper($method);
 		} elseif (is_array($args[1])) {
@@ -273,7 +309,6 @@ class Router {
 		}
 		return call_user_func_array([$this, 'when'], $args);
 	}
-	
 
 	public function when($r, $args = null) {
 		if (is_array($r)) {
@@ -483,6 +518,9 @@ class Controller {
 			foreach ($this->route()->tipsy()->models() as $name => $model) {
 				$exports[$name] = $this->route()->tipsy()->model($name);
 			}
+			foreach ($this->route()->tipsy()->services() as $name => $service) {
+				$exports[$name] = $this->route()->tipsy()->service($name);
+			}
 			$args = [];
 		
 			$refFunc = new \ReflectionFunction($this->_closure);
@@ -560,17 +598,20 @@ class Db {
 	}
 }
 
+
+
 class Model {
 	private $_methods;
+	private $_properties;
+
 	public function json() {
-		return json_encode($this->values());
+		return json_encode($this->properties());
 	}
-	public function values() {
-		return $this->_values ? $this->_values : get_object_vars($this);
-	}
+
 	public function addMethod($method, $closure) {
 		$this->_methods[$method] = $closure;
 	}
+
 	public function __call($method, $args) {
 		if (is_callable($this->_methods[$method])) {
 			$this->_methods[$method] = $this->_methods[$method]->bindTo($this);
@@ -579,6 +620,47 @@ class Model {
 			throw new Exception('Could not call ' . $method. ' on '.get_class());
 		}
 	}
+
+	public function &properties() {
+		return $this->_properties ? $this->_properties : get_object_vars($this);
+	}
+
+	public function property($name) {
+		return isset($this->_properties[$name]) ? $this->_properties[$name] : null;
+	}
+
+	public function &__get($name) {
+		if (isset($name{0}) && $name{0} == '_') {
+			return $this->{$name};
+		} else {
+			return $this->_properties[$name];
+		}
+	}
+
+	public function __set($name, $value) {
+		if ($name{0} == '_') {
+			return $this->{$name} = $value;
+		} else {
+			return $this->_properties[$name] = $value;
+		}
+	}
+
+	public function __isset($name) {
+		return $name{0} == '_' ? isset($this->{$name}) : isset($this->_properties[$name]);
+	}
+
+	public function exports() {
+		return $this->properties();
+	}
+
+	public function csv() {
+		$csv = $this->properties();
+		if ($this->idVar() != 'id') {
+			unset($csv['id']);
+		}
+		return $csv;
+	}
+
 }
 
 
@@ -611,7 +693,6 @@ class DBO extends Model {
 	private $_id_var;
 	private $_fields;
 	private $_db;
-	private $_properties;
 	private $_tipsy;
 	private $_baseConfig;
 	private $_model;
@@ -859,34 +940,6 @@ class DBO extends Model {
 		}
 	}
 
-	public function &properties() {
-		return $this->_properties;
-	}
-
-	public function property($name) {
-		return isset($this->_properties[$name]) ? $this->_properties[$name] : null;
-	}
-
-	public function &__get($name) {
-		if (isset($name{0}) && $name{0} == '_') {
-			return $this->{$name};
-		} else {
-			return $this->_properties[$name];
-		}
-	}
-
-	public function __set($name, $value) {
-		if ($name{0} == '_') {
-			return $this->{$name} = $value;
-		} else {
-			return $this->_properties[$name] = $value;
-		}
-	}
-
-	public function __isset($name) {
-		return $name{0} == '_' ? isset($this->{$name}) : isset($this->_properties[$name]);
-	}
-
 	public static function o() {
 		$classname = get_called_class();
 		foreach (func_get_args() as $arg) {
@@ -947,17 +1000,6 @@ class DBO extends Model {
 		return new Looper($items);
 	}
 
-	public function exports() {
-		return $this->properties();
-	}
-
-	public function csv() {
-		$csv = $this->properties();
-		if ($this->idVar() != 'id') {
-			unset($csv['id']);
-		}
-		return $csv;
-	}
 	public function tipsy() {
 		return $this->_tipsy;
 	}
