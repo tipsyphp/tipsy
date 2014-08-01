@@ -28,11 +28,7 @@ class Tipsy {
 	}
 
 	public function start($url = null) {
-		// Use the __url variable instead of the request URL. this can be passed from .htaccess
-		
 		$url = $this->request()->path($url);
-
-		//$this->page = explode('/', $url);
 		$route = $this->router()->match($url);
 
 		$route->controller()->init();
@@ -262,6 +258,7 @@ class Request {
 			if ($url{0} == '/') {
 				$url = substr($url, 1);
 			}
+			$url = trim($url);
 			$url = ltrim($url, '/');
 			$url = rtrim($url, '/');
 			$url = trim($url);
