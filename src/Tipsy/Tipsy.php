@@ -300,6 +300,10 @@ class Router {
 		return $this;
 	}
 	
+	public function home($route) {
+		return $this->when('', $route);
+	}
+
 	public function otherwise($default) {
 		$this->_default = new Route([
 			'controller' => $default,
