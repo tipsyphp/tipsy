@@ -82,30 +82,7 @@ class DBTest extends Tipsy_Test {
 
 		$this->assertEquals('devin', $check);
 	}
-
-	/*
-	public function testModelDBOAutoTable() {
-		$_REQUEST['__url'] = 'user/1';
-	
-		$this->tip->model('Tipsy\DBO/TestUser', [
-			blah => function() {
-				echo 'asd';
-			}
-		]);
-		
-		$this->tip->router()
-			->when('user/:id', function($Params, $TestUser) {
-				$u = $TestUser->load($Params['id']);
-				echo $u->username;
-			});
-			
-		$this->ob();
-		$this->tip->start();
-		$check = $this->ob(false);
-		
-		$this->assertEquals('devin', $check);
-	}
-	
+		/*
 	public function testModelDBOQuery() {
 	
 		$_REQUEST['__url'] = 'user/devin';
@@ -131,6 +108,31 @@ class DBTest extends Tipsy_Test {
 		
 		$this->assertEquals('devin', $check);
 	}
+
+
+	public function testModelDBOAutoTable() {
+		$_REQUEST['__url'] = 'user/1';
+	
+		$this->tip->model('Tipsy\DBO/TestUser', [
+			blah => function() {
+				echo 'asd';
+			}
+		]);
+		
+		$this->tip->router()
+			->when('user/:id', function($Params, $TestUser) {
+				$u = $TestUser->load($Params['id']);
+				echo $u->username;
+			});
+			
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		
+		$this->assertEquals('devin', $check);
+	}
+	
+
 	*/
 
 }
