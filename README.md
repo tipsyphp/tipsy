@@ -14,7 +14,7 @@ Tipsy is an MVW (Model, View, Whatever) PHP framework inspired by [AngularJS](ht
 
 See [Documentation](https://github.com/arzynik/Tipsy/wiki) for more information.
 
-###### home.php
+###### hello.php
 
 ```php
 require_once 'Tipsy.php';
@@ -23,19 +23,25 @@ use Tipsy\Tipsy;
 $tipsy = new Tipsy;
 
 $tipsy->router()
-  ->when('/', function($Scope, $View) {
-    $Scope->user = 'Devin';
-    $View->display('home');
-  });
+	->home(function($View) {
+		$View->display('home');
+	});
+	->when('user', function($Scope, $View) {
+		$Scope->user = 'Devin';
+		$View->display('user');
+	})
+	->otherwise(function() {
+		$View->display('404');
+	});
 
 $tipsy->start();
 ```
 
-###### home.phtml
+###### user.phtml
 
 ```phtml
 <div class="content">
-  <h1>Welcome <?=$user?>!</h1>
+	<h1>Welcome <?=$user?>!</h1>
 </div>
 ```
 
