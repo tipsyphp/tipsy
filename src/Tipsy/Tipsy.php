@@ -27,10 +27,12 @@ class Tipsy {
 		$this->_services = [];
 	}
 
-	public function start() {
+	public function start($url = null) {
 		// Use the __url variable instead of the request URL. this can be passed from .htaccess
-		$url = $_REQUEST['__url'] ? $_REQUEST['__url'] : explode('?', $_SERVER['REQUEST_URI'], 2)[0];
-		$this->page = explode('/', $url);
+		
+		$url = $this->request()->path($url);
+
+		//$this->page = explode('/', $url);
 		$route = $this->router()->match($url);
 
 		$route->controller()->init();
@@ -192,6 +194,8 @@ class Service extends Model {
 
 class Request {
 	private $_properties;
+	private $_rawRequest;
+	private $_content;
 
     public function __construct() {
 		$this->_properties = [];
@@ -201,10 +205,10 @@ class Request {
                 case 'PUT':
                 case 'DELETE':
                     if ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
-                        parse_str($this->getContent(), $this->_properties);
+                        parse_str($this->_getContent(), $this->_properties);
 
                     } elseif ($_SERVER['CONTENT_TYPE'] === 'application/json') {
-                        $content = $this->getContent();
+                        $content = $this->_getContent();
                         $request = json_decode($content,'array');
                         if (!$request) {
                             $this->_properties = false;
@@ -218,13 +222,13 @@ class Request {
                     if ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded' || !$_SERVER['CONTENT_TYPE']) {
                         $this->_properties = $_GET;
                     } elseif ($_SERVER['CONTENT_TYPE'] === 'application/json') {
-                        $this->_properties = $this->getRawRequest();
+                        $this->_properties = $this->_getRawRequest();
                     }
                     break;
 
                 case 'POST':
                     if ($_SERVER['CONTENT_TYPE'] === 'application/json') {
-                        $this->_properties = json_decode($this->getContent(), 'array');
+                        $this->_properties = json_decode($this->_getContent(), 'array');
                     /* Found a case where the CONTENT_TYPE was 'application/x-www-form-urlencoded; charset=UTF-8'
                      *
                      * @todo Is there any case where we do not set the $request to $_POST nor the json?
@@ -238,8 +242,37 @@ class Request {
             }
         }
     }
+    
+    public function path($url = null) {
+    	if (!isset($this->_path)) {
+			if (!$url) {
+				if ($_REQUEST['__url']) {
+					$url = $_REQUEST['__url'];
+				} else {
+					$request = explode('?', $_SERVER['REQUEST_URI'], 2)[0];
+					$dir = str_replace('/','\\/',(dirname($_SERVER['SCRIPT_NAME'])));
+					$url = preg_replace('/^.*'.$dir.'/','',$request);
+				}
+			}
+			
+			while (strpos($url, '//') !== false) {
+				$url = str_replace('//', '/', $url);
+			}
+	
+			if ($url{0} == '/') {
+				$url = substr($url, 1);
+			}
+			$url = ltrim($url, '/');
+			$url = rtrim($url, '/');
+			$url = trim($url);
+			
+			$this->_path = $url;
+		}
+		
+		return $this->_path;
+    }
 
-    private function getContent() {
+    private function _getContent() {
         if (!isset($this->_content)) {
             if (strlen(trim($this->_content = file_get_contents('php://input'))) === 0) {
                 $this->_content = false;
@@ -248,7 +281,7 @@ class Request {
         return $this->_content;
     }
 
-    private function getRawRequest() {
+    private function _getRawRequest() {
         if (!isset($this->_rawRequest)) {
 
             $request = trim($_SERVER['REQUEST_URI']);
@@ -424,7 +457,7 @@ class Route  {
 
 		$r = preg_replace('/:[a-z]+/i','.*',$this->_route);
 		$r = preg_replace('/\//','\/',$r);
-
+//echo '--'.$page;
 		if (preg_match('/^'.$r.'$/'.($this->_caseSensitive ? '' : 'i'),$page)) {
 			$paths = explode('/',$page);
 
