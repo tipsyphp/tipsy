@@ -31,7 +31,7 @@ $tipsy->router()
 		$View->display('user');
 	})
 	->otherwise(function() {
-		$View->display('404');
+		echo '404';
 	});
 
 $tipsy->start();
