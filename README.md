@@ -40,6 +40,6 @@ $tipsy->start();
 ```
 
 
-### Instalation
+### Installation
 
 See [Installation](https://github.com/arzynik/Tipsy/wiki/Installation) for instructions on how to install.
