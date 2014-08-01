@@ -12,6 +12,8 @@ Tipsy is an MVW (Model, View, Whatever) PHP framework inspired by [AngularJS](ht
 
 ### Example Usage
 
+See [Documentation](https://github.com/arzynik/Tipsy/wiki) for more information.
+
 ###### home.php
 
 ```php
