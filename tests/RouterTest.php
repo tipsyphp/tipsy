@@ -37,6 +37,16 @@ class RouterTest extends Tipsy_Test {
 		$this->assertEquals('BASIC', $check);
 	}
 	
+	public function testRouterBasicAlternate() {
+		$this->tip->router()
+			->when('router/basic', function() {
+				echo 'BASIC';
+			});
+		$this->ob();
+		$this->tip->start('   //router/basic // ');
+		$this->assertEquals('BASIC', $this->ob(false));
+	}
+	
 	public function testRouterHomeSuccess() {
 		$_REQUEST['__url'] = '/';
 
