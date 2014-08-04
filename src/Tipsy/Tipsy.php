@@ -392,7 +392,7 @@ class Router {
 	}
 	
 	public function match($page) {
-		foreach ($this->routes() as $route) {
+		foreach (array_reverse($this->routes(), true) as $route) {
 			if ($route->match($page)) {
 				return $route;
 			}

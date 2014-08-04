@@ -340,7 +340,7 @@ class RouterTest extends Tipsy_Test {
 		$this->assertEquals('YES', $check);
 	}
 	
-public function testArraySetup() {
+	public function testArraySetup() {
 		$_REQUEST['__url'] = 'router/array';
 		$_SERVER['REQUEST_METHOD'] = 'POST';
 
@@ -357,6 +357,24 @@ public function testArraySetup() {
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('ARRAY', $check);
+	}
+	
+	public function testRouteLoop() {
+		$_REQUEST['__url'] = 'loop';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+
+		$this->tip->router()
+			->post('loop',function() {
+				echo 'ONE';
+			})
+			->when('loop',function() {
+				echo 'TWO';
+			});
+		
+		$this->ob();
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('TWO', $check);
 	}
 
 	/*
