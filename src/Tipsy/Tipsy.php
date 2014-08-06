@@ -204,10 +204,10 @@ class Request {
             switch ($this->method()) {
                 case 'PUT':
                 case 'DELETE':
-                    if ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
+                    if ($this->_contentType() === 'application/x-www-form-urlencoded') {
                         parse_str($this->_getContent(), $this->_properties);
 
-                    } elseif ($_SERVER['CONTENT_TYPE'] === 'application/json') {
+                    } elseif ($this->_contentType() === 'application/json') {
                         $content = $this->_getContent();
                         $request = json_decode($content,'array');
                         if (!$request) {
@@ -219,21 +219,16 @@ class Request {
                     break;
 
                 case 'GET':
-                    if ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded' || !$_SERVER['CONTENT_TYPE']) {
+                    if ($this->_contentType() === 'application/x-www-form-urlencoded' || !$this->_contentType()) {
                         $this->_properties = $_GET;
-                    } elseif ($_SERVER['CONTENT_TYPE'] === 'application/json') {
+                    } elseif ($this->_contentType() === 'application/json') {
                         $this->_properties = $this->_getRawRequest();
                     }
                     break;
 
                 case 'POST':
-                    if ($_SERVER['CONTENT_TYPE'] === 'application/json') {
+                    if ($this->_contentType() === 'application/json') {
                         $this->_properties = json_decode($this->_getContent(), 'array');
-                    /* Found a case where the CONTENT_TYPE was 'application/x-www-form-urlencoded; charset=UTF-8'
-                     *
-                     * @todo Is there any case where we do not set the $request to $_POST nor the json?
-                     * If not, there there should be OK to use the fallback scenario
-                     */
                     // } elseif ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
                     } else  {
                         $this->_properties = $_POST;
@@ -241,6 +236,13 @@ class Request {
                     break;
             }
         }
+    }
+    
+    private function _contentType() {
+	    if (!isset($this->_contentType)) {
+		    $this->_contentType = explode(';',$_SERVER['CONTENT_TYPE'])[0];
+	    }
+	    return $this->_contentType;
     }
     
     public function base() {
