@@ -118,8 +118,8 @@ class Tipsy {
 			if ($this->_models[$model]['reflection']->hasMethod('__construct')) {
 				$config = array_merge(is_array($this->_models[$model]['config']) ? $this->_models[$model]['config'] : [],['tipsy' => $this],$args);
 				$instance = $this->_models[$model]['reflection']->newInstance($config);
-			} else {
 
+			} else {
 				$instance = $this->_models[$model]['reflection']->newInstance();
 			}
 
@@ -127,7 +127,8 @@ class Tipsy {
 				if (is_callable($config) && method_exists($instance, 'addMethod')) {
 					$instance->addMethod($name, $config);
 				} else {
-					$instance->{$name} = $config;
+					// @todo: why is this needed?
+					//$instance->{$name} = $config;
 				}
 				$instance->_tipsy = $this;
 			}
@@ -744,6 +745,9 @@ class DBO extends Model {
 	private $_model;
 	
 	public function __construct($args = []) {
+	
+
+		$this->_baseConfig = $args;
 
 		if ($args['tipsy']) {
 			$this->_tipsy = $args['tipsy'];
@@ -778,10 +782,10 @@ class DBO extends Model {
 			$this->_table = $args['table'];
 			unset($args['table']);
 		}
+
 		if ($args) {
 			$this->load($args);
 		}
-//		$this->_baseConfig = $args;
 	}
 
 
@@ -843,15 +847,23 @@ class DBO extends Model {
 	 */
 	public function load($id = null) {
 		// fill the object with blank properties based on the fields of that table
+		
 		$fields = $this->fields();
 		foreach ($fields as $field) {
 			$this->{$field->Field} = $this->{$field->Field} ? $this->{$field->Field} : '';
 		}
 		
+
+		if (!$id && $this->dbId()) {
+			$id = $this->dbId();
+		}
+
 		if (is_object($id)) {
 			$node = $id;
+
 		} elseif (is_array($id)) {
 			$node = (object)$id;
+
 		} elseif ($id) {
 			if (!$node) {
 				$node = (object)$this->db()->get('select * from `' . $this->table() . '` where `'.$this->idVar().'` = ? limit 1', [$id])[0];
@@ -867,6 +879,7 @@ class DBO extends Model {
 				$this->$var = $value;
 			}
 		}
+
 
 /*
 		if (Cana::config()->cache->object !== false) {

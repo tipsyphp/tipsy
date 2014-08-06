@@ -34,6 +34,17 @@ class DBTest extends Tipsy_Test {
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		");
 
+		$this->tip->db()->exec("
+			DROP TABLE IF EXISTS `test_user2`;
+			CREATE TABLE `test_user2` (
+			  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+			  `name` varchar(255) DEFAULT NULL,
+			  `username` varchar(255) DEFAULT NULL,
+			  PRIMARY KEY (`id`),
+			  UNIQUE KEY `username` (`username`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		");
+
 		$this->assertEquals('YES', 'YES');
 	}
 
@@ -54,6 +65,34 @@ class DBTest extends Tipsy_Test {
 		$this->assertEquals('YES', $m->test());
 	}
 
+	public function testModelDBOIdLoad() {
+		$this->tip->model('Tipsy\DBO/TestModel', [
+			id => 'id',
+			table => 'test_user2'
+		]);
+
+		$m = $this->tip->model('TestModel');
+		$m->load([
+			'name' => 'test'
+		]);
+		$m->save();
+
+		$this->assertEquals(1, $m->dbId());
+	}
+	
+	public function testModelDBOIdCreate() {
+		$this->tip->model('Tipsy\DBO/TestModel', [
+			id => 'id',
+			table => 'test_user2'
+		]);
+
+		$m = $this->tip->model('TestModel');
+		$m = $m->create([
+			'name' => 'test'
+		]);
+
+		$this->assertEquals(2, $m->dbId());
+	}
 
 	public function testModelDBOExtendRoute() {
 		$_REQUEST['__url'] = 'user/create';
