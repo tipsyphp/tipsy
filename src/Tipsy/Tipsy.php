@@ -652,7 +652,7 @@ class Model {
 	private $_properties;
 
 	public function json() {
-		return json_encode($this->properties());
+		return json_encode($this->exports());
 	}
 
 	public function addMethod($method, $closure) {
@@ -663,16 +663,18 @@ class Model {
 		if (is_callable($this->_methods[$method])) {
 			$this->_methods[$method] = $this->_methods[$method]->bindTo($this);
 			return call_user_func_array($this->_methods[$method], $args);
+		} elseif (method_exists($this,'__'.$method)) {
+			return call_user_func_array([$this, '__'.$method], $args);
 		} else {
 			throw new Exception('Could not call ' . $method. ' on '.get_class());
 		}
 	}
 
-	public function &properties() {
+	public function &__properties() {
 		return $this->_properties ? $this->_properties : get_object_vars($this);
 	}
 
-	public function property($name) {
+	public function __property($name) {
 		return isset($this->_properties[$name]) ? $this->_properties[$name] : null;
 	}
 
@@ -696,12 +698,12 @@ class Model {
 		return $name{0} == '_' ? isset($this->{$name}) : isset($this->_properties[$name]);
 	}
 
-	public function exports() {
-		return $this->properties();
+	public function __exports() {
+		return $this->__properties();
 	}
 
 	public function csv() {
-		$csv = $this->properties();
+		$csv = $this->__properties();
 		if ($this->idVar() != 'id') {
 			unset($csv['id']);
 		}
@@ -1450,7 +1452,7 @@ class Looper implements \Iterator {
 	public function json() {
 		foreach ($this->_items as $key => $item) {
 			if (is_callable($item, 'exports') || method_exists($item, 'exports')) {
-				$items[$key] = (new ReflectionMethod($item, 'exports'))->invokeArgs($item, []);
+				$items[$key] = (new \ReflectionMethod($item, 'exports'))->invokeArgs($item, []);
 			}
 			$items[$key] = $item->exports();
 		}
@@ -1576,7 +1578,7 @@ class Looper implements \Iterator {
 	public function __call($name, $arguments) {
 		foreach ($this->_items as $key => $item) {
 			if (is_callable($item, $name) || method_exists($item, $name)) {
-				$items[] = (new ReflectionMethod($item, $name))->invokeArgs($item, $arguments);
+				$items[] = (new \ReflectionMethod($item, $name))->invokeArgs($item, $arguments);
 			} else {
 				// not callable
 			}
