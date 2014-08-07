@@ -14,8 +14,8 @@ $tipsy->model('Tipsy\DBO/Blog', [
 	posts => function() {
 		return $this->q('select * from blog limit 10');
 	},
-	id => 'id',
-	table => 'blog'
+	_id => 'id',
+	_table => 'blog'
 ]);
 
 //$tipsy->model()

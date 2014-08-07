@@ -104,7 +104,7 @@ class Tipsy {
 			}
 
 			$name = $extend ? $extend : 'Tipsy\Model';
-			$config['model'] = $model;
+			$config['_model'] = $model;
 
 			$this->_models[$model] = [
 				'reflection' => new \ReflectionClass($name),
@@ -116,7 +116,7 @@ class Tipsy {
 		} else {
 
 			if ($this->_models[$model]['reflection']->hasMethod('__construct')) {
-				$config = array_merge(is_array($this->_models[$model]['config']) ? $this->_models[$model]['config'] : [],['tipsy' => $this],$args);
+				$config = array_merge(is_array($this->_models[$model]['config']) ? $this->_models[$model]['config'] : [],['_tipsy' => $this],$args);
 				$instance = $this->_models[$model]['reflection']->newInstance($config);
 
 			} else {
@@ -610,12 +610,8 @@ class Db {
 		if (!$args) {
 			throw new Exception('Invalid DB config.');
 		}
-		
-		if (!$args['dsn']) {
-			$args['dsn'] = 'mysql:host='.$args['host'].';dbname='.$args['database'].';charset=utf8';
-		}
 
-		$db = new \PDO($args['dsn'], $args['user'], $args['pass']);
+		$db = new \PDO('mysql:host='.$args['host'].';dbname='.$args['database'].';charset=utf8', $args['user'], $args['pass']);
 		$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		$db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
 		return $db;
@@ -755,13 +751,13 @@ class DBO extends Model {
 
 		$this->_baseConfig = $args;
 
-		if ($args['tipsy']) {
-			$this->_tipsy = $args['tipsy'];
-			unset($args['tipsy']);
+		if ($args['_tipsy']) {
+			$this->_tipsy = $args['_tipsy'];
+			unset($args['_tipsy']);
 		}
-		if ($args['model']) {
-			$this->_model = $args['model'];
-			unset($args['model']);
+		if ($args['_model']) {
+			$this->_model = $args['_model'];
+			unset($args['_model']);
 		}
 		/*
 		foreach ($args as $key=>$arg) {
@@ -780,13 +776,13 @@ class DBO extends Model {
 		}
 		*/
 
-		if ($args['id']) {
-			$this->_id_var = $args['id'];
-			unset($args['id']);
+		if ($args['_id']) {
+			$this->_id_var = $args['_id'];
+			unset($args['_id']);
 		}
-		if ($args['table']) {
-			$this->_table = $args['table'];
-			unset($args['table']);
+		if ($args['_table']) {
+			$this->_table = $args['_table'];
+			unset($args['_table']);
 		}
 
 		if ($args) {
@@ -858,7 +854,6 @@ class DBO extends Model {
 		foreach ($fields as $field) {
 			$this->{$field->Field} = $this->{$field->Field} ? $this->{$field->Field} : '';
 		}
-		
 
 		if (!$id && $this->dbId()) {
 			$id = $this->dbId();

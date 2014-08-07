@@ -55,8 +55,8 @@ class DBTest extends Tipsy_Test {
 			test => function() {
 				return $this->test;
 			},
-			id => 'id_test_user',
-			table => 'test_user'
+			_id => 'id_test_user',
+			_table => 'test_user'
 		]);
 		
 		$m = $this->tip->model('TestModel');
@@ -67,8 +67,8 @@ class DBTest extends Tipsy_Test {
 
 	public function testModelDBOIdLoad() {
 		$this->tip->model('Tipsy\DBO/TestModel', [
-			id => 'id',
-			table => 'test_user2'
+			_id => 'id',
+			_table => 'test_user2'
 		]);
 
 		$m = $this->tip->model('TestModel');
@@ -82,8 +82,8 @@ class DBTest extends Tipsy_Test {
 	
 	public function testModelDBOIdCreate() {
 		$this->tip->model('Tipsy\DBO/TestModel', [
-			id => 'id',
-			table => 'test_user2'
+			_id => 'id',
+			_table => 'test_user2'
 		]);
 
 		$m = $this->tip->model('TestModel');
@@ -101,8 +101,8 @@ class DBTest extends Tipsy_Test {
 			test => function($user) {
 				return $this->test;
 			},
-			id => 'id_test_user',
-			table => 'test_user'
+			_id => 'id_test_user',
+			_table => 'test_user'
 		]);
 
 		$this->tip->router()
