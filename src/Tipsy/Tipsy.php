@@ -608,7 +608,11 @@ class Db {
 			throw new Exception('Invalid DB config.');
 		}
 
-		$db = new \PDO('mysql:host='.$args['host'].';dbname='.$args['database'].';charset=utf8', $args['user'], $args['pass']);
+		if (!$args['dsn']) {
+			$args['dsn'] = 'mysql:host='.$args['host'].';dbname='.$args['database'].';charset=utf8';
+		}
+		$db = new \PDO($args['dsn'], $args['user'], $args['pass']);
+
 		$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		$db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
 		return $db;
