@@ -96,7 +96,6 @@ class Tipsy {
 
 			} elseif ($model && is_array($args)) {
 				$config = $args;
-
 			}
 			
 			if ($this->_models[$extend]) {
@@ -470,7 +469,7 @@ class Route  {
 
 		$r = preg_replace('/:[a-z]+/i','.*',$this->_route);
 		$r = preg_replace('/\//','\/',$r);
-//echo '--'.$page;
+
 		if (preg_match('/^'.$r.'$/'.($this->_caseSensitive ? '' : 'i'),$page)) {
 			$paths = explode('/',$page);
 
@@ -592,8 +591,6 @@ class Controller {
 		}
 		return $this->_route;
 	}
-
-	
 }
 
 
@@ -644,7 +641,6 @@ class Db {
 		return $this->_fields[$table];
 	}
 }
-
 
 
 class Model {
@@ -711,30 +707,6 @@ class Model {
 	}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class DBO extends Model {
@@ -836,7 +808,6 @@ class DBO extends Model {
 	public function dbId() {
 		return $this->{$this->idVar()};
 	}
-
 
 	/**
 	 * Load the object with properties
@@ -1109,29 +1080,6 @@ class RouteParams extends Scope {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class View {
 	private $_layout = 'layout';
 	private $_headers;
@@ -1296,63 +1244,6 @@ class StripWhite extends View_Filter {
 		return preg_replace($find, $replace, $content);
 	}
 }
-
-
-function joinPaths() {
-	$args = func_get_args();
-	$paths = [];
-	foreach ($args as $arg) {
-		$paths = array_merge($paths, (array)$arg);
-	}
-
-	$paths = array_map(create_function('$p', 'return trim($p, "/");'), $paths);
-	$paths = array_filter($paths);
-	return join('/', $paths);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // @todo: clean this up. its just a copy and paste from cana. we dont need all of it
@@ -1625,4 +1516,17 @@ class Looper implements \Iterator {
 		}
 		return $this;
 	}
+}
+
+
+function joinPaths() {
+	$args = func_get_args();
+	$paths = [];
+	foreach ($args as $arg) {
+		$paths = array_merge($paths, (array)$arg);
+	}
+
+	$paths = array_map(create_function('$p', 'return trim($p, "/");'), $paths);
+	$paths = array_filter($paths);
+	return join('/', $paths);
 }
