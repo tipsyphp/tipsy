@@ -51,7 +51,7 @@ class DBTest extends Tipsy_Test {
 
 	public function testModelDBOExtendCall() {
 	
-		$this->tip->model('Tipsy\DBO/TestModel', [
+		$this->tip->service('Tipsy\Resource/TestModel', [
 			test => function() {
 				return $this->test;
 			},
@@ -59,19 +59,19 @@ class DBTest extends Tipsy_Test {
 			_table => 'test_user'
 		]);
 		
-		$m = $this->tip->model('TestModel');
+		$m = $this->tip->service('TestModel');
 		$m->test = 'YES';
 
 		$this->assertEquals('YES', $m->test());
 	}
 
 	public function testModelDBOIdLoad() {
-		$this->tip->model('Tipsy\DBO/TestModel', [
+		$this->tip->service('Tipsy\Resource/TestModel', [
 			_id => 'id',
 			_table => 'test_user2'
 		]);
 
-		$m = $this->tip->model('TestModel');
+		$m = $this->tip->service('TestModel');
 		$m->load([
 			'name' => 'test'
 		]);
@@ -81,12 +81,12 @@ class DBTest extends Tipsy_Test {
 	}
 	
 	public function testModelDBOIdCreate() {
-		$this->tip->model('Tipsy\DBO/TestModel', [
+		$this->tip->service('Tipsy\Resource/TestModel', [
 			_id => 'id',
 			_table => 'test_user2'
 		]);
 
-		$m = $this->tip->model('TestModel');
+		$m = $this->tip->service('TestModel');
 		$m = $m->create([
 			'name' => 'test'
 		]);
@@ -97,7 +97,7 @@ class DBTest extends Tipsy_Test {
 	public function testModelDBOExtendRoute() {
 		$_REQUEST['__url'] = 'user/create';
 	
-		$this->tip->model('Tipsy\DBO/TestUser', [
+		$this->tip->service('Tipsy\Resource/TestUser', [
 			test => function($user) {
 				return $this->test;
 			},

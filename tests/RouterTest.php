@@ -24,7 +24,6 @@ class RouterTest extends Tipsy_Test {
 
 	public function testRouterBasic() {
 		$_REQUEST['__url'] = 'router/basic';
-		
 		$this->ob();
 
 		$this->tip->router()
@@ -122,7 +121,6 @@ class RouterTest extends Tipsy_Test {
 	
 	public function testRouterInternalController() {
 		$_REQUEST['__url'] = 'router/internal';
-		
 		$this->tip->controller('InternalController', function() {
 			echo 'INTERNAL';
 		});

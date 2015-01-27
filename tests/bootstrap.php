@@ -29,7 +29,7 @@ class Tipsy_Test extends PHPUnit_Framework_TestCase {
 }
 
 // Autoload files using Composer autoload
-//require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-// manual load
-require_once __DIR__ . '/../src/Tipsy/Tipsy.php';
+// include the base file in case we have crap in there
+$t = new \Tipsy\Tipsy;

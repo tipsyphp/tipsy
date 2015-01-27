@@ -1,6 +1,5 @@
 <?php
 
-
 class LoginService extends \Tipsy\Service {
 	function __construct() {
 		$this->loggedin = 'YES';

@@ -25,19 +25,19 @@ class ModelTest extends Tipsy_Test {
 	
 	public function testModelBasic() {
 
-		$this->tip->model('TestModel', [
+		$this->tip->service('TestModel', [
 			'test' => function() {
 				return 'YES';
 			}
 		]);
 
-		$model = $this->tip->model('TestModel');
+		$model = $this->tip->service('TestModel');
 		$this->assertEquals('YES', $model->test());
 	}
 
 	public function testModelBasicFunc() {
 
-		$this->tip->model('TestModel', function() {
+		$this->tip->service('TestModel', function() {
 			$model = [
 				'test' => function() {
 					return 'YES';
@@ -46,12 +46,12 @@ class ModelTest extends Tipsy_Test {
 			return $model;
 		});
 
-		$model = $this->tip->model('TestModel');
+		$model = $this->tip->service('TestModel');
 		$this->assertEquals('YES', $model->test());
 	}
 
 	public function testModelCustomExtend() {
-		$this->tip->model('TestModelBaseProtected/TestModel', function() {
+		$this->tip->service('TestModelBaseProtected/TestModel', function() {
 			$model = [
 				'test' => function() {
 					return 'TWO';
@@ -60,24 +60,24 @@ class ModelTest extends Tipsy_Test {
 			return $model;
 		});
 		
-		$model = $this->tip->model('TestModel');
+		$model = $this->tip->service('TestModel');
 		$this->assertEquals('TWO', $model->test());
 	}
 
 	public function testModelCustomExtendCall() {
-		$this->tip->model('TestModelBase/TestModel', function() {
+		$this->tip->service('TestModelBase/TestModel', function() {
 			$model = [
 
 			];
 			return $model;
 		});
 
-		$model = $this->tip->model('TestModel');
+		$model = $this->tip->service('TestModel');
 		$this->assertEquals('ONE', $model->test());
 	}
 	
 	public function testModelController() {
-		$this->tip->model('TestModel', function() {
+		$this->tip->service('TestModel', function() {
 			$model = [
 				'test' => function() {
 					return 'YESM';
