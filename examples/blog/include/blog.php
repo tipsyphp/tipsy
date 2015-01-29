@@ -1,13 +1,15 @@
 <?
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
-use Tipsy\Tipsy;
 
-$tipsy = new Tipsy;
+
+$tipsy = new Tipsy\Tipsy;
+
+echo $_REQUEST['__url'];
 
 $tipsy->config('../config/*.ini');
 
-$tipsy->model('Tipsy\DBO/Blog', [
+$tipsy->service('Tipsy\Resource/Blog', [
 	permalink => function($permalink) {
 		return $this->q('select * from blog where permalink=?',$permalink);
 	},
@@ -24,9 +26,6 @@ $tipsy->router()
 	->home(function($View) {
 		$View->display('home');
 	})
-	->when('', function($View) {
-		$View->display('about');
-	})
 	->when('about', function($View) {
 		$View->display('about');
 	})
@@ -34,11 +33,7 @@ $tipsy->router()
 		$Scope->posts = $Blog->posts();
 		$View->display('blog');
 	})
-	->get('blog/:id', function($Params, $Blog, $Scope, $View) {
-		$Scope->post = $Blog->permalink($Params->id);
-		$View->display('post');
-	})
-	->post('blog/:id', function($Params, $Blog, $Scope, $View) {
+	->when('blog/:id', function($Params, $Blog, $Scope, $View) {
 		$Scope->post = $Blog->permalink($Params->id);
 		$View->display('post');
 	})
