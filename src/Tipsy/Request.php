@@ -60,9 +60,6 @@ class Request {
     }
     
     public function base() {
-	    if (!isset($this->_base)) {
-		    
-	    }
 	    return $this->_base;
     }
     
@@ -88,8 +85,9 @@ class Request {
 				} else {
 					$request = explode('?', $_SERVER['REQUEST_URI'], 2)[0];
 					$dir = dirname($_SERVER['SCRIPT_NAME']);
-					$this->_base = $dir;
-					$url = preg_replace('/^.*'.str_replace('/','\\/',$dir).'/','',$request);
+					$this->_base = substr($dir, -1) == '/' ? $dir : $dir.'/';
+					$url = preg_replace('/^'.str_replace('/','\\/',''.$dir).'/','',$request);
+					$url = substr($url, 0, 1) == '/' ? $url : '/'.$url;
 				}
 			}
 
