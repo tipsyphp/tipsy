@@ -392,7 +392,10 @@ class Resource extends Model {
 		return new Looper($items);
 	}
 
-	public function tipsy() {
+	public function tipsy($tipsy = null) {
+		if (!is_null($tipsy)) {
+			$this->_tipsy = $tipsy;
+		}
 		return $this->_tipsy;
 	}
 	public function db() {
