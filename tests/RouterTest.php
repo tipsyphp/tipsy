@@ -2,14 +2,14 @@
 
 // class for library controller test
 class LibraryController extends Tipsy\Controller {
-	public function init() {
+	public function init($args = []) {
 		echo 'LIBRARY';
 	}
 }
 
 // class for instance controller test
 class InstanceController extends Tipsy\Controller {
-	public function init() {
+	public function init($args = []) {
 		echo 'INSTANCE';
 	}
 }
