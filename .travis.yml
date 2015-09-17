@@ -13,8 +13,11 @@ env:
 # install:
 
 before_script:
+  - mkdir build
   - phpenv config-add tests/php.ini
   - mysql -e "create database IF NOT EXISTS tipsy;" -uroot;
+  - composer self-update
+  - composer install --dev --no-interaction
 #  - mysql -uroot crunchbutton_travis < db/dump.sql;
 #  - sudo apt-get clean
 #  - sudo apt-get update
@@ -30,6 +33,7 @@ before_script:
 
 
 script:
-  - composer self-update
-  - composer install
-  - phpunit --configuration tests/phpunit.xml --coverage-text
+  - phpunit --configuration tests/phpunit.xml
+
+after_script:
+  - php vendor/bin/coveralls -v build/logs/clover.xml
