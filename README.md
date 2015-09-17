@@ -6,6 +6,7 @@ Tipsy is an MVW (Model, View, Whatever) PHP framework inspired by [AngularJS](ht
 
 
 [![Build Status](https://travis-ci.org/arzynik/Tipsy.svg?branch=master)](https://travis-ci.org/arzynik/Tipsy)
+[![Coverage Status](https://coveralls.io/repos/arzynik/Tipsy/badge.svg?branch=master&service=github)](https://coveralls.io/github/arzynik/Tipsy?branch=master)
 
 
 
