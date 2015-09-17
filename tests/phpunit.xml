@@ -9,4 +9,13 @@
             <directory>./</directory>
         </testsuite>
     </testsuites>
+	
+    <filter>
+        <whitelist>
+            <directory suffix=".php" processUncoveredFilesFromWhitelist="true">../include</directory>
+			<exclude>
+				<directory>../examples</directory>
+			</exclude>
+        </whitelist>
+    </filter>
 </phpunit>
