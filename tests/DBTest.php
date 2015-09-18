@@ -131,7 +131,7 @@ class DBTest extends Tipsy_Test {
 
 		$this->assertEquals('devin', $check);
 	}
-	/*
+
 	public function testResourceClass() {
 
 		$this->tip->service('ClassResourceTest');
@@ -139,17 +139,17 @@ class DBTest extends Tipsy_Test {
 		$model = $this->tip->service('ClassResourceTest');
 		$this->assertEquals('NO', $model->test());
 	}
-	*/
+	
 	
 	public function testResourceClassOverwrite() {
 
-		$this->tip->service('ClassResourceTest', [
+		$this->tip->service('ClassResourceTest2', [
 			'test' => function() {
 				return 'YES';
 			}
 		]);
 
-		$model = $this->tip->service('ClassResourceTest');
+		$model = $this->tip->service('ClassResourceTest2');
 		$this->assertEquals('YES', $model->test());
 	}
 	
