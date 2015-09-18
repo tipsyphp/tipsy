@@ -111,6 +111,12 @@ class Tipsy {
 
 			} elseif ($service && !$args && class_exists($service)) {
 				$extend = $service;
+				if (property_exists($service,'_id')) {
+					$config['_id'] = $service::$_id;
+				}
+				if (property_exists($service,'_table')) {
+					$config['_table'] = $service::$_table;
+				}
 
 			} elseif ($service && is_array($args)) {
 				$config = $args;

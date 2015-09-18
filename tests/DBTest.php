@@ -1,6 +1,16 @@
 <?php
 
 
+class ClassResourceTest extends \Tipsy\Resource {
+	public static $_id = 'id_test_user';
+	public static $_table = 'test_user';
+
+	function test() {
+		return 'NO';
+	}
+}
+
+
 class DBTest extends Tipsy_Test {
 
 	public static function setUpBeforeClass() {
@@ -120,6 +130,26 @@ class DBTest extends Tipsy_Test {
 		$check = $this->ob(false);
 
 		$this->assertEquals('devin', $check);
+	}
+	
+	public function testResourceClass() {
+
+		$this->tip->service('ClassResourceTest');
+
+		$model = $this->tip->service('ClassResourceTest');
+		$this->assertEquals('NO', $model->test());
+	}
+	
+	public function testResourceClassOverwrite() {
+
+		$this->tip->service('ClassResourceTest', [
+			'test' => function() {
+				return 'YES';
+			}
+		]);
+
+		$model = $this->tip->service('ClassResourceTest');
+		$this->assertEquals('YES', $model->test());
 	}
 		/*
 	public function testModelDBOQuery() {
