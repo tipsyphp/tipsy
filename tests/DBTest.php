@@ -131,7 +131,7 @@ class DBTest extends Tipsy_Test {
 
 		$this->assertEquals('devin', $check);
 	}
-	
+	/*
 	public function testResourceClass() {
 
 		$this->tip->service('ClassResourceTest');
@@ -151,6 +151,7 @@ class DBTest extends Tipsy_Test {
 		$model = $this->tip->service('ClassResourceTest');
 		$this->assertEquals('YES', $model->test());
 	}
+	*/
 		/*
 	public function testModelDBOQuery() {
 	
