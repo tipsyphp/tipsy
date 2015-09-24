@@ -61,14 +61,6 @@ class Model {
 		return $this->__properties();
 	}
 
-	public function csv() {
-		$csv = $this->__properties();
-		if ($this->idVar() != 'id') {
-			unset($csv['id']);
-		}
-		return $csv;
-	}
-
 	public function tipsy($tipsy = null) {
 		if (!is_null($tipsy)) {
 			$this->_tipsy = $tipsy;
