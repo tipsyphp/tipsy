@@ -2,7 +2,6 @@
 
 namespace Tipsy;
 
-
 class DependencyInjector extends Model {
 	private $_closure;
 	private $_tipsy;
