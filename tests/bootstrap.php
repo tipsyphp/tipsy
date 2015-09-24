@@ -14,6 +14,7 @@ class Tipsy_Test extends PHPUnit_Framework_TestCase {
 			return;
 		}
 		if ($start) {
+			ob_clean();
 			ob_start();
 		} else {
 			$check = ob_get_contents();
