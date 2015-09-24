@@ -374,6 +374,20 @@ class RouterTest extends Tipsy_Test {
 		$check = $this->ob(false);
 		$this->assertEquals('TWO', $check);
 	}
+	
+	public function testRouterException() {
+		$_REQUEST['__url'] = 'router/exception';
+
+		$this->ob();
+		try {
+			$this->tip->start();
+			$caught = false;
+		} catch (Exception $e) {
+			$caught = true;
+		}
+
+		$this->assertTrue($caught);
+	}
 
 	/*
 	public function testRouterViewController() {
