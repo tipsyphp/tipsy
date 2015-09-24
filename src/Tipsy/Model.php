@@ -1,5 +1,5 @@
 <?php
-	
+
 namespace Tipsy;
 
 class Model {
@@ -12,6 +12,10 @@ class Model {
 
 	public function addMethod($method, $closure) {
 		$this->_methods[$method] = $closure;
+	}
+
+	public function hasMethod($method) {
+		return $this->_methods[$method] ? true : false;
 	}
 
 	public function __call($method, $args) {
@@ -64,7 +68,7 @@ class Model {
 		}
 		return $csv;
 	}
-	
+
 	public function tipsy($tipsy = null) {
 		if (!is_null($tipsy)) {
 			$this->_tipsy = $tipsy;
