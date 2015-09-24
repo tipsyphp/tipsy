@@ -6,8 +6,8 @@
  *
  * A little bit of a mess. Still a work in progress.
  */
- 
- 
+
+
 namespace Tipsy;
 
 set_error_handler(function ($errno, $errstr){
@@ -33,18 +33,29 @@ class Tipsy {
 	private $_services;
 	private $_route;
 	private $_url;
-	
+	private $_middlewares;
+	private $_middlewareStart;
+
 	public function __construct() {
 		$this->_controllers = [];
+		$this->_middlewares = [];
 		$this->_config = [];
 		$this->_services = [];
 		$this->_services = [];
 		$this->_rootScope = new Scope;
+		$this->_middlewareStart = false;
 	}
 
 	public function start($url = null) {
 		$this->_url = $this->request()->path($url);
 		$this->_route = $this->router()->match($this->_url);
+		$this->_middlewareStart = true;
+		foreach ($this->middlewares() as $middleware) {
+			if ($middleware['started']) {
+				continue;
+			}
+			Middleware::_start($middleware, $this);
+		}
 		$this->_route->controller()->init();
 	}
 	public function router() {
@@ -72,14 +83,14 @@ class Tipsy {
 		$merge = ($recursive ? 'array_merge_recursive' : 'array_merge');
 		if (is_string($args)) {
 			// assume its a config file
-			
+
 			$iterator = new \GlobIterator($args);
-			
+
 			foreach($iterator as $file) {
 			    $config = parse_ini_file($file->getPathname(), true);
 			    $this->_config = $merge($this->_config, $config);
 			}
-			
+
 			return $this;
 
 		} elseif (is_array($args)) {
@@ -88,16 +99,16 @@ class Tipsy {
 
 		} else {
 			return $this->_config;
-		}		
+		}
 	}
-	
+
 	public function provider($service, $args = []) {
 		$this->service($service, $args);
 		$this->service($service);
 		return $this;
 	}
 
-	public function service($service, $args = []) {
+	public function service($service, $args = [], $static = false) {
 		list($service, $extend) = $this->_serviceName($service, $args);
 
 		if (!$this->_services[$service]) {
@@ -109,7 +120,7 @@ class Tipsy {
 				])];
 
 
-			} elseif ($service && !$args && class_exists($service)) {
+			} elseif ($service && class_exists($service)) { //!$args && @note: not sure why i had this here. tests still pass without it
 				$extend = $service;
 				if (property_exists($service,'_id')) {
 					$config['_id'] = $service::$_id;
@@ -121,9 +132,13 @@ class Tipsy {
 			} elseif ($service && is_array($args)) {
 				$config = $args;
 			}
-			
+
 			if ($this->_services[$extend]) {
 				$extend = $this->_services[$extend];
+			}
+			
+			if ($static) {
+				$config['_static'] = true;
 			}
 
 			$name = $extend ? $extend : 'Tipsy\Service';
@@ -142,6 +157,10 @@ class Tipsy {
 				$this->_services[$service]['config'] = $this->_services[$service]['config']['_controller']->init(['tipsy' => $this]);
 			}
 
+			if ($this->_services[$service]['config']['_static'] && $this->_services[$service]['instance']) {
+				return $this->_services[$service]['instance'];
+			}
+			
 			if ($this->_services[$service]['reflection']->hasMethod('__construct')) {
 				$config = array_merge(is_array($this->_services[$service]['config']) ? $this->_services[$service]['config'] : [],['_tipsy' => $this],$args);
 				$instance = $this->_services[$service]['reflection']->newInstance($config);
@@ -160,6 +179,10 @@ class Tipsy {
 					$instance->tipsy($this);
 				}
 			}
+			
+			if ($this->_services[$service]['config']['_static']) {
+				$this->_services[$service]['instance'] = $instance;
+			}
 
 			return $instance;
 		}
@@ -173,7 +196,7 @@ class Tipsy {
 	public function db() {
 		if (!isset($this->_db)) {
 			$this->_db = new Db($this->_config['db']);
-			
+
 			// kill the db config in case something gets outputted
 			unset($this->_config['db']);
 		}
@@ -195,7 +218,7 @@ class Tipsy {
 	}
 
 	private function _serviceName($service, $args = []) {
-		if (!is_null($args)) {
+		if (!is_null($args) && strpos($service, '/')) {
 			$service = explode('/',$service);
 			if (count($service) > 2) {
 				throw new Exception('Cant extend more than one model.');
@@ -206,7 +229,7 @@ class Tipsy {
 		}
 		return [$service, $extend];
 	}
-	
+
 	public function rootScope() {
 		return $this->_rootScope;
 	}
@@ -216,7 +239,31 @@ class Tipsy {
 	public function url() {
 		return $this->_url;
 	}
+
+	public function middleware($service, $args = []) {
+		if (!$this->_services[$service]) {
+			$this->service($service, $args, true);
+		}
+		if ($this->_middlewares[$service]) {
+			return $this->service($service);
+		}
+		$middleware = [
+			'service' => $service,
+			'args' => $args,
+			'started' => $this->_middlewareStart
+		];
+		$this->_middlewares[$service] = $middleware;
+		if ($this->_middlewareStart) {
+			Middleware::_start($middleware, $this);
+		}
+		return $this->service($service);
+	}
+
+	public function middlewares() {
+		return $this->_middlewares;
+	}
 }
+
 
 
 
@@ -229,12 +276,12 @@ class Tipsy {
 
 
 class RouteParams extends Scope {
-	
+
 }
 
 
 class View_Filter {
-	
+
 }
 
 
@@ -255,287 +302,3 @@ class StripWhite extends View_Filter {
 }
 
 
-// @todo: clean this up. its just a copy and paste from cana. we dont need all of it
-class Looper implements \Iterator {
-	private $_items;
-	private $_position;
-
-	public function __construct() {
-		$items = [];
-		foreach (func_get_args() as $arg) {
-			if (is_object($arg) && (get_class($arg) == 'Looper' || is_subclass_of($arg,'Looper'))) {
-				$arg = $arg->items();
-			} elseif (is_object($arg)) {
-				$arg = [$arg];
-			}
-			$items = array_merge((array)$arg, $items);
-		}
-
-		$this->_items = $items;
-		$this->_position = 0;
-	}
-	
-	// if anyone knows any way to pass func_get_args by reference i would love you. i want string manipulation
-	public static function o() {
-		$iterator = new ReflectionClass(get_called_class());
-		return $iterator->newInstanceArgs(func_get_args());
-	}
-	
-	public function items() {
-		return $this->_items;
-	}
-	
-	public function get($index) {
-		return $this->_items[$index];
-	}
-
-	public function eq($pos) {
-		$pos = $pos < 0 ? count($this->_items) - abs($pos) : $pos;
-		return $this->_items[$pos];
-	}
-	
-	public function remove($start) {
-		unset($this->_items[$start]);
-		return $this;
-	}
-	
-	public function slice($start, $end = null) {
-		$items = $this->_items;
-		$items = array_slice($items, $start, $end);
-
-		return $this->_returnItems($items);
-	}
-	
-	public function not() {
-		$items = call_user_func_array([$this, '_filter'], func_get_args());
-		return $this->_returnItems($items['no']);
-	}
-		
-	public function filter() {
-		$items = call_user_func_array([$this, '_filter'], func_get_args());
-		return $this->_returnItems($items['yes']);
-	}
-	
-	public function each($func, $params = []) {
-		foreach ($this->_items as $key => $item) {
-			$func = $func->bindTo(!is_object($item) ? (object)$item : $item);
-			$func($key, $item);
-			$this->_items[$key] = $item;
-		}
-	}
-	
-	public function e($f) {
-		self::each($f);
-	}
-
-	public function rewind() {
-		$this->_position = 0;
-	}
-
-	public function current() {
-		return $this->_items[$this->_position];
-	}
-
-	public function key() {
-		return $this->_position;
-	}
-
-	public function next() {
-		++$this->_position;
-	}
-
-	public function valid() {
-		return isset($this->_items[$this->_position]);
-	}
-	
-	public function json() {
-		foreach ($this->_items as $key => $item) {
-			if (is_callable($item, 'exports') || method_exists($item, 'exports')) {
-				$items[$key] = (new \ReflectionMethod($item, 'exports'))->invokeArgs($item, []);
-			}
-			$items[$key] = $item->exports();
-		}
-		return json_encode($items);
-	}
-	
-	public function count() {
-		return count($this->_items);
-	}
-
-	public function parent() {
-		return $this->_parent;
-	}
-
-	private function _filter() {
-		$items = $this->_items;
-		$mismatch = [];
-		$strict = false;
-
-		if (func_num_args() == 1 && is_callable(func_get_arg(0))) {
-			$func = func_get_arg(0);
-
-		} elseif (func_num_args() == 2 && !is_array(func_get_arg(0)) && !is_array(func_get_arg(1))) {
-			$filters[][func_get_arg(0)] = func_get_arg(1);
-
-		} else {
-			foreach (func_get_args() as $arg) {
-				if (is_array($arg)) {
-					$filters[] = $arg;
-				}
-			}
-		}
-
-		if ($filters) {
-			foreach ($filters as $key => $set) {
-				foreach ($items as $key => $item) {
-					$mis = 0;
-					foreach ($set as $k => $v) {
-						if ($item->{$k} != $v) {
-							$mis++;
-						}
-					}
-					if (($strict && count($set) == $mis) || $mis) {
-						$mismatch[$key]++;
-					}
-				}
-			}
-		}
-		
-		if ($func) {
-			foreach ($items as $key => $item) {
-				if (!$func($item,$key)) {
-					$mismatch[$key] = $key;
-					break;
-				}
-			}
-		}
-
-		foreach ($items as $key => $value) {
-			if (array_key_exists($key, $mismatch) && ($func || $mismatch[$key] == count($filters))) {
-				$trash[] = $items[$key];
-			} else {
-				$newitems[] = $items[$key];
-			}
-		}
-		
-		return ['yes' => $newitems,'no' => $trash];
-	}
-
-	private function _returnItems($items) {
-		if (count($items) != count($this->_items)) {
-			$return = new self($items);
-			$return->_parent = $this;
-		} else {
-			$return = $this;
-		}
-		return $return;
-	}
-	
-	public function __toString() {
-		$print = '';
-		foreach ($this->_items as $key => $item) {
-			if (is_object($item) && method_exists($item,'__toString')) {
-				$print .= $item->__toString();
-			} elseif (is_string($item) || is_int($item)) {
-				$print .= $item;
-			}
-		}
-		return $print;
-	}
-	
-	// export all available objects as a csv. asume that they are all table objects
-	// may not be the best place to put this but o well. exporting iterators is great.
-	public function csv() {
-
-		$fields = [];
-		foreach ($this->_items as $key => $item) {
-			if (is_object($item) && method_exists($item,'csv')) {
-				foreach ($item->csv() as $field => $value) {
-					$fields[$field] = $field;
-				}
-			}
-		}
-		$output = '';
-		foreach ($fields as $field) {
-			$output .= ($output ? ',' : '').$field;
-		}
-		$output .= "\n";
-		foreach ($this->_items as $key => $item) {
-			if (is_object($item) && method_exists($item,'csv')) {
-				$o = $item->csv();
-				foreach ($fields as $field) {
-					$output .= '"'.addslashes($o[$field]).'",';
-				}
-				$output = substr($output,0,-1);
-				$output .= "\n";
-			}
-		}
-		return $output;
-		
-	}
-	
-	public function __call($name, $arguments) {
-		foreach ($this->_items as $key => $item) {
-			if (is_callable($item, $name) || method_exists($item, $name)) {
-				$items[] = (new \ReflectionMethod($item, $name))->invokeArgs($item, $arguments);
-			} else {
-				// not callable
-			}
-		}
-
-		return i::o($items);
-	}
-
-	public function &__get($name) {
-		if (property_exists($this,$name)) {
-			return $this->{$name};
-		} else {
-			if (isset($name{0}) && $name{0} == '_') {
-				return $this->_items[0]->{$name};
-			} else {
-				return $this->_items[0]->_properties[$name];
-			}
-		}
-	}
-
-	public function __set($name, $value) {
-		if (property_exists($this,$name)) {
-			$this->{$name} = $value;
-		} else {
-			foreach ($this->_items as $key => $item) {
-				$this->_items[$key]->{$name} = $value;
-			}
-		}
-		return $value;
-	}
-	
-	public function __isset($property) {
-		if (isset($property{0}) && $property{0} == '_') {
-			return $this->_items[0]->{$property} ? true : false;
-		} else {
-			return $this->_items[0]->_properties[$property] ? true : false;
-		}
-	}
-	
-	public function __unset($property) {
-		if (isset($property{0}) && $property{0} == '_') {
-			unset($this->_items[0]->{$property});
-		} else {
-			unset($this->_items[0]->_properties[$property]);
-		}
-		return $this;
-	}
-}
-
-
-function joinPaths() {
-	$args = func_get_args();
-	$paths = [];
-	foreach ($args as $arg) {
-		$paths = array_merge($paths, (array)$arg);
-	}
-
-	$paths = array_map(create_function('$p', 'return trim($p, "/");'), $paths);
-	$paths = array_filter($paths);
-	return join('/', $paths);
-}
