@@ -33,7 +33,7 @@ class Router {
 	}
 	
 	public function alias($from, $to) {
-		// not sure how to do this yet
+		// @todo: not sure how to do this yet
 		$this->_aliass[] = new RouteAlias($from, $to);
 		return $this;
 	}
