@@ -64,6 +64,32 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->assertEquals('HELLO', $check);
 	}
 	
+	public function testMiddlewareTipsyDirect() {
+		$_REQUEST['__url'] = '';
+		$this->ob();
+
+		$this->tip->middleware('Tipsy\Service/LoginServiceTipsy', [
+			run => function() {
+				echo 'HI';
+			},
+			test => function() {
+				return 'HELLO';
+			}
+		]);
+
+
+		$check = $this->ob(false);
+		$this->assertEquals('', $check);
+		
+		$this->tip->router()->home(function() {});
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('HI', $check);
+		
+		$check = $this->tip->service('LoginServiceTipsy')->test();
+		$this->assertEquals('HELLO', $check);
+	}
+	
 	public function testMiddlewareFailure() {
 		$_REQUEST['__url'] = '';
 		$this->ob();

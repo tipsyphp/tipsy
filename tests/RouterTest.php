@@ -388,6 +388,20 @@ class RouterTest extends Tipsy_Test {
 
 		$this->assertTrue($caught);
 	}
+	
+	public function testRouterNullException() {
+		$_REQUEST['__url'] = 'router/exception';
+
+		$this->ob();
+		try {
+			$this->tip->router()->when();
+			$caught = false;
+		} catch (Exception $e) {
+			$caught = true;
+		}
+
+		$this->assertTrue($caught);
+	}
 
 	/*
 	public function testRouterViewController() {
