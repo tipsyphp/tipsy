@@ -224,18 +224,8 @@ class Tipsy {
 
 
 
-class Service extends DependencyInjector {
-	public function init($args = []) {
-		if ($this->closure()) {
-			return $this->inject($this->closure(), $this->_scope);
-		}
-	}
-}
 
 
-class Exception extends \Exception {
-	
-}
 
 
 class RouteParams extends Scope {

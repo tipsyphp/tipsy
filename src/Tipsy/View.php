@@ -56,12 +56,12 @@ class View {
 		}
 
 		foreach ($stack as $dir) {
-			$path = joinPaths($this->_path, $dir, $src.$this->_extension);
+			$path = self::joinPaths($this->_path, $dir, $src.$this->_extension);
 			if (file_exists($path) && is_file($path)) {
 				$file = $path;
 				break;
 			}
-			$path = joinPaths($this->_path, $dir, $src);
+			$path = self::joinPaths($this->_path, $dir, $src);
 			if (file_exists($path) && is_file($path)) {
 				$file = $path;
 				break;
@@ -69,6 +69,18 @@ class View {
 		}
 
 		return $file;
+	}
+	
+	private static function joinPaths() {
+		$args = func_get_args();
+		$paths = [];
+		foreach ($args as $arg) {
+			$paths = array_merge($paths, (array)$arg);
+		}
+
+		$paths = array_map(create_function('$p', 'return trim($p, "/");'), $paths);
+		$paths = array_filter($paths);
+		return join('/', $paths);
 	}
 	
 	public function layout() {
