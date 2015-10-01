@@ -1,3 +1,5 @@
+<img align="right" height="300px" src="http://tipsy.la/images/cocktail.png">
+
 Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [AngularJS](https://angularjs.org/). It provides a very lightweight, easy to use interface for websites, rest apis, and dependency injection.
 
 
@@ -5,7 +7,7 @@ Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [Angular
 [![Build Status](https://travis-ci.org/arzynik/Tipsy.svg?branch=master)](https://travis-ci.org/arzynik/Tipsy)
 [![Coverage Status](https://coveralls.io/repos/arzynik/Tipsy/badge.svg?branch=master&service=github)](https://coveralls.io/github/arzynik/Tipsy?branch=master)
 
-
+---
 
 
 ### Example Usage
@@ -43,6 +45,8 @@ $tipsy->router()
 ```
 {"message": 1}
 ```
+
+---
 
 
 ### Installation
