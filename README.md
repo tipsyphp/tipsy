@@ -1,10 +1,7 @@
-Tipsy is an MVW (Model, View, Whatever) PHP framework inspired by [AngularJS](https://angularjs.org/). It provides a very lightweight, easy to use framework, capable of handling most tasks.
+Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [AngularJS](https://angularjs.org/). It provides a very lightweight, easy to use interface for websites, rest apis, and dependency injection.
 
 
-
-**This is a dev version**. I am currently pulling in features from [Cana](http://cana.la/) and building unit tests as I go.
-
-
+[![Latest Stable Version](https://poser.pugx.org/arzynik/tipsy/v/stable)](https://packagist.org/packages/arzynik/tipsy)
 [![Build Status](https://travis-ci.org/arzynik/Tipsy.svg?branch=master)](https://travis-ci.org/arzynik/Tipsy)
 [![Coverage Status](https://coveralls.io/repos/arzynik/Tipsy/badge.svg?branch=master&service=github)](https://coveralls.io/github/arzynik/Tipsy?branch=master)
 
@@ -15,33 +12,42 @@ Tipsy is an MVW (Model, View, Whatever) PHP framework inspired by [AngularJS](ht
 
 See [Examples](https://github.com/arzynik/Tipsy/wiki/Examples) for more detailed examples. See [Documentation](https://github.com/arzynik/Tipsy/wiki) for more information.
 
+#### View Template Example
+
 ###### index.php
-
 ```php
-require_once 'Tipsy.php';
-use Tipsy\Tipsy;
-
-$tipsy = new Tipsy;
-
 $tipsy->router()
-	->when('hello', function($Scope, $View) {
-		$Scope->user = 'Devin';
-		$View->display('hello');
-	})
-	->otherwise(function() {
-		echo '404';
-	});
-
-$tipsy->start();
+    ->home(function($Scope, $View) {
+        $Scope->user = 'Mai Tai';
+        $View->display('hello');
+    });
 ```
 
 ###### hello.phtml
-
 ```phtml
-<h1>Welcome, <?=$user?>!</h1>
+<h1>Hello <?=$user?>!</h1>
+```
+
+#### API Example
+
+###### index.php
+
+```php
+$tipsy->router()
+    ->delete('api/maitai/:id', function($Params) {
+        echo json_encode([message => $Params->id]);
+    });
+```
+
+###### DELETE /api/maitai/1
+```
+{"message": 1}
 ```
 
 
 ### Installation
+To install using composer use the command below. For alternate installation methods see [Installation](https://github.com/arzynik/Tipsy/wiki/Installation).
 
-See [Installation](https://github.com/arzynik/Tipsy/wiki/Installation) for instructions on how to install.
+```sh
+composer require arzynik/Tipsy
+```
