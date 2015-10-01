@@ -1,4 +1,5 @@
 <img align="right" height="300px" src="http://tipsy.la/images/cocktail.png">
+<img height="100px" src="http://tipsy.la/images/logo.png">
 
 Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [AngularJS](https://angularjs.org/). It provides a very lightweight, easy to use interface for websites, rest apis, and dependency injection.
 
