@@ -1,0 +1,141 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,400,700);
+@import url(https://fonts.googleapis.com/css?family=Amatic+SC:400,700);
+
+body {
+	font-family: "Opens Sans", Helvetica, Verdana, sans-serif;
+	font-weight: 100;
+	background: #fff;
+	font-size: 10px;
+	color: #393939;
+}
+
+h1, h2 {
+	font-family: "Amatic SC", cursive;
+	margin:0;
+	padding:0;
+	font-weight: normal;
+}
+
+h1, a {
+	color: #d03d4a;
+}
+a {
+	text-decoration: none;
+	border-bottom: 1px solid transparent;
+	transition: all ease .2s;
+}
+a:hover:not(.nohover) {
+	border-bottom: 1px solid #d03d4a;
+}
+h1 {
+	transform: rotate(-90deg);
+	font-size: 8.6em;
+	margin-top: .44em;
+	margin-bottom: .3em;
+	margin-right: .18em;
+}
+h3 {
+	color: #159957;
+	font-size: 1.5em;
+	font-weight: normal;
+}
+
+p {
+	font-size: 1.5em;
+	font-weight: 300;
+	color: #5f5f5f;
+	line-height: 1.6em;
+}
+
+.nav {
+	font-size: 1.5em;
+	text-align: right;
+}
+
+.nav a {
+	margin-left: 1.8em;
+}
+
+.content {
+	width: 650px;
+	margin: 0 auto;
+	margin-top: 5em;
+}
+
+.left {
+	float: left;
+	width: 25%;
+	text-align: center;
+}
+.right {
+	float: right;
+	width: 65%;
+}
+
+.profile-pic {
+	background: url(https://graph.facebook.com/659828729/picture?width=480&height=480) no-repeat;
+	background-size: cover;
+	border-radius: 20em;
+	height: 5em;
+	width: 5em;
+	margin: 0 auto;
+	margin-top: 1em;
+	margin-bottom: 5em;
+	
+}
+
+.cocktail {
+	background: url(/images/cocktail.png) no-repeat top center;
+	background-size: contain;
+	height: 344px;
+	width: 130px;
+	margin: 0 auto;
+	border-left: 17px solid transparent;
+}
+
+.github {
+	border: 1px solid #fc2d8c;
+	border-radius: 4px;
+	padding: .1em 0;
+	margin: 0;
+	background: none;
+	font-family: "Amatic SC", cursive;
+	color: #000;
+	font-size: 2.3em;
+	font-weight: bold;
+	width: 80%;
+	margin-top: 1.2em;
+}
+
+.github:hover {
+	background: #fc2d8c;
+	color: #fff;
+	transition: all ease .2s;
+}
+
+pre {
+	font-family: Consolas, 'Courier New', monospace;
+	font-size: 1.2em;
+	line-height: 1.6em;
+	padding: 0;
+	margin: 0;
+}
+.hljs {
+	padding: 0;
+	margin: 0;
+}
+
+footer {
+	padding-top: 10em;
+	clear: both;
+	font-size: 1.2em;
+	text-align: center;
+	padding-bottom: 2em;
+}
+
+.code-title {
+	font-weight: bold;
+	font-size: 1.3em;
+	color: #1e6bb8;
+	margin-bottom: .6em;
+}

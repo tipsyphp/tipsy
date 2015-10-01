@@ -1,83 +1,93 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <meta charset="UTF-8">
-    <title>Tipsy by arzynik</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-  </head>
-  <body>
-    <section class="page-header">
-      <h1 class="project-name">Tipsy</h1>
-      <h2 class="project-tagline">MVW PHP framework</h2>
-      <a href="https://github.com/arzynik/Tipsy" class="btn">View on GitHub</a>
-      <a href="https://github.com/arzynik/Tipsy/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/arzynik/Tipsy/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+	<head>
+		<meta charset="UTF-8">
+		<title>Tipsy, an MVW PHP micro framework</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" type="text/css" href="css/normalize.css" media="screen">
+		<link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.8.0/styles/xcode.min.css" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" type="text/css" href="css/style.css" media="screen">
+		
+	</head>
+	<body>
+		
+		<section class="content">
+			<section class="left">
+				<h1>tipsy</h1>
+				<div class="cocktail"></div>
+			</section>
+			<section class="right">
+				<div class="nav">
+					<a href="https://github.com/arzynik/Tipsy/wiki/Examples">Github</a>
+					<a href="https://github.com/arzynik/Tipsy/wiki/Examples">Examples</a>
+					<a href="https://github.com/arzynik/Tipsy/wiki">Docs</a>
+				</div>
+				<p>
+					Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by <a href="https://angularjs.org/" target="_blank">AngularJS</a>. It provides a very lightweight, easy to use framework for websites and rest apis.
+				</p>
+				<br>
+				<h3>Template Example</h3>
+				<pre class="code-title">&gt; index.php</pre>
+				<pre><code class="javscript">$tipsy->router()
+    ->home(function($Scope, $View) {
+        $Scope->user = 'Mai Tai';
+        $View->display('hello');
+    });
+</code></pre>
+				
+				<pre class="code-title">&gt; hello.phtml</pre>
+				<pre><code class="javscript">&lt;h1&gt;Hello &lt;?=$user?&gt;!&lt;/h1&gt;
+</code></pre>
+				
+				<br><br><br>
+				<h3>API Example</h3>
+				<pre class="code-title">&gt; index.php</pre>
+				<pre><code class="javscript">$tipsy->router()
+    ->delete('api/maitai/:id', function($Params) {
+        echo json_encode([message => $Params->id]);
+    });
+</code></pre>
+				
+				<pre class="code-title">&gt; DELETE /api/maitai/1</pre>
+				<pre>{"message": 1}
+</code></pre>
+			
+				<br><br><br><br>
+				<h3>Installation</h3>
+				<p>To install using composer use the command below. For alternate installation methods see <a href="https://github.com/arzynik/Tipsy/wiki/Installation">Installation</a>.</p>
+				<pre><code class="javscript">composer require arzynik/Tipsy</code></pre>
 
-    <section class="main-content">
-      <p>Tipsy is an MVW (Model, View, Whatever) PHP framework inspired by <a href="https://angularjs.org/">AngularJS</a>. It provides a very lightweight, easy to use framework, capable of handling most tasks.</p>
+			</section>
+		</section>
+		
+		<footer>
+			
+			<a href="https://travis-ci.org/arzynik/Tipsy" target="_blank" class="nohover"><img alt="Build Status" src="https://travis-ci.org/arzynik/Tipsy.svg?branch=master"></a>
+			<a href="https://coveralls.io/github/arzynik/Tipsy?branch=master" target="_blank" class="nohover"><img alt="Coverage Status" src="https://coveralls.io/repos/arzynik/Tipsy/badge.svg?branch=master&service=github"></a>
+			<br><br>
+			
+			<a href="https://github.com/arzynik/Tipsy">Tipsy</a> is made with &#9829; by this guy
+			<br>
+			<a href="http://devin.la" target="_blank">
+				<div class="profile-pic"></div>
+			</a>
+			
+			stay Tipsy my friends
+		</footer>
 
-<p><strong>This is a dev version</strong>. I am currently pulling in features from <a href="http://cana.la/">Cana</a> and building unit tests as I go.</p>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.8.0/highlight.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.8.0/languages/javascript.min.js"></script>
+		<script>hljs.initHighlightingOnLoad();</script>
+		<script type="text/javascript">
+			var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+			document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+		</script>
+		<script type="text/javascript">
+			try {
+				var pageTracker = _gat._getTracker("UA-916699-25");
+				pageTracker._trackPageview();
+			} catch(err) {}
+		</script>
 
-<p><a href="https://travis-ci.org/arzynik/Tipsy"><img src="https://travis-ci.org/arzynik/Tipsy.svg?branch=master" alt="Build Status"></a>
-<a href="https://coveralls.io/github/arzynik/Tipsy?branch=master"><img src="https://coveralls.io/repos/arzynik/Tipsy/badge.svg?branch=master&amp;service=github" alt="Coverage Status"></a></p>
-
-<h3>
-<a id="example-usage" class="anchor" href="#example-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example Usage</h3>
-
-<p>See <a href="https://github.com/arzynik/Tipsy/wiki/Examples">Examples</a> for more detailed examples. See <a href="https://github.com/arzynik/Tipsy/wiki">Documentation</a> for more information.</p>
-
-<h6>
-<a id="indexphp" class="anchor" href="#indexphp" aria-hidden="true"><span class="octicon octicon-link"></span></a>index.php</h6>
-
-<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">require_once</span> <span class="pl-s"><span class="pl-pds">'</span>Tipsy.php<span class="pl-pds">'</span></span>;</span>
-<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Tipsy\Tipsy</span>;</span>
-<span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-smi">$tipsy</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-c1">Tipsy</span>;</span>
-<span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-smi">$tipsy</span><span class="pl-k">-&gt;</span>router()</span>
-<span class="pl-s1">    <span class="pl-k">-&gt;</span>when(<span class="pl-s"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">$Scope</span>, <span class="pl-smi">$View</span>) {</span>
-<span class="pl-s1">        <span class="pl-smi">$Scope</span><span class="pl-k">-&gt;</span><span class="pl-smi">user</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>Devin<span class="pl-pds">'</span></span>;</span>
-<span class="pl-s1">        <span class="pl-smi">$View</span><span class="pl-k">-&gt;</span>display(<span class="pl-s"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span>);</span>
-<span class="pl-s1">    })</span>
-<span class="pl-s1">    <span class="pl-k">-&gt;</span>otherwise(<span class="pl-k">function</span>() {</span>
-<span class="pl-s1">        <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">'</span>404<span class="pl-pds">'</span></span>;</span>
-<span class="pl-s1">    });</span>
-<span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-smi">$tipsy</span><span class="pl-k">-&gt;</span>start();</span></pre></div>
-
-<h6>
-<a id="hellophtml" class="anchor" href="#hellophtml" aria-hidden="true"><span class="octicon octicon-link"></span></a>hello.phtml</h6>
-
-<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span><span class="pl-c1">h1</span><span class="pl-k">&gt;</span><span class="pl-c1">Welcome</span>, <span class="pl-k">&lt;</span>?<span class="pl-k">=</span><span class="pl-smi">$user</span></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span>!&lt;/<span class="pl-ent">h1</span>&gt;</pre></div>
-
-<h3>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
-
-<p>See <a href="https://github.com/arzynik/Tipsy/wiki/Installation">Installation</a> for instructions on how to install.</p>
-
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/arzynik/Tipsy">Tipsy</a> is maintained by <a href="https://github.com/arzynik">arzynik</a>.</span>
-
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
-
-    </section>
-
-            <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-916699-25");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
-
-  </body>
+	</body>
 </html>
