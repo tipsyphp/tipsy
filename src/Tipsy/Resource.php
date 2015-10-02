@@ -148,7 +148,9 @@ class Resource extends Model {
 	
 	public function create($args = []) {
 		$class = get_called_class();
-		$object = new $class($this->_baseConfig);
+		// @note: not sure if this is good or bad....
+		//$object = new $class($this->_baseConfig);
+		$object = clone $this;
 		$object->_tipsy = $this->_tipsy;
 		$object->load($args);
 		$object->save(true);
