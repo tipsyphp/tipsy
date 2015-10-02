@@ -50,12 +50,14 @@ class Tipsy {
 		$this->_url = $this->request()->path($url);
 		$this->_route = $this->router()->match($this->_url);
 		$this->_middlewareStart = true;
+
 		foreach ($this->middlewares() as $middleware) {
 			if ($middleware['started']) {
 				continue;
 			}
 			Middleware::_start($middleware, $this);
 		}
+
 		$this->_route->controller()->init();
 	}
 	public function router() {
