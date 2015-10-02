@@ -370,6 +370,14 @@ class Resource extends Model {
 	}
 
 	public function q($query) {
+		if (!isset($this)) {
+			$name = get_called_class();
+			$class = new $name();
+			$class->tipsy = Tipsy::app();
+			print_r($class->tipsy);
+			return $class->q($query);
+		}
+
 		$args = [];
 
 		if (func_num_args() == 2 && is_array(func_get_arg(1))) {
@@ -379,7 +387,7 @@ class Resource extends Model {
 				$args[] = func_get_arg($i);
 			}
 		}
-
+		
 		$res = $this->db()->query($query, $args);
 
 		while ($row = $res->fetch(\PDO::FETCH_ASSOC)) {
