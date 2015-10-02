@@ -110,4 +110,32 @@ class MiddlewareTest extends Tipsy_Test {
 		}
 		$this->assertTrue($check);
 	}
+	
+	/*
+	@todo: need to communicate with eachother
+	public function testMiddlewareToMiddlewareReference() {
+		$_REQUEST['__url'] = '';
+		$this->ob();
+
+		$this->tip->middleware('Tipsy\Service/FirstService', [
+			test => function() {
+				return 'HELLO';
+			}
+		]);
+		
+		$this->tip->middleware('Tipsy\Service/SecondService', function($FirstService) {
+			return [
+				test => function() {
+					return $FirstService->test();
+				}
+			];
+		});
+
+		$this->tip->router()->home(function() {});
+		$this->tip->start();
+		
+		$check = $this->tip->middleware('SecondService')->test();
+		$this->assertEquals('HELLO', $check);
+	}
+	*/
 }
