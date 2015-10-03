@@ -25,7 +25,7 @@ class Looper implements \Iterator {
 
 	// if anyone knows any way to pass func_get_args by reference i would love you. i want string manipulation
 	public static function o() {
-		$iterator = new ReflectionClass(get_called_class());
+		$iterator = new \ReflectionClass(get_called_class());
 		return $iterator->newInstanceArgs(func_get_args());
 	}
 
@@ -35,6 +35,15 @@ class Looper implements \Iterator {
 
 	public function get($index) {
 		return $this->_items[$index];
+	}
+	
+	public function set($var, $val) {
+		if ($var) {
+			foreach ($this->_items as $item) {
+				$item->{$var} = $val;
+			};
+		}
+		return $this;
 	}
 
 	public function eq($pos) {
