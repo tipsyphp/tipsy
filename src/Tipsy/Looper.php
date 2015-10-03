@@ -5,6 +5,8 @@ namespace Tipsy;
 class Looper implements \Iterator {
 	private $_items;
 	private $_position;
+	
+	const DONE = 'looper\break';
 
 	public function __construct() {
 		$items = [];
@@ -65,8 +67,11 @@ class Looper implements \Iterator {
 	public function each($func, $params = []) {
 		foreach ($this->_items as $key => $item) {
 			$func = $func->bindTo(!is_object($item) ? (object)$item : $item);
-			$func($key, $item);
+			$res = $func($key, $item);
 			$this->_items[$key] = $item;
+			if ($res == self::DONE) {
+				break;
+			}
 		}
 	}
 
