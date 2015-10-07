@@ -83,6 +83,16 @@ class Looper implements \Iterator {
 			}
 		}
 	}
+	
+	public function json($args = []) {
+		foreach ($this->_items as $key => $item) {
+			if (is_callable($item, 'json') || method_exists($item, 'json')) {
+				$items[$key] = (new \ReflectionMethod($item, 'json'))->invokeArgs($item, $args);
+			}
+			$items[$key] = $item->exports();
+		}
+		return json_encode($items);
+	}
 
 	public function e($f) {
 		self::each($f);
