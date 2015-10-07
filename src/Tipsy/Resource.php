@@ -336,13 +336,14 @@ class Resource extends Model {
 
 	public static function o() {
 		$classname = get_called_class();
+
 		foreach (func_get_args() as $arg) {
 			if (is_array($arg)) {
 				foreach ($arg as $item) {
-					$items[] = Cana::factory($classname,$item);
+					$items[] = Tipsy::factory($classname,$item);
 				}
 			} else {
-				$items[] = Cana::factory($classname,$arg);
+				$items[] = Tipsy::factory($classname,$arg);
 			}
 		}
 
