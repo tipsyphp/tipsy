@@ -91,7 +91,7 @@ class App {
 		return $this;
 	}
 
-	public function service($service, $args = [], $static = false) {
+	public function service($service, $args = null, $static = false) {
 		list($service, $extend) = $this->_serviceName($service, $args);
 
 		if (!$this->_services[$service]) {
@@ -113,7 +113,7 @@ class App {
 				}
 
 			} elseif ($service && is_array($args)) {
-				$config = $args;
+				$config = $args ? $args : [];
 			}
 
 			if ($this->_services[$extend]) {
@@ -125,6 +125,8 @@ class App {
 			}
 
 			$name = $extend ? $extend : 'Tipsy\Service';
+			//$name = ($extend && !is_null($args)) ? $extend : 'Tipsy\Service';
+			
 			$config['_service'] = $service;
 
 			$this->_services[$service] = [
@@ -145,7 +147,7 @@ class App {
 			}
 			
 			if ($this->_services[$service]['reflection']->hasMethod('__construct')) {
-				$config = array_merge(is_array($this->_services[$service]['config']) ? $this->_services[$service]['config'] : [],['_tipsy' => $this],$args);
+				$config = array_merge(is_array($this->_services[$service]['config']) ? $this->_services[$service]['config'] : [],['_tipsy' => $this],$args ? $args : []);
 				$instance = $this->_services[$service]['reflection']->newInstance($config);
 
 			} else {
@@ -200,8 +202,8 @@ class App {
 		return $this->_request;
 	}
 
-	private function _serviceName($service, $args = []) {
-		if (!is_null($args) && strpos($service, '/')) {
+	private function _serviceName($service, $args = null) {
+		if (strpos($service, '/')) {//!is_null($args) && 
 			$service = explode('/',$service);
 			if (count($service) > 2) {
 				throw new Exception('Cant extend more than one model.');
@@ -209,6 +211,11 @@ class App {
 				$extend = array_shift($service);
 			}
 			$service = array_shift($service);
+
+		} elseif ($args === null) {
+			$extend = $service;
+			$service = explode('\\', $service);
+			$service = array_pop($service);
 		}
 		return [$service, $extend];
 	}
@@ -244,5 +251,17 @@ class App {
 
 	public function middlewares() {
 		return $this->_middlewares;
+	}
+	
+	
+	public function factoryCount() {
+		return $this->_factory->count();
+	}
+
+	public function factory($a = null, $b = null) {
+		if (!$this->_factory) {
+			$this->_factory = new Factory;
+		}
+		return $this->_factory->objectMap($a,$b);
 	}
 }

@@ -2,11 +2,12 @@
 
 
 class ClassResourceTest extends \Tipsy\Resource {
-	public static $_id = 'id_test_user';
-	public static $_table = 'test_user';
-
 	function test() {
 		return 'NO';
+	}
+	
+	public function __construct($id = null) {
+		$this->idVar('id_user')->table('test_user')->load($id);
 	}
 }
 
@@ -102,6 +103,18 @@ class DBTest extends Tipsy_Test {
 		]);
 
 		$this->assertEquals(2, $m->dbId());
+	}
+	
+	public function testModelDBOStaticRetrieve() {
+		$test = ClassResourceTest::create([
+			'name' => 'test'
+		]);
+
+		$this->assertGreaterThan(0, $test->dbId());
+		$this->assertEquals('test', $test->name);
+		
+		$test2 = ClassResourceTest::o($test->dbId());
+		$this->assertGreaterThan(0, $test2->dbId());
 	}
 
 	public function testModelDBOExtendRoute() {

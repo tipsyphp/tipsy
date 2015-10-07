@@ -13,7 +13,6 @@ class Resource extends Model {
 	
 	public function __construct($args = []) {
 	
-
 		$this->_baseConfig = $args;
 
 		if ($args['_tipsy']) {
@@ -42,11 +41,11 @@ class Resource extends Model {
 		*/
 
 		if ($args['_id']) {
-			$this->_id_var = $args['_id'];
+			$this->idVar($args['_id']);
 			unset($args['_id']);
 		}
 		if ($args['_table']) {
-			$this->_table = $args['_table'];
+			$this->table($args['_table']);
 			unset($args['_table']);
 		}
 		if ($args['_fields']) {
@@ -119,12 +118,8 @@ class Resource extends Model {
 		return $this->_fields;
 	}
 	
-	public function get($id) {
-		$class = get_called_class();
-		$object = new $class($this->_baseConfig);
-		$object->_tipsy = $this->_tipsy;
-		$object->load($id);
-		return $object;
+	public function get($id = null) {
+		return $this;
 	}
 	
 	public function createTable() {
@@ -146,12 +141,17 @@ class Resource extends Model {
 		$this->db()->query('DROP TABLE `'.$this->table().'`');
 	}
 	
-	public function create($args = []) {
-		$class = get_called_class();
-		// @note: not sure if this is good or bad....
-		//$object = new $class($this->_baseConfig);
+	public static function __create_static($args = []) {
+		$name = get_called_class();
+		$args['_tipsy'] = Tipsy::app();
+		$obj = new $name($args);
+		$obj->save();
+		return $obj;
+	}
+	
+	public function __create($args = []) {
 		$object = clone $this;
-		$object->_tipsy = $this->_tipsy;
+		$object->tipsy($this->tipsy());
 		$object->load($args);
 		$object->save(true);
 		return $object;
@@ -172,7 +172,6 @@ class Resource extends Model {
 	 */
 	public function load($id = null) {
 		// fill the object with blank properties based on the fields of that table
-		
 		$fields = $this->fields();
 		foreach ($fields as $key => $field) {
 			$this->{$key} = $this->{$key} ? $this->{$key} : '';
@@ -204,12 +203,10 @@ class Resource extends Model {
 			}
 		}
 
-
-/*
-		if (Cana::config()->cache->object !== false) {
-			Cana::factory($this);
+		if ($this->tipsy() && $this->tipsy()->config()['tipsy']['factory'] !== false) {
+			$this->tipsy()->factory($this);
 		}
-*/
+
 		return $this;
 	}
 
@@ -366,18 +363,15 @@ class Resource extends Model {
 		return $this;
 	}
 	
-	public function zget($query, $int = 0) {
-		return $this->q($query)->get($int);
+	public static function __q_static() {		
+		$name = get_called_class();
+		$class = new $name();
+		$class->tipsy(Tipsy::app());
+		$class->service($name);
+		return (new \ReflectionMethod($class, '__q'))->invokeArgs($class, func_get_args());
 	}
 
-	public function q($query) {
-		if (!isset($this)) {
-			$name = get_called_class();
-			$class = new $name();
-			$class->tipsy = Tipsy::app();
-			print_r($class->tipsy);
-			return $class->q($query);
-		}
+	public function __q($query) {
 
 		$args = [];
 
@@ -388,13 +382,15 @@ class Resource extends Model {
 				$args[] = func_get_arg($i);
 			}
 		}
-		
+
 		$res = $this->db()->query($query, $args);
+		
 
 		while ($row = $res->fetch(\PDO::FETCH_ASSOC)) {
 			if ($this->tipsy()->services($this->service())) {
 				$items[] = $this->tipsy()->service($this->service(), $row);
 			} elseif (class_exists($this->service())) {
+				$classname = $this->service();
 				$items[] = new $classname($row);
 			} else {
 				$items[] = $row;
@@ -410,9 +406,16 @@ class Resource extends Model {
 		return $this->_tipsy;
 	}
 	public function db() {
-		return $this->tipsy()->db();
+		if ($this && $this->tipsy() && $this->tipsy()->db()) {
+			return $this->tipsy()->db();
+		} else {
+			return Tipsy::db();
+		}
 	}
-	public function service() {
+	public function service($service = null) {
+		if (!is_null($service)) {
+			$this->_service = $service;
+		}
 		return $this->_service;
 	}
 

@@ -17,12 +17,24 @@ class Model {
 	public function hasMethod($method) {
 		return $this->_methods[$method] ? true : false;
 	}
+	
+	public static function __callStatic($method, $args = []) {
+		$name = '__'.$method.'_static';
 
-	public function __call($method, $args) {
+		if (method_exists(get_called_class(),$name)) {
+			return (new \ReflectionMethod(get_called_class(), $name))->invokeArgs(null, $args);
+		} else {
+			throw new Exception('Could not call static ' . $method. ' on '.get_called_class());
+		}
+	}
+
+	public function __call($method, $args = []) {
 		if (is_callable($this->_methods[$method])) {
 			$this->_methods[$method] = $this->_methods[$method]->bindTo($this);
 			return call_user_func_array($this->_methods[$method], $args);
 		} elseif (method_exists($this,'__'.$method)) {
+			// @todo: internets say call_user_func_array is faster but who knows
+			//return (new \ReflectionMethod($this, '__'.$method))->invokeArgs($this, $args);
 			return call_user_func_array([$this, '__'.$method], $args);
 		} else {
 			throw new Exception('Could not call ' . $method. ' on '.get_class());
@@ -58,7 +70,13 @@ class Model {
 	}
 
 	public function __exports() {
-		return $this->__properties();
+		$out = $this->__properties();
+		foreach ($out as $k => $v) {
+			if (is_callable($v)) {
+				unset($out[$k]);
+			}
+		}
+		return $out;
 	}
 
 	public function tipsy($tipsy = null) {
@@ -67,5 +85,4 @@ class Model {
 		}
 		return $this->_tipsy;
 	}
-
 }
