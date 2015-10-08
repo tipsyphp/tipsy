@@ -26,6 +26,8 @@ class DependencyInjector extends Model {
 					return $this->tipsy()->route();
 				case 'Request':
 					return $this->tipsy()->request();
+				case 'Headers':
+					return $this->tipsy()->request()->headers();
 				case 'Params':
 					return $this->tipsy()->route()->params();
 				case 'Tipsy':
@@ -43,7 +45,7 @@ class DependencyInjector extends Model {
 	}
 
 	public function inject($closure, $scope = null) {
-		$avail = ['Db', 'Route', 'Request', 'Params', 'Tipsy', 'View', 'Scope', 'RootScope'];
+		$avail = ['Db', 'Route', 'Request', 'Headers', 'Params', 'Tipsy', 'View', 'Scope', 'RootScope'];
 		
 		if (!$this->tipsy()) {
 			throw new Exception('Tipsy is not defined!');
