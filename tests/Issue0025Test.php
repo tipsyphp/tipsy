@@ -7,7 +7,9 @@ class UserOne extends \Tipsy\Resource {
 	public function create($params = []) {
 		return $this->table();
 	}
-
+	public function className() {
+		return get_called_glass();
+	}
 	public function __construct($id = null) {
 		$this->idVar('id')->table('test_user')->load($id);
 	}
@@ -16,10 +18,8 @@ class UserOne extends \Tipsy\Resource {
 
 class UserTwo extends \Tipsy\Resource {
 	public function user() {
-		$this->_user = UserOne::create([]);
-		return $this->_user;
+		return UserOne::create([]);
 	}
-
 	public function __construct($id = null) {
 		$this->idVar('id')->table('test_user2')->load($id);
 	}
@@ -48,6 +48,11 @@ class Issue0025Test extends Tipsy_Test {
 	}
 
 	public function testException() {
+		if (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 6) {
+			$this->markTestSkipped('Prior to PHP 5.6 this did not throw an exception');
+			return;
+		}
+
 		$catch = false;
 
 		try {
@@ -59,7 +64,18 @@ class Issue0025Test extends Tipsy_Test {
 		$this->assertTrue($catch);
 	}
 
+	public function testTableName() {
+		if ((PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 6) || PHP_MAJOR_VERSION > 5) {
+			$this->markTestSkipped('After PHP 5.6 this throws an exception');
+			return;
+		}
 
+		$table = $this->tip->service('UserTwo')->user()->create();
+		$class = $this->tip->service('UserTwo')->user()->className();
 
+		// note that this isnt really what is intended to happen likely for the user, but this is just how it works :/
+		$this->assertEquals('test_user2', $table);
+		$this->assertEquals('UserTwo', $class);
+	}
 
 }
