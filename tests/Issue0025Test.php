@@ -17,8 +17,11 @@ class UserOne extends \Tipsy\Resource {
 
 
 class UserTwo extends \Tipsy\Resource {
-	public function user() {
-		return UserOne::create([]);
+	public function create() {
+		return UserOne::create();
+	}
+	public function className() {
+		return UserOne::className();
 	}
 	public function __construct($id = null) {
 		$this->idVar('id')->table('test_user2')->load($id);
@@ -70,8 +73,8 @@ class Issue0025Test extends Tipsy_Test {
 			return;
 		}
 
-		$table = $this->tip->service('UserTwo')->user()->create();
-		$class = $this->tip->service('UserTwo')->user()->className();
+		$table = $this->tip->service('UserTwo')->create();
+		$class = $this->tip->service('UserTwo')->className();
 
 		// note that this isnt really what is intended to happen likely for the user, but this is just how it works :/
 		$this->assertEquals('test_user2', $table);
