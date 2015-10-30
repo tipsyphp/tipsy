@@ -1,0 +1,12 @@
+<?=$test?>
+<? $test= 'TWO'; ?>
+<? $this->display('ScopeTest'); ?>
+<? $test= 'THREE'; ?>
+<?=$this->render('ScopeTest')?>
+<?=$this->render('ScopeTest', ['set' => ['test' => 'FOUR']])?>
+<? $test= 'FIVE'; ?>
+<?=$include('ScopeTest')?>
+<?=$include('ScopeTest', ['test' => 'SIX'])?>
+<?=$include('ScopeTest')?>
+<?=$include('ScopeTest', [])?>
+

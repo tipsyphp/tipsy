@@ -16,25 +16,25 @@ class View {
 		$this->headers = [];
 
 		$this->config($args);
-		
+
 		$this->_tipsy = $args['tipsy'];
 		$this->_scope = $scope;
 	}
-	
+
 	public function config($args = null) {
 		if (isset($args['layout'])) {
 			$this->_layout = $args['layout'];
 		}
-		
+
 		if (isset($args['stack'])) {
 			$this->_stack = $args['stack'];
 		}
-		
+
 		if (isset($args['path'])) {
 			$this->_path = $args['path'];
 		}
 	}
-	
+
 	public function stack() {
 		$stack = $this->tipsy()->config()['view']['stack'];
 		if (!$stack) {
@@ -42,11 +42,7 @@ class View {
 		}
 		return $stack;
 	}
-	
-	public function mtime($file) {
-		return filemtime($this->file($file));
-	}
-	
+
 	public function file($src) {
 		$stack = $this->stack();
 
@@ -70,7 +66,7 @@ class View {
 
 		return $file;
 	}
-	
+
 	private static function joinPaths() {
 		$args = func_get_args();
 		$paths = [];
@@ -82,7 +78,7 @@ class View {
 		$paths = array_filter($paths);
 		return join('/', $paths);
 	}
-	
+
 	public function layout() {
 		return $this->file($this->_layout);
 	}
@@ -90,7 +86,7 @@ class View {
 	public function render($view, $params = null) {
 		if (isset($params['set'])) {
 			foreach ($params['set'] as $key => $value) {
-				$$key = $value;
+				$this->scope()->{$key} = $value;
 			}
 		}
 
@@ -99,15 +95,15 @@ class View {
 			throw new Exception('Could not find view file: "'.$view.'" in "'.(implode(',',$this->stack())).'"');
 		}
 		$layout = $this->layout();
-		
+
 
 		$p = $this->scope()->properties();
 
 		extract($this->scope()->properties(), EXTR_REFS);
-		
+
 		$difVars = get_defined_vars();
 
-		$include = function($view, $scope) use ($difVars, $p) {
+		$include = function($view, $scope = []) use ($difVars, $p) {
 			$use = [];
 
 			foreach ($scope as $k => $var) {
@@ -118,17 +114,17 @@ class View {
 
 			return $this->render($view, ['set' => $use]);
 		};
-		
+
 		// @todo: add all the other services
 		$Request = $this->tipsy()->request();
 
 		if ($this->_rendering || !isset($params['display'])) {
-			
+
 			ob_start();
 			include($file);
 			$page = $this->filter(ob_get_contents(),$params);
 			ob_end_clean();
-			
+
 		} else {
 
 			$this->_rendering = true;
@@ -136,7 +132,7 @@ class View {
 			include($file);
 			$this->content = $this->filter(ob_get_contents(),$params);
 			ob_end_clean();
-			
+
 			if ($layout) {
 				ob_start();
 				include($layout);
@@ -146,12 +142,14 @@ class View {
 			} else {
 				$page = $this->content;
 			}
-		}		
-		
+		}
+
+		/* directly modify view variables. i dont think we need this
 		if (isset($params['var'])) {
 			$this->{$params['var']} = $page;
 		}
-		return $page;	
+		*/
+		return $page;
 	}
 
 	public function display($view,$params=null) {
@@ -174,11 +172,11 @@ class View {
 		}
 		return $content;
 	}
-	
+
 	public function tipsy() {
 		return $this->_tipsy;
 	}
-	
+
 	public function scope(&$scope = null) {
 		if ($scope) {
 			$this->_scope = $scope;
