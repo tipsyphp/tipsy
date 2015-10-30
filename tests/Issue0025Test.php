@@ -8,7 +8,7 @@ class UserOne extends \Tipsy\Resource {
 		return $this->table();
 	}
 	public function className() {
-		return get_called_glass();
+		return get_called_class();
 	}
 	public function __construct($id = null) {
 		$this->idVar('id')->table('test_user')->load($id);
