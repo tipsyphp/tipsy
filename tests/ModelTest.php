@@ -13,16 +13,21 @@ class TestModelBaseProtected extends Tipsy\Model {
 	}
 }
 
+class TestModelStaticFail extends Tipsy\Model {
+
+}
+
+
 
 class ModelTest extends Tipsy_Test {
-	
+
 	public function setUp() {
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
-		
+
 		$this->tip->config('tests/config.ini');
 	}
-	
+
 	public function testModelBasic() {
 
 		$this->tip->service('TestModel', [
@@ -59,7 +64,7 @@ class ModelTest extends Tipsy_Test {
 			];
 			return $model;
 		});
-		
+
 		$model = $this->tip->service('TestModel');
 		$this->assertEquals('TWO', $model->test());
 	}
@@ -75,7 +80,7 @@ class ModelTest extends Tipsy_Test {
 		$model = $this->tip->service('TestModel');
 		$this->assertEquals('ONE', $model->test());
 	}
-	
+
 	public function testModelController() {
 		$this->tip->service('TestModel', function() {
 			$model = [
@@ -85,17 +90,41 @@ class ModelTest extends Tipsy_Test {
 			];
 			return $model;
 		});
-		
+
 		$this->ob();
-		
+
 		$this->tip->router()
 			->otherwise(function($TestModel) {
 				echo $TestModel->test();
 			});
 		$this->tip->start();
-			
+
 		$res = $this->ob(false);
 
 		$this->assertEquals('YESM', $res);
+	}
+
+	public function testIsset() {
+		$test = new Tipsy\Model;
+		$test->test = 'test';
+		$this->assertTrue(isset($test->test));
+	}
+
+	public function testExports() {
+		$test = new Tipsy\Model;
+		$test->test = 'test';
+		$test->tester = function(){};
+
+		$this->assertEquals($test->exports(), ['test' => 'test']);
+	}
+
+	public function testStaticFail() {
+		try {
+			TestModelStaticFail::test();
+		} catch (Exception $e) {
+			$catch = $e->getMessage();
+		}
+
+		$this->assertEquals('Could not call static test on TestModelStaticFail', $catch);
 	}
 }

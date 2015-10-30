@@ -430,6 +430,23 @@ class RouterTest extends Tipsy_Test {
 		$this->assertEquals('Invalid route specified.', $catch);
 	}
 
+	public function testInvalidControllerClass() {
+		$_REQUEST['__url'] = 'fail';
+
+		$this->tip->router()
+			->when('fail','ClassFail');
+
+		$this->ob();
+		try {
+			$this->tip->start();
+		} catch (Exception $e) {
+			echo $e->getMessage();
+		}
+		$check = $this->ob(false);
+
+		$this->assertEquals('No controller attached to route.', $check);
+	}
+
 
 	/*
 	public function testRouterViewController() {
