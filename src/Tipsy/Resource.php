@@ -330,8 +330,15 @@ class Resource extends Model {
 			return $this;
 		}
 	}
+	
+	public function __o($args) {
+		$object = clone $this;
+		$object->tipsy($this->tipsy());
+		$object->load($args);
+		return $object;
+	}
 
-	public static function o() {
+	public static function __o_static() {
 		$classname = get_called_class();
 
 		foreach (func_get_args() as $arg) {
