@@ -2,12 +2,16 @@
 
 namespace Tipsy;
 
-class Model {
+class Model implements \JsonSerializable {
 	private $_methods;
 	private $_properties;
 
 	public function json() {
 		return json_encode($this->exports());
+	}
+
+	public function jsonSerialize() {
+		return $this->exports();
 	}
 
 	public function addMethod($method, $closure) {
@@ -17,7 +21,7 @@ class Model {
 	public function hasMethod($method) {
 		return $this->_methods[$method] ? true : false;
 	}
-	
+
 	public static function __callStatic($method, $args = []) {
 		$name = '__'.$method.'_static';
 
