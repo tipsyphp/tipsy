@@ -31,11 +31,11 @@ class RouterTest extends Tipsy_Test {
 				echo 'BASIC';
 			});
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 		$this->assertEquals('BASIC', $check);
 	}
-	
+
 	public function testRouterBasicAlternate() {
 		$this->tip->router()
 			->when('router/basic', function() {
@@ -45,7 +45,7 @@ class RouterTest extends Tipsy_Test {
 		$this->tip->start('   //router/basic // ');
 		$this->assertEquals('BASIC', $this->ob(false));
 	}
-	
+
 	public function testRouterHomeSuccess() {
 		$_REQUEST['__url'] = '/';
 
@@ -59,7 +59,7 @@ class RouterTest extends Tipsy_Test {
 
 		$this->assertEquals('HOME', $this->ob(false));
 	}
-	
+
 	public function testRouterHomeSuccessAgain() {
 		$_REQUEST['__url'] = '';
 
@@ -73,10 +73,10 @@ class RouterTest extends Tipsy_Test {
 
 		$this->assertEquals('HOME', $this->ob(false));
 	}
-	
+
 	public function testRouterId() {
 		$_REQUEST['__url'] = 'router/file/BACON';
-		
+
 		$this->ob();
 
 		$this->tip->router()
@@ -84,14 +84,14 @@ class RouterTest extends Tipsy_Test {
 				echo $Params->id;
 			});
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 		$this->assertEquals('BACON', $check);
 	}
-	
+
 	public function testRouterIdSub() {
 		$_REQUEST['__url'] = 'router/file/BACON/eat';
-		
+
 		$this->ob();
 
 		$this->tip->router()
@@ -99,11 +99,11 @@ class RouterTest extends Tipsy_Test {
 				echo 'SUB';
 			});
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 		$this->assertEquals('SUB', $check);
 	}
-	
+
 	public function testRouterLibraryController() {
 		$_REQUEST['__url'] = 'router/library';
 
@@ -114,11 +114,11 @@ class RouterTest extends Tipsy_Test {
 				'controller' => 'LibraryController'
 			]);
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 		$this->assertEquals('LIBRARY', $check);
 	}
-	
+
 	public function testRouterInternalController() {
 		$_REQUEST['__url'] = 'router/internal';
 		$this->tip->controller('InternalController', function() {
@@ -132,7 +132,7 @@ class RouterTest extends Tipsy_Test {
 				'controller' => 'InternalController'
 			]);
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 		$this->assertEquals('INTERNAL', $check);
 	}
@@ -148,11 +148,11 @@ class RouterTest extends Tipsy_Test {
 				'controller' => $test
 			]);
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 		$this->assertEquals('INSTANCE', $check);
 	}
-	
+
 	public function testRouterHomeOne() {
 		$_REQUEST['__url'] = '';
 
@@ -163,15 +163,15 @@ class RouterTest extends Tipsy_Test {
 				echo 'ONE';
 			});
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 
 		$this->assertEquals('ONE', $check);
 	}
-	
+
 	public function testRouterHomeTwo() {
 		$_REQUEST['__url'] = '/';
-		
+
 		$this->ob();
 
 		$this->tip->router()
@@ -179,15 +179,15 @@ class RouterTest extends Tipsy_Test {
 				echo 'TWO';
 			});
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 
 		$this->assertEquals('TWO', $check);
 	}
-	
+
 	public function testRouterHomeThree() {
 		$_REQUEST['__url'] = '';
-		
+
 		$this->ob();
 
 		$this->tip->router()
@@ -195,15 +195,15 @@ class RouterTest extends Tipsy_Test {
 				echo 'THREE';
 			});
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 
 		$this->assertEquals('THREE', $check);
 	}
-	
+
 	public function testRouterHomeFour() {
 		$_REQUEST['__url'] = '/';
-		
+
 		$this->ob();
 
 		$this->tip->router()
@@ -211,13 +211,13 @@ class RouterTest extends Tipsy_Test {
 				echo 'FOUR';
 			});
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 
 		$this->assertEquals('FOUR', $check);
 	}
 
-	
+
 	public function testRouterError() {
 		$_REQUEST['__url'] = 'router/errorme';
 
@@ -228,11 +228,11 @@ class RouterTest extends Tipsy_Test {
 				echo '404';
 			});
 		$this->tip->start();
-		
+
 		$check = $this->ob(false);
 		$this->assertEquals('404', $check);
 	}
-	
+
 	public function testHttpGetSuccess() {
 		$_REQUEST['__url'] = 'router/get';
 		$_SERVER['REQUEST_METHOD'] = 'GET';
@@ -244,7 +244,7 @@ class RouterTest extends Tipsy_Test {
 			->otherwise(function() {
 				echo 'NO';
 			});
-		
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
@@ -262,13 +262,13 @@ class RouterTest extends Tipsy_Test {
 			->otherwise(function() {
 				echo 'NO';
 			});
-		
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('NO', $check);
 	}
-	
+
 	public function testHttpPostSuccess() {
 		$_REQUEST['__url'] = 'router/post';
 		$_SERVER['REQUEST_METHOD'] = 'POST';
@@ -280,13 +280,13 @@ class RouterTest extends Tipsy_Test {
 			->otherwise(function() {
 				echo 'NO';
 			});
-		
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('YES', $check);
 	}
-	
+
 	public function testHttpPostFail() {
 		$_REQUEST['__url'] = 'router/post';
 		$_SERVER['REQUEST_METHOD'] = 'GET';
@@ -298,13 +298,13 @@ class RouterTest extends Tipsy_Test {
 			->otherwise(function() {
 				echo 'NO';
 			});
-		
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('NO', $check);
 	}
-	
+
 	public function testHttpGetParam() {
 		$_REQUEST['__url'] = 'router/get';
 		$_SERVER['REQUEST_METHOD'] = 'GET';
@@ -314,7 +314,7 @@ class RouterTest extends Tipsy_Test {
 			->get('router/get',function($Request) {
 				echo $Request->test;
 			});
-		
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
@@ -331,13 +331,13 @@ class RouterTest extends Tipsy_Test {
 			->post('router/post',function($Request) {
 				echo $Request->test;
 			});
-		
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('YES', $check);
 	}
-	
+
 	public function testArraySetup() {
 		$_REQUEST['__url'] = 'router/array';
 		$_SERVER['REQUEST_METHOD'] = 'POST';
@@ -350,13 +350,13 @@ class RouterTest extends Tipsy_Test {
 					echo 'ARRAY';
 				}
 			]);
-		
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('ARRAY', $check);
 	}
-	
+
 	public function testRouteLoop() {
 		$_REQUEST['__url'] = 'loop';
 		$_SERVER['REQUEST_METHOD'] = 'POST';
@@ -368,13 +368,13 @@ class RouterTest extends Tipsy_Test {
 			->when('loop',function() {
 				echo 'TWO';
 			});
-		
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('TWO', $check);
 	}
-	
+
 	public function testRouterException() {
 		$_REQUEST['__url'] = 'router/exception';
 
@@ -388,7 +388,7 @@ class RouterTest extends Tipsy_Test {
 
 		$this->assertTrue($caught);
 	}
-	
+
 	public function testRouterNullException() {
 		$_REQUEST['__url'] = 'router/exception';
 
@@ -403,6 +403,34 @@ class RouterTest extends Tipsy_Test {
 		$this->assertTrue($caught);
 	}
 
+	public function testInvalidRoute() {
+		try {
+			$this->tip->router()
+				->when(null,null);
+		} catch (Exception $e) {
+			$catch = $e->getMessage();
+		}
+
+		$this->assertEquals('Invalid route specified.', $catch);
+	}
+
+	public function testInvalidArrayRoute() {
+		try {
+			$this->tip->router()
+				->when([
+					'method' => 'post,put',
+					'controller' => function() {
+						echo 'ARRAY';
+					}
+				]);
+		} catch (Exception $e) {
+			$catch = $e->getMessage();
+		}
+
+		$this->assertEquals('Invalid route specified.', $catch);
+	}
+
+
 	/*
 	public function testRouterViewController() {
 		$_REQUEST['__url'] = 'router/view';
@@ -410,7 +438,7 @@ class RouterTest extends Tipsy_Test {
 		$this->tip->controller('ViewController', function() {
 			$this->scope->test = 'YES';
 		});
-		
+
 		ob_start();
 
 		$this->tip->router()
@@ -421,10 +449,10 @@ class RouterTest extends Tipsy_Test {
 				'controller' => 'ViewController'
 			]);
 		$this->tip->start();
-		
+
 		$check = ob_get_contents();
 		ob_end_clean();
-		
+
 		$this->assertTrue($check == 'YES');
 	}
 	*/
