@@ -1,6 +1,6 @@
 <?php
 
-namespace Tipsy;	
+namespace Tipsy;
 
 /**
  * Handles definition and resolution of routes to controllers
@@ -16,7 +16,7 @@ class Router {
 		$this->_aliass = [];
 		$this->_tipsy = $args['tipsy'];
 	}
-	
+
 	public function __call($method, $args = []) {
 
 		if (count($args) == 1) {
@@ -31,7 +31,7 @@ class Router {
 		}
 		return call_user_func_array([$this, 'when'], $args);
 	}
-	
+
 	public function alias($from, $to) {
 		// @todo: not sure how to do this yet
 		$this->_aliass[] = new RouteAlias($from, $to);
@@ -43,7 +43,7 @@ class Router {
 			$route = $r;
 		} else {
 			if (is_array($args)) {
-				$route = $args;			
+				$route = $args;
 			} else {
 				$route = ['controller' => $args];
 			}
@@ -53,16 +53,16 @@ class Router {
 			throw new Exception('Invalid route specified.');
 		}
 		$route['tipsy'] = $this->_tipsy;
-		
+
 		if (!$route['method']) {
 			$route['method'] = '*';
 		}
 
 		$this->_routes[] = new Route($route);
-		
+
 		return $this;
 	}
-	
+
 	public function home($route) {
 		return $this->when('', $route);
 	}
@@ -74,7 +74,7 @@ class Router {
 			'tipsy' => $this->_tipsy
 		]);
 	}
-	
+
 	public function match($page) {
 		foreach (array_reverse($this->aliass(), true) as $route) {
 			if ($route->match($page)) {
@@ -90,21 +90,21 @@ class Router {
 
 		return $this->defaultRoute();
 	}
-	
+
 	public function routes($routes = null) {
 		if (isset($$routes)) {
 			$this->_routes = $routes;
 		}
 		return $this->_routes;
 	}
-	
+
 	public function aliass($aliass = null) {
 		if (isset($$aliass)) {
 			$this->_aliass = $aliass;
 		}
 		return $this->_aliass;
 	}
-	
+
 	public function defaultRoute() {
 		return $this->_default ? $this->_default : new Route(['tipsy' => $this->_tipsy]);
 	}

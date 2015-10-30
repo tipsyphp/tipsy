@@ -33,7 +33,7 @@ class Tipsy {
 	public function __construct($params = null) {
 		self::init();
 	}
-	
+
 	public static function init($params = null) {
 		self::app(new App($params));
 	}
@@ -48,53 +48,14 @@ class Tipsy {
 	public static function __callStatic($name, $arguments) {
 		return (new \ReflectionMethod(self::app(), $name))->invokeArgs(self::app(), $arguments);
 	}
-	
+
 	public function __call($name, $arguments) {
 		return (new \ReflectionMethod(self::app(), $name))->invokeArgs(self::app(), $arguments);
 	}
 }
 
 
-
-
-
-
-
-
-
-
-
-
-class RouteParams extends Scope {
-
-}
-
-
-class View_Filter {
-
-}
-
-
-class StripWhite extends View_Filter {
-	public static function filter($content) {
-		$find = [
-			'/^(\s?)(.*?)(\s?)$/',
-			'/\t|\n|\r/',
-			'/(\<\!\-\-)(.*?)\-\-\>/'
-		];
-		$replace = [
-			'\\2',
-			'',
-			''
-		];
-		return preg_replace($find, $replace, $content);
-	}
-}
-
-
-
-
-
+// useful for nginx
 if (!function_exists('getallheaders'))  {
 	function getallheaders() {
 		if (!is_array($_SERVER)) {

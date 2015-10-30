@@ -162,6 +162,4 @@ class ViewTest extends Tipsy_Test {
 		$this->assertEquals('ONETWOTHREEFOURFIVESIXTWOTWO', trim($res));
 	}
 
-
-
 }

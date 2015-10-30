@@ -33,6 +33,12 @@ class View {
 		if (isset($args['path'])) {
 			$this->_path = $args['path'];
 		}
+
+		if (isset($args['filters'])) {
+			foreach ($args['filters'] as $filter) {
+				$this->filter($filter);
+			}
+		}
 	}
 
 	public function stack() {
@@ -122,7 +128,7 @@ class View {
 
 			ob_start();
 			include($file);
-			$page = $this->filter(ob_get_contents(),$params);
+			$page = $this->filterContent(ob_get_contents(),$params);
 			ob_end_clean();
 
 		} else {
@@ -130,13 +136,13 @@ class View {
 			$this->_rendering = true;
 			ob_start();
 			include($file);
-			$this->content = $this->filter(ob_get_contents(),$params);
+			$this->content = $this->filterContent(ob_get_contents(),$params);
 			ob_end_clean();
 
 			if ($layout) {
 				ob_start();
 				include($layout);
-				$page = $this->filter(ob_get_contents(),$params);
+				$page = $this->filterContent(ob_get_contents(),$params);
 				ob_end_clean();
 				$this->_rendering = false;
 			} else {
@@ -166,9 +172,19 @@ class View {
 		echo $this->render($view,$params);
 	}
 
-	public function filter($content) {
+	public function filterContent($content) {
 		foreach ($this->_filters as $filter) {
-			$content = $filter::filter($content);
+			if (is_callable($filter['filter'])) {
+				$content = $filter['filter']($content, $filter['arguments']);
+			} else if (is_string($filter['filter'])) {
+				if (class_exists($filter['filter'])) {
+					$content = $filter['filter']::filter($content, $filter['arguments']);
+				} else {
+					throw new Exception('Filter class "'.$filter['filter'].'" doest not exist.');
+				}
+			} else {
+				throw new Exception('Invalid filter.');
+			}
 		}
 		return $content;
 	}
@@ -182,5 +198,15 @@ class View {
 			$this->_scope = $scope;
 		}
 		return $this->_scope;
+	}
+
+	public function filter($filter, $arguments = []) {
+		if ($filter) {
+			$this->_filters[] = [
+				'filter' => $filter,
+				'arguments' => $arguments
+			];
+		}
+		return $this->_filter;
 	}
 }
