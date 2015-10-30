@@ -5,7 +5,7 @@ class ClassResourceTest extends \Tipsy\Resource {
 	function test() {
 		return 'NO';
 	}
-	
+
 	public function __construct($id = null) {
 		$this->idVar('id_user')->table('test_user')->load($id);
 	}
@@ -19,21 +19,21 @@ class DBTest extends Tipsy_Test {
 
 	public static function tearDownAfterClass() {
 	}
-	
+
 	public function setUp() {
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
-		
+
 		$this->tip->config('tests/config.ini');
-		
+
 		$env = getenv('TRAVIS') ? 'travis' : 'local';
-		
+
 		$this->tip->config('tests/config.db.'.$env.'.ini');
 	}
 
 
 	public function testDBCreateTable() {
-	
+
 		$this->tip->db()->exec("
 			DROP TABLE IF EXISTS `test_user`;
 			CREATE TABLE `test_user` (
@@ -61,7 +61,7 @@ class DBTest extends Tipsy_Test {
 
 
 	public function testModelDBOExtendCall() {
-	
+
 		$this->tip->service('Tipsy\Resource/TestModel', [
 			test => function() {
 				return $this->test;
@@ -69,7 +69,7 @@ class DBTest extends Tipsy_Test {
 			_id => 'id_test_user',
 			_table => 'test_user'
 		]);
-		
+
 		$m = $this->tip->service('TestModel');
 		$m->test = 'YES';
 
@@ -90,7 +90,7 @@ class DBTest extends Tipsy_Test {
 
 		$this->assertEquals(1, $m->dbId());
 	}
-	
+
 	public function testModelDBOIdCreate() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
 			_id => 'id',
@@ -104,7 +104,7 @@ class DBTest extends Tipsy_Test {
 
 		$this->assertEquals(2, $m->dbId());
 	}
-	
+
 	public function testModelDBOStaticRetrieve() {
 		$test = ClassResourceTest::create([
 			'name' => 'test'
@@ -112,14 +112,14 @@ class DBTest extends Tipsy_Test {
 
 		$this->assertGreaterThan(0, $test->dbId());
 		$this->assertEquals('test', $test->name);
-		
+
 		$test2 = ClassResourceTest::o($test->dbId());
 		$this->assertGreaterThan(0, $test2->dbId());
 	}
 
 	public function testModelDBOExtendRoute() {
 		$_REQUEST['__url'] = 'user/create';
-	
+
 		$this->tip->service('Tipsy\Resource/TestUser', [
 			test => function($user) {
 				return $this->test;
@@ -157,8 +157,8 @@ class DBTest extends Tipsy_Test {
 		$model = $this->tip->service('ClassResourceTest');
 		$this->assertEquals('NO', $model->test());
 	}
-	
-	
+
+
 	public function testResourceClassOverwrite() {
 
 		$this->tip->service('ClassResourceTest2', [
@@ -170,10 +170,32 @@ class DBTest extends Tipsy_Test {
 		$model = $this->tip->service('ClassResourceTest2');
 		$this->assertEquals('YES', $model->test());
 	}
-	
+
+	public function testModelJsonExport() {
+		$this->tip->service('Tipsy\Resource/TestModel', [
+			_id => 'id',
+			_table => 'test_user2'
+		]);
+
+		$m = $this->tip->service('TestModel');
+		$m->load([
+			'name' => 'test'
+		]);
+		$m->save();
+
+		$json = json_encode([
+			'id' => $m->dbId(),
+			'name' => 'test',
+			'username' => null
+		]);
+
+		$this->assertEquals($json, $m->json());
+		$this->assertEquals($json, json_encode($m));
+	}
+
 		/*
 	public function testModelDBOQuery() {
-	
+
 		$_REQUEST['__url'] = 'user/devin';
 
 		$this->tip->model('Tipsy\DBO/TestUser', [
@@ -184,43 +206,43 @@ class DBTest extends Tipsy_Test {
 				return $this->q('select * from user where username=?',$user);
 			}
 		]);
-		
+
 		$this->tip->router()
 			->when('user/:id', function($Params, $TestUser) {
 				$u = $TestUser->user($Params['id']);
 				echo $u->username;
 			});
-		
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
-		
+
 		$this->assertEquals('devin', $check);
 	}
 
 
 	public function testModelDBOAutoTable() {
 		$_REQUEST['__url'] = 'user/1';
-	
+
 		$this->tip->model('Tipsy\DBO/TestUser', [
 			blah => function() {
 				echo 'asd';
 			}
 		]);
-		
+
 		$this->tip->router()
 			->when('user/:id', function($Params, $TestUser) {
 				$u = $TestUser->load($Params['id']);
 				echo $u->username;
 			});
-			
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
-		
+
 		$this->assertEquals('devin', $check);
 	}
-	
+
 
 	*/
 
