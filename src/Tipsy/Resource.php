@@ -1,5 +1,5 @@
 <?php
-	
+
 namespace Tipsy;
 
 class Resource extends Model {
@@ -10,9 +10,9 @@ class Resource extends Model {
 	private $_tipsy;
 	private $_baseConfig;
 	private $_service;
-	
+
 	public function __construct($args = []) {
-	
+
 		$this->_baseConfig = $args;
 
 		if ($args['_tipsy']) {
@@ -77,7 +77,7 @@ class Resource extends Model {
 				case 'mysql':
 					$q = 'SHOW COLUMNS FROM `'.$this->table().'`';
 					break;
-					
+
 				case 'sqlite':
 					$q = 'PRAGMA table_info("'.$this->table().'")';
 					break;
@@ -87,7 +87,7 @@ class Resource extends Model {
 
 			try {
 				$rows = $this->db()->get($q);
-				
+
 				foreach ($rows as $row) {
 
 					switch ($this->db()->driver()) {
@@ -97,7 +97,7 @@ class Resource extends Model {
 								'null' => $row->notnull ? false : true
 							];
 							break;
-	
+
 						case 'mysql':
 							$fields[$row->Field] = [
 								'type' => $row->Type,
@@ -117,11 +117,11 @@ class Resource extends Model {
 		}
 		return $this->_fields;
 	}
-	
+
 	public function get($id = null) {
 		return $this;
 	}
-	
+
 	public function createTable() {
 		if (!$this->__fields) {
 			throw new Exception('Could not create table "'.$this->table().'"');
@@ -131,16 +131,16 @@ class Resource extends Model {
 		foreach ($this->__fields as $k => $field) {
 			$q .= ' `'.$k.'` '.$field.' NULL, ';
 		}
-		
+
 		$q .= 'PRIMARY KEY  (`'.$this->idVar().'`))';
 
 		$this->db()->query($q);
 	}
-	
+
 	public function dropTable() {
-		$this->db()->query('DROP TABLE `'.$this->table().'`');
+		$this->db()->query('DROP TABLE IF EXISTS `'.$this->table().'`');
 	}
-	
+
 	public static function __create_static($args = []) {
 		$name = get_called_class();
 		$args['_tipsy'] = Tipsy::app();
@@ -148,7 +148,7 @@ class Resource extends Model {
 		$obj->save();
 		return $obj;
 	}
-	
+
 	public function __create($args = []) {
 		$object = clone $this;
 		$object->tipsy($this->tipsy());
@@ -156,7 +156,7 @@ class Resource extends Model {
 		$object->save(true);
 		return $object;
 	}
-	
+
 	public function dbId() {
 		return $this->{$this->idVar()};
 	}
@@ -171,6 +171,7 @@ class Resource extends Model {
 	 * @param $id object|int
 	 */
 	public function load($id = null) {
+
 		// fill the object with blank properties based on the fields of that table
 		$fields = $this->fields();
 		foreach ($fields as $key => $field) {
@@ -245,7 +246,7 @@ class Resource extends Model {
 			} elseif ($this->{$k} == null && !$field['null']) {
 				$this->{$k} = '';
 			}
-			
+
 			$q1 .= $q1 ? ', ' : '';
 			if ($insert) {
 				$q1 .= ' ? ';
@@ -255,7 +256,7 @@ class Resource extends Model {
 
 			$args[] = is_null($this->{$k}) ? null : $this->{$k};
 		}
-		
+
 		$query .= $q1;
 
 		if ($insert) {
@@ -330,7 +331,7 @@ class Resource extends Model {
 			return $this;
 		}
 	}
-	
+
 	public function __o($args) {
 		$object = clone $this;
 		$object->tipsy($this->tipsy());
@@ -369,8 +370,8 @@ class Resource extends Model {
 		}
 		return $this;
 	}
-	
-	public static function __q_static() {		
+
+	public static function __q_static() {
 		$name = get_called_class();
 		$class = new $name();
 		$class->tipsy(Tipsy::app());
@@ -391,7 +392,7 @@ class Resource extends Model {
 		}
 
 		$res = $this->db()->query($query, $args);
-		
+
 
 		while ($row = $res->fetch(\PDO::FETCH_ASSOC)) {
 			if ($this->tipsy()->services($this->service())) {
