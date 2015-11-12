@@ -49,6 +49,10 @@ class View {
 		return $stack;
 	}
 
+	public function mtime($file) {
+		return filemtime($this->file($file));
+	}
+
 	public function file($src) {
 		$stack = $this->stack();
 
