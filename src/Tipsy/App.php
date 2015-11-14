@@ -23,7 +23,7 @@ class App {
 		$this->_services = [];
 		$this->_rootScope = new Scope;
 		$this->_middlewareStart = false;
-		
+
 		$this->_id = sha1(rand(1,900000));
 	}
 
@@ -119,14 +119,14 @@ class App {
 			if ($this->_services[$extend]) {
 				$extend = $this->_services[$extend];
 			}
-			
+
 			if ($static) {
 				$config['_static'] = true;
 			}
 
 			$name = $extend ? $extend : 'Tipsy\Service';
 			//$name = ($extend && !is_null($args)) ? $extend : 'Tipsy\Service';
-			
+
 			$config['_service'] = $service;
 
 			$this->_services[$service] = [
@@ -145,7 +145,7 @@ class App {
 			if ($this->_services[$service]['config']['_static'] && $this->_services[$service]['instance']) {
 				return $this->_services[$service]['instance'];
 			}
-			
+
 			if ($this->_services[$service]['reflection']->hasMethod('__construct')) {
 				$config = array_merge(is_array($this->_services[$service]['config']) ? $this->_services[$service]['config'] : [],['_tipsy' => $this],$args ? $args : []);
 				$instance = $this->_services[$service]['reflection']->newInstance($config);
@@ -154,7 +154,7 @@ class App {
 				$instance = $this->_services[$service]['reflection']->newInstance();
 			}
 
-			if ($this->_services[$service]['config']) {
+			if (is_array($this->_services[$service]['config'])) {
 				foreach ($this->_services[$service]['config'] as $name => $config) {
 					if (is_callable($config) && method_exists($instance, 'addMethod')) {
 						$instance->addMethod($name, $config);
@@ -164,7 +164,7 @@ class App {
 					$instance->tipsy($this);
 				}
 			}
-			
+
 			if ($this->_services[$service]['config']['_static']) {
 				$this->_services[$service]['instance'] = $instance;
 			}
@@ -203,7 +203,7 @@ class App {
 	}
 
 	private function _serviceName($service, $args = null) {
-		if (strpos($service, '/')) {//!is_null($args) && 
+		if (strpos($service, '/')) {//!is_null($args) &&
 			$service = explode('/',$service);
 			if (count($service) > 2) {
 				throw new Exception('Cant extend more than one model.');
@@ -252,8 +252,8 @@ class App {
 	public function middlewares() {
 		return $this->_middlewares;
 	}
-	
-	
+
+
 	public function factoryCount() {
 		return $this->_factory->count();
 	}
