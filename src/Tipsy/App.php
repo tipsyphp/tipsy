@@ -27,6 +27,10 @@ class App {
 		$this->_id = sha1(rand(1,900000));
 	}
 
+	public function run($url = null) {
+		return $this->start($url);
+	}
+
 	public function start($url = null) {
 		$this->_url = $this->request()->path($url);
 		$this->_route = $this->router()->match($this->_url);
