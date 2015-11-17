@@ -85,11 +85,17 @@ class Request {
 				if ($_REQUEST['__url']) {
 					$url = $_REQUEST['__url'];
 				} else {
+
 					$request = explode('?', $_SERVER['REQUEST_URI'], 2)[0];
-					$dir = dirname($_SERVER['SCRIPT_NAME']);
-					$this->_base = substr($dir, -1) == '/' ? $dir : $dir.'/';
+
+					$dir = $_SERVER['SCRIPT_NAME'];
 					$url = preg_replace('/^'.str_replace('/','\\/',''.$dir).'/','',$request);
+
+					$dir = dirname($_SERVER['SCRIPT_NAME']);
+					$url = preg_replace('/^'.str_replace('/','\\/',''.$dir).'/','',$url);
+
 					$url = substr($url, 0, 1) == '/' ? $url : '/'.$url;
+					$this->_base = substr($dir, -1) == '/' ? $dir : $dir.'/';
 				}
 			}
 

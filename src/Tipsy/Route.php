@@ -1,5 +1,5 @@
 <?php
-	
+
 namespace Tipsy;
 
 
@@ -18,12 +18,12 @@ class Route  {
 		$this->_route = preg_replace('/^\/?(.*?)\/?$/i','\\1',$args['route']);
 		$this->_tipsy = $args['tipsy'];
 		$this->_method = $args['method'] == 'all' ? '*' : $args['method'];
-		
+
 		$this->_routeParams = new RouteParams;
 	}
-	
+
 	public function match($page) {
-	
+
 		if ($this->method() != '*') {
 			$methods = explode(',',strtolower($this->method()));
 			$match = false;
@@ -39,10 +39,10 @@ class Route  {
 				return false;
 			}
 		}
-		
+
 		$pathParams = [];
 		$paths = explode('/',$this->_route);
-		
+
 		// index page
 		if (($this->_route === '' || $this->_route == '/') && ($page === '' || $page == '/')) {
 			return $this;
@@ -63,16 +63,16 @@ class Route  {
 			foreach ($pathParams as $key => $path) {
 				$this->_routeParams->{$path} = $paths[$key];
 			}
-			
+
 			return $this;
 		}
 		return false;
 	}
-	
+
 	public function params() {
 		return $this->_routeParams;
 	}
-	
+
 	public function controller() {
 
 		if (!isset($this->_controllerRef)) {
@@ -97,19 +97,19 @@ class Route  {
 
 				$this->_controllerRef = new $this->_controller(['tipsy' => $this->tipsy()]);
 			}
-			
+
 			if ($this->_controllerRef) {
 				$this->_controllerRef->tipsy()->route($this);
 			}
 		}
-		
+
 		if (!$this->_controllerRef) {
 			throw new Exception('No controller attached to route.');
 		}
-		
+
 		return $this->_controllerRef;
 	}
-	
+
 	public function tipsy() {
 		return $this->_tipsy;
 	}

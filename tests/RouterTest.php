@@ -447,6 +447,39 @@ class RouterTest extends Tipsy_Test {
 		$this->assertEquals('No controller attached to route.', $check);
 	}
 
+	public function testRouterParse() {
+		$_SERVER['REQUEST_URI'] = '/router/parse?test=a';
+		$_SERVER['SCRIPT_NAME'] = '/app/index.php';
+
+		$this->ob();
+
+		$this->tip->router()
+			->when('router/parse', function() {
+				echo 'BASIC';
+			});
+		$this->tip->start();
+
+		$check = $this->ob(false);
+		$this->assertEquals('BASIC', $check);
+	}
+
+	public function testRouterPath() {
+		$_SERVER['TEST'] = 1;
+		$_SERVER['REQUEST_URI'] = '/RouterTest.php/router/path?test=a';
+		$_SERVER['SCRIPT_NAME'] = '/RouterTest.php';
+
+		$this->ob();
+
+		$this->tip->router()
+			->when('router/path', function() {
+				echo 'BASIC';
+			});
+		$this->tip->start();
+
+		$check = $this->ob(false);
+		$this->assertEquals('BASIC', $check);
+	}
+
 
 	/*
 	public function testRouterViewController() {
