@@ -1,5 +1,5 @@
 <?php
-	
+
 namespace Tipsy;
 
 class Db {
@@ -16,17 +16,64 @@ class Db {
 			throw new Exception('Invalid DB config.');
 		}
 
-		if (!$args['dsn']) {
-			$args['dsn'] = 'mysql:host='.$args['host'].';dbname='.$args['database'].';charset=utf8';
+		$options = [];
+
+		// will overwrite any existing args
+		if ($args['url']) {
+			$url = parse_url($args['url']);
+
+			$args['driver'] = $url['scheme'];
+			$args['user'] = $url['user'];
+			$args['pass'] = $url['pass'];
+			$args['host'] = $url['host'];
+			$args['port'] = $url['port'];
+			$args['db'] = substr($url['path'], 1);
+			parse_str($url['query'], $args['options']);
+
+			if ($args['options'] && is_array($args['options'])) {
+				foreach ($args['options'] as $key => $value) {
+					$args[$key] = $value;
+				}
+			}
 		}
-		$db = new \PDO($args['dsn'], $args['user'], $args['pass']);
+
+		if (!$args['port']) {
+			switch ($args['driver']) {
+				case 'pgsql':
+					$args['port'] = 5432;
+					break;
+				case 'mysql':
+				default:
+					$args['port'] = 3306;
+					break;
+			}
+		}
+
+		if (!$args['charset']) {
+			$args['charset'] = 'utf8';
+		}
+
+		if ($args['persistent']) {
+			$options[PDO::ATTR_PERSISTENT] = true;
+		}
+
+		if ($args['sslca']) {
+			$options[PDO::MYSQL_ATTR_SSL_CA] = $args['sslca'];
+			$options[PDO::ATTR_TIMEOUT] = 4;
+			$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+		}
+
+		if (!$args['dsn']) {
+			$args['dsn'] = 'mysql:host='.$args['host'].';port='.$args['port'].';dbname='.$args['database'].';charset='.$args['charset'];
+		}
+		$db = new \PDO($args['dsn'], $args['user'], $args['pass'], $options);
 		$this->_driver = $db->getAttribute(\PDO::ATTR_DRIVER_NAME);
 
 		$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		$db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
 		return $db;
 	}
-	
+
 	public function exec($query) {
 		return $this->db()->exec($query);
 	}
@@ -37,23 +84,23 @@ class Db {
 		//$db->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql'
 		return $stmt;
 	}
-	
+
 	public function get($query, $args = [], $type = 'object') {
 		$stmt = $this->query($query, $args);
 		return $stmt->fetchAll($type == 'object' ? \PDO::FETCH_OBJ : \PDO::FETCH_ASSOC);
 	}
-	
+
 	public function db() {
 		return $this->_db;
 	}
-	
+
 	public function fields($table, $fields = null) {
 		if ($table && $fields) {
 			$this->_fields[$table] = $fields;
 		}
 		return $this->_fields[$table];
 	}
-	
+
 	public function driver() {
 		return $this->_driver;
 	}
