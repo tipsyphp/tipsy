@@ -27,7 +27,7 @@ class Db {
 			$args['pass'] = $url['pass'];
 			$args['host'] = $url['host'];
 			$args['port'] = $url['port'];
-			$args['db'] = substr($url['path'], 1);
+			$args['database'] = substr($url['path'], 1);
 			parse_str($url['query'], $args['options']);
 
 			if ($args['options'] && is_array($args['options'])) {
