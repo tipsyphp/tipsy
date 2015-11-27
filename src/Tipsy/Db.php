@@ -59,8 +59,12 @@ class Db {
 			$args['driver'] = 'pgsql';
 		}
 
+		if ($args['driver'] == 'mysql') {
+			$args['charset'] = 'utf8';
+		}
+
 		if (!$args['dsn']) {
-			$args['dsn'] = $args['driver'].':host='.$args['host'].($args['port'] ? ';port='.$args['port'] : '').';dbname='.$args['database'].';charset='.$args['charset'];
+			$args['dsn'] = $args['driver'].':host='.$args['host'].($args['port'] ? ';port='.$args['port'] : '').';dbname='.$args['database'].($args['charset'] ? ';charset='.$args['charset'] : '');
 		}
 		$db = new \PDO($args['dsn'], $args['user'], $args['pass'], $options);
 		$this->_driver = $db->getAttribute(\PDO::ATTR_DRIVER_NAME);
