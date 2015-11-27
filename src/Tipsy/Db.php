@@ -55,7 +55,7 @@ class Db {
 			$args['driver'] = 'mysql';
 		}
 
-		if ($args['driver'] == 'postgressql') {
+		if ($args['driver'] == 'postgres') {
 			$args['driver'] = 'pgsql';
 		}
 
