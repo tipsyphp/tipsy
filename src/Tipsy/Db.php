@@ -37,18 +37,6 @@ class Db {
 			}
 		}
 
-		if (!$args['port']) {
-			switch ($args['driver']) {
-				case 'pgsql':
-					$args['port'] = 5432;
-					break;
-				case 'mysql':
-				default:
-					$args['port'] = 3306;
-					break;
-			}
-		}
-
 		if (!$args['charset']) {
 			$args['charset'] = 'utf8';
 		}
@@ -63,8 +51,12 @@ class Db {
 			$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
 		}
 
+		if (!$args['driver']) {
+			$args['driver'] = 'mysql';
+		}
+
 		if (!$args['dsn']) {
-			$args['dsn'] = 'mysql:host='.$args['host'].';port='.$args['port'].';dbname='.$args['database'].';charset='.$args['charset'];
+			$args['dsn'] = $args['driver'].':host='.$args['host'].($args['port'] ? ';port='.$args['port'] : '').';dbname='.$args['database'].';charset='.$args['charset'];
 		}
 		$db = new \PDO($args['dsn'], $args['user'], $args['pass'], $options);
 		$this->_driver = $db->getAttribute(\PDO::ATTR_DRIVER_NAME);
