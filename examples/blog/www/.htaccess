@@ -1,8 +1,0 @@
-allow from all
-
-RewriteEngine on
-Options +Followsymlinks +Indexes
-
-RewriteCond %{REQUEST_FILENAME}     !-f
-RewriteCond %{REQUEST_FILENAME}     !-d
-RewriteRule ^(.*)					index.php [L,QSA]
