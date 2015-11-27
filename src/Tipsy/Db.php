@@ -37,10 +37,6 @@ class Db {
 			}
 		}
 
-		if (!$args['charset']) {
-			$args['charset'] = 'utf8';
-		}
-
 		if ($args['persistent']) {
 			$options[PDO::ATTR_PERSISTENT] = true;
 		}
