@@ -55,6 +55,10 @@ class Db {
 			$args['driver'] = 'mysql';
 		}
 
+		if ($args['driver'] == 'postgressql') {
+			$args['driver'] = 'pgsql';
+		}
+
 		if (!$args['dsn']) {
 			$args['dsn'] = $args['driver'].':host='.$args['host'].($args['port'] ? ';port='.$args['port'] : '').';dbname='.$args['database'].';charset='.$args['charset'];
 		}
