@@ -54,5 +54,5 @@ $tipsy->router()
 To install using composer use the command below. For alternate installation methods see [Installation](https://github.com/arzynik/Tipsy/wiki/Installation).
 
 ```sh
-composer require arzynik/Tipsy
+composer require arzynik/tipsy
 ```
