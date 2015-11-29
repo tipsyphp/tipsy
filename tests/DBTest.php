@@ -124,7 +124,7 @@ class DBTest extends Tipsy_Test {
 			test => function($user) {
 				return $this->test;
 			},
-			_id => 'id_test_user',
+			_id => 'id_user',
 			_table => 'test_user'
 		]);
 
