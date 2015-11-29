@@ -184,11 +184,19 @@ class App {
 	}
 	public function db() {
 		if (!isset($this->_db)) {
-			$this->_db = new Db($this->_config['db']);
+			if ($this->services('Db')) {
+				$this->_db = $this->service('Db');
+				$this->_db->connect($this->_config['db']);
+
+				$this->_db->mysqlToPgsql('test');
+			} else {
+				$this->_db = new Db($this->_config['db']);
+			}
 
 			// kill the db config in case something gets outputted
 			unset($this->_config['db']);
 		}
+
 		return $this->_db;
 	}
 	public function view() {
