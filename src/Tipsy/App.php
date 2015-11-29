@@ -187,8 +187,6 @@ class App {
 			if ($this->services('Db')) {
 				$this->_db = $this->service('Db');
 				$this->_db->connect($this->_config['db']);
-
-				$this->_db->mysqlToPgsql('test');
 			} else {
 				$this->_db = new Db($this->_config['db']);
 			}
