@@ -2,20 +2,21 @@
 
 namespace Tipsy;
 
-class Db {
+class Db extends Model {
 	private $_db;
 	private $_fields;
 
 	public function __construct($config = []) {
-		$db = $this->connect($config);
-		$this->_db = $db;
+		if ($config['_tipsy']) {
+			return;
+		}
+		$this->connect($config);
 	}
 
 	public function connect($args = null) {
 		if (!$args) {
 			throw new Exception('Invalid DB config.');
 		}
-
 		$options = [];
 
 		// will overwrite any existing args
@@ -67,7 +68,10 @@ class Db {
 
 		$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		$db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
-		return $db;
+
+		$this->db($db);
+
+		return $this;
 	}
 
 	public function exec($query) {
@@ -77,7 +81,6 @@ class Db {
 	public function query($query, $args = []) {
 		$stmt = $this->db()->prepare($query);
 		$stmt->execute($args);
-		//$db->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql'
 		return $stmt;
 	}
 
@@ -86,7 +89,10 @@ class Db {
 		return $stmt->fetchAll($type == 'object' ? \PDO::FETCH_OBJ : \PDO::FETCH_ASSOC);
 	}
 
-	public function db() {
+	public function db($db = null) {
+		if (!is_null($db)) {
+			$this->_db = $db;
+		}
 		return $this->_db;
 	}
 
@@ -99,5 +105,12 @@ class Db {
 
 	public function driver() {
 		return $this->_driver;
+	}
+
+	public function tipsy($tipsy = null) {
+		if (!is_null($tipsy)) {
+			$this->_tipsy = $tipsy;
+		}
+		return $this->_tipsy;
 	}
 }

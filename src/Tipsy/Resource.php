@@ -31,7 +31,6 @@ class Resource extends Model {
 
 		if (!$args) {
 
-		die($this->_service);
 			// auto table name and id
 			$args = [
 				'id' => '',
@@ -81,28 +80,58 @@ class Resource extends Model {
 				case 'sqlite':
 					$q = 'PRAGMA table_info("'.$this->table().'")';
 					break;
+
+				case 'pgsql':
+					$q = 'SELECT column_name as Field, data_type as Type, is_nullable as Null, column_default as Default FROM information_schema.columns WHERE table_name = \''.$this->table().'\'';
+					break;
 			}
 
-			$rows = $this->db()->get($q);
-
 			try {
+
 				$rows = $this->db()->get($q);
 
 				foreach ($rows as $row) {
 
 					switch ($this->db()->driver()) {
 						case 'sqlite':
-							$fields[$row->name] = [
+							$fields[$row->name] = (object)[
+								'field' => $row->name,
 								'type' => $row->type,
 								'null' => $row->notnull ? false : true
 							];
 							break;
 
 						case 'mysql':
-							$fields[$row->Field] = [
+							$fields[$row->Field] = (object)[
+								'field' => $row->Field,
 								'type' => $row->Type,
-								'null' => $row->Null == 'YES' ? true : false
+								'null' => $row->Null == 'YES' ? true : false,
+								'auto' => $row->Extra == 'auto_increment' ? true : false
 							];
+
+							if ($fields[$row->Field]->type == 'tinyint(1)' || $fields[$row->Field]->type == 'tinyint(1) unsigned') {
+								$fields[$row->Field]->type = 'boolean';
+							} elseif (strpos($fields[$row->Field]->type, 'int') !== false) {
+								$fields[$row->Field]->type = 'int';
+							}
+
+							break;
+
+						case 'pgsql':
+							$fields[$row->field] = (object)[
+								'field' => $row->field,
+								'type' => $row->type,
+								'null' => $row->null == 'YES' ? true : false,
+								'auto' => $row->default && preg_match('/^nextval\(/',$row->default) ? true : false
+							];
+
+							if ($fields[$row->field]->type == 'integer') {
+								$fields[$row->field]->type = 'int';
+							}
+
+							if ($fields[$row->field]->auto && $fields[$row->field]->field == $this->idVar()) {
+								$fields[$row->field]->sequence = preg_replace('/^nextval\(\'(.*)\'.*\)$/i','\\1', $row->default);
+							}
 							break;
 					}
 				}
@@ -171,7 +200,6 @@ class Resource extends Model {
 	 * @param $id object|int
 	 */
 	public function load($id = null) {
-
 		// fill the object with blank properties based on the fields of that table
 		$fields = $this->fields();
 		foreach ($fields as $key => $field) {
@@ -216,7 +244,6 @@ class Resource extends Model {
 	 * Saves an entry in the db. if there is no curerent id it will add one
 	 */
 	public function save($insert = null) {
-
 		if (is_null($insert)) {
 			$insert = $this->dbId() ? false : true;
 		}
@@ -226,52 +253,93 @@ class Resource extends Model {
 		}
 
 		if ($insert) {
-			$query = 'INSERT INTO `'.$this->table().'` VALUES(';
+			$query = 'INSERT INTO `'.$this->table().'`';
 		} else {
-			$query = 'UPDATE `'.$this->table().'` SET ';
+			$query = 'UPDATE `'.$this->table().'`';
 		}
 
 		$fields = $this->fields();
 
-		$args = [];
+		$numset = 0;
 
-		foreach ($fields as $k => $field) {
-
-			if ($this->property($k) === false) {
+		foreach ($fields as $field) {
+			if ($field->auto === true && $insert && $field->field == $this->idVar()) {
 				continue;
 			}
 
-			if ($this->{$k} == '' && $field['null']) {
-				$this->{$k} = null;
-			} elseif ($this->{$k} == null && !$field['null']) {
-				$this->{$k} = '';
+			if ($this->{$field->field} == '' && $field->null) {
+				$this->{$field->field} = null;
+			} elseif ($this->{$field->field} == null && !$field->null) {
+				$this->{$field->field} = '';
 			}
 
-			$q1 .= $q1 ? ', ' : '';
+			switch ($field->type) {
+				case 'boolean':
+					$this->{$field->field} = $this->{$field->field} ? true : false;
+					break;
+
+				case 'int':
+					$this->{$field->field} = intval($this->{$field->field});
+					break;
+
+				case 'datetime':
+					if ($this->{$field->field} == '0000-00-00 00:00:00' && $field->null) {
+						$this->{$field->field} = null;
+					}
+					break;
+
+				case 'date':
+					if ($this->{$field->field} == '0000-00-00' && $field->null) {
+						$this->{$field->field} = null;
+					}
+					break;
+			}
+
+			$this->{$field->field} = (!$this->{$field->field} && $field->null) ? null : $this->{$field->field};
+
+			$query .= !$numset ? ($insert ? '(' : ' SET ') : ',';
 			if ($insert) {
-				$q1 .= ' ? ';
+				$query .= ' `'.$field->field.'` ';
 			} else {
-				$q1 .= ' `'.$k.'`= ? ';
+				if ($field->field != $this->idVar()) {
+					$query .= ' `'.$field->field.'`=:'.$field->field;
+				} else {
+					// should proabably be cleaned up a bit
+					$query = substr($query, 0, -5);
+					$numset--;
+				}
 			}
 
-			$args[] = is_null($this->{$k}) ? null : $this->{$k};
+			$fs[$field->field] = $this->{$field->field};
+
+			$numset++;
+
 		}
 
-		$query .= $q1;
-
 		if ($insert) {
+			$query .= ' ) VALUES (';
+			$numset = 0;
+
+			foreach ($fields as $field) {
+				if ($field->auto === true) {
+					continue;
+				}
+
+				$query .= !$numset ? '' : ',';
+				$query .= ' :'.$field->field;
+				$numset++;
+			}
+
 			$query .= ')';
+		} else {
+			$query .= ' WHERE '.$this->idVar().'=:id';
+			$fs['id'] = $this->{$this->idVar()};
 		}
 
-		if (!$insert) {
-			$query .= ' WHERE '.$this->idVar().'= ?';
-			$args[] = $this->dbId();
-		}
-
-		$this->db()->query($query, $args);
+		$stmt = $this->db()->query($query, $fs);
 
 		if ($insert) {
-			$this->{$this->idVar()} = $this->db()->db()->lastInsertId();
+			$this->{$this->idVar()} = $this->db()->db()->lastInsertId($fields[$this->idVar()]->sequence ? $fields[$this->idVar()]->sequence : null);
 		}
 
 		return $this;
@@ -357,7 +425,6 @@ class Resource extends Model {
 		} else {
 			return new Looper($items);
 		}
-
 	}
 
 	public function s() {
@@ -393,7 +460,6 @@ class Resource extends Model {
 
 		$res = $this->db()->query($query, $args);
 
-
 		while ($row = $res->fetch(\PDO::FETCH_ASSOC)) {
 			if ($this->tipsy()->services($this->service())) {
 				$items[] = $this->tipsy()->service($this->service(), $row);
@@ -413,6 +479,7 @@ class Resource extends Model {
 		}
 		return $this->_tipsy;
 	}
+
 	public function db() {
 		if ($this && $this->tipsy() && $this->tipsy()->db()) {
 			return $this->tipsy()->db();
@@ -420,12 +487,11 @@ class Resource extends Model {
 			return Tipsy::db();
 		}
 	}
+
 	public function service($service = null) {
 		if (!is_null($service)) {
 			$this->_service = $service;
 		}
 		return $this->_service;
 	}
-
-
 }
