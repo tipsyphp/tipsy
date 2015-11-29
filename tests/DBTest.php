@@ -193,6 +193,19 @@ class DBTest extends Tipsy_Test {
 		$this->assertEquals($json, json_encode($m));
 	}
 
+	public function testExtend() {
+		$this->tip->service('Tipsy\Resource/TestModel', [
+			exports => function() {
+				return [test => true];
+			},
+			_id => 'id',
+			_table => 'test_user2'
+		]);
+
+		$m = $this->tip->service('TestModel');
+		$this->assertTrue($m->exports()['test']);
+	}
+
 		/*
 	public function testModelDBOQuery() {
 
