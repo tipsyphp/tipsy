@@ -41,6 +41,8 @@ class Tipsy {
 	public static function app($app = null) {
 		if (!is_null($app)) {
 			self::$_app = $app;
+		} elseif (is_null(self::$_app)) {
+			self::init();
 		}
 		return self::$_app;
 	}
@@ -53,6 +55,8 @@ class Tipsy {
 		return (new \ReflectionMethod(self::app(), $name))->invokeArgs(self::app(), $arguments);
 	}
 }
+
+class_alias('\Tipsy\Tipsy', 't');
 
 
 // useful for nginx
