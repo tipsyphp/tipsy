@@ -178,14 +178,14 @@ class LooperTest extends Tipsy_Test {
 
 	public function testMultiComplex() {
 		$loop = (new \Tipsy\Looper([
-				(object)['a' => 1, 'b' => 1, 'c' => 1],
-				(object)['a' => 2, 'b' => 1, 'c' => 1],
-				(object)['a' => 3, 'b' => 3, 'c' => 1]
-			], [
-				(object)['a' => 4, 'b' => 1, 'c' => 1],
-				(object)['a' => 5, 'b' => 1, 'c' => 1],
-				(object)['a' => 7, 'b' => 3, 'c' => 1]
-			]))->filter(['b' => 3])
+			(object)['a' => 1, 'b' => 1, 'c' => 1],
+			(object)['a' => 2, 'b' => 1, 'c' => 1],
+			(object)['a' => 3, 'b' => 3, 'c' => 1]
+		], [
+			(object)['a' => 4, 'b' => 1, 'c' => 1],
+			(object)['a' => 5, 'b' => 1, 'c' => 1],
+			(object)['a' => 7, 'b' => 3, 'c' => 1]
+		]))->filter(['b' => 3])
 			->set('c', 2)
 			->parent();
 		$val = 0;
@@ -235,5 +235,36 @@ class LooperTest extends Tipsy_Test {
 			$val += $this->a;
 		});
 		$this->assertEquals(13, $val);
+	}
+
+	public function testForEach() {
+		$loop = new \Tipsy\Looper([
+			(object)['a' => 4],
+			(object)['a' => 5],
+			(object)['a' => 6],
+			(object)['a' => 7],
+			(object)['a' => 8]
+		]);
+		foreach ($loop as $item) {
+			$val += $item->a;
+		}
+		$this->assertEquals(30, $val);
+	}
+
+	public function testWhile() {
+		$loop = new \Tipsy\Looper([
+			(object)['a' => 4],
+			(object)['a' => 5],
+			(object)['a' => 6],
+			(object)['a' => 7],
+			(object)['a' => 8]
+		]);
+		$loop->rewind();
+
+		while ($loop->valid()){
+			$val += $loop->current()->a;
+			$loop->next();
+		}
+		$this->assertEquals(30, $val);
 	}
 }
