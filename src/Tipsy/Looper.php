@@ -5,13 +5,16 @@ namespace Tipsy;
 class Looper implements \Iterator {
 	private $_items;
 	private $_position;
-	
+
 	const DONE = 'looper\break';
 
 	public function __construct() {
 		$items = [];
-		foreach (func_get_args() as $arg) {
-			if (is_object($arg) && (get_class($arg) == 'Looper' || is_subclass_of($arg,'Looper'))) {
+		$args = func_get_args();
+		$args = array_reverse($args);
+
+		foreach ($args as $arg) {
+			if (is_object($arg) && (get_class($arg) == 'Looper' || is_subclass_of($arg, 'Looper'))) {
 				$arg = $arg->items();
 			} elseif (is_object($arg)) {
 				$arg = [$arg];
