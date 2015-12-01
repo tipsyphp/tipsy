@@ -9,6 +9,12 @@ class LoginServiceMiddleware extends \Tipsy\Middleware {
 	}
 }
 
+class MiddleWareTestFail {
+	function run() {
+		return false;
+	}
+}
+
 
 class MiddlewareTest extends Tipsy_Test {
 
@@ -54,16 +60,16 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->tip->middleware('LoginServiceTipsy');
 		$check = $this->ob(false);
 		$this->assertEquals('', $check);
-		
+
 		$this->tip->router()->home(function() {});
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('HI', $check);
-		
+
 		$check = $this->tip->service('LoginServiceTipsy')->test();
 		$this->assertEquals('HELLO', $check);
 	}
-	
+
 	public function testMiddlewareTipsyDirect() {
 		$_REQUEST['__url'] = '';
 		$this->ob();
@@ -80,16 +86,16 @@ class MiddlewareTest extends Tipsy_Test {
 
 		$check = $this->ob(false);
 		$this->assertEquals('', $check);
-		
+
 		$this->tip->router()->home(function() {});
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('HI', $check);
-		
+
 		$check = $this->tip->service('LoginServiceTipsy')->test();
 		$this->assertEquals('HELLO', $check);
 	}
-	
+
 	public function testMiddlewareFailure() {
 		$_REQUEST['__url'] = '';
 		$this->ob();
@@ -110,7 +116,7 @@ class MiddlewareTest extends Tipsy_Test {
 		}
 		$this->assertTrue($check);
 	}
-	
+
 	/*
 	@todo: need to communicate with eachother
 	public function testMiddlewareToMiddlewareReference() {
@@ -122,7 +128,7 @@ class MiddlewareTest extends Tipsy_Test {
 				return 'HELLO';
 			}
 		]);
-		
+
 		$this->tip->middleware('Tipsy\Service/SecondService', function($FirstService) {
 			return [
 				test => function() {
@@ -133,7 +139,7 @@ class MiddlewareTest extends Tipsy_Test {
 
 		$this->tip->router()->home(function() {});
 		$this->tip->start();
-		
+
 		$check = $this->tip->middleware('SecondService')->test();
 		$this->assertEquals('HELLO', $check);
 	}

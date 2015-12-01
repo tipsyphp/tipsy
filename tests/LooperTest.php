@@ -78,9 +78,9 @@ class LooperTest extends Tipsy_Test {
 
 	public function testFilter() {
 		$loop = new \Tipsy\Looper([
-			(object)['a' => 1, 'b' => 1],
-			(object)['a' => 2, 'b' => 1],
-			(object)['a' => 3, 'b' => 3]
+			(object)['a' => 4, 'b' => 1],
+			(object)['a' => 5, 'b' => 1],
+			(object)['a' => 6, 'b' => 3]
 		]);
 		$loop = $loop->filter([
 			'b' => 1
@@ -89,7 +89,23 @@ class LooperTest extends Tipsy_Test {
 		$loop->each(function() use (&$val) {
 			$val += $this->a;
 		});
-		$this->assertEquals(3, $val);
+		$this->assertEquals(9, $val);
+	}
+
+	public function testFilterNot() {
+		$loop = new \Tipsy\Looper([
+			(object)['a' => 4, 'b' => 1],
+			(object)['a' => 5, 'b' => 1],
+			(object)['a' => 6, 'b' => 3]
+		]);
+		$loop = $loop->not([
+			'b' => 1
+		]);
+		$val = 0;
+		$loop->each(function() use (&$val) {
+			$val += $this->a;
+		});
+		$this->assertEquals(6, $val);
 	}
 
 	public function testEq() {
@@ -98,7 +114,7 @@ class LooperTest extends Tipsy_Test {
 		$this->assertEquals(3, $val);
 	}
 
-	public function testGet() {
+	public function testEqGet() {
 		$loop = new \Tipsy\Looper([1,2,3]);
 		$val = $loop->eq(0);
 		$this->assertEquals(1, $val);
@@ -146,5 +162,31 @@ class LooperTest extends Tipsy_Test {
 	public function testToJson() {
 		$loop = new \Tipsy\Looper([1,"2"], new LoopItem);
 		$this->assertEquals('[1,"2",{"test":true}]', $loop->json());
+	}
+
+	public function testLoopInLoop() {
+		$loop = new \Tipsy\Looper([1,2], new \Tipsy\Looper([3,4], [5,6]));
+		$this->assertEquals('123456', "".$loop);
+	}
+
+	public function testGet() {
+		$loop = new \Tipsy\Looper([1,2]);
+		$this->assertEquals(1, $loop->get(0));
+	}
+
+	public function testSlice() {
+		$loop = new \Tipsy\Looper([
+			(object)['a' => 4],
+			(object)['a' => 5],
+			(object)['a' => 6],
+			(object)['a' => 7],
+			(object)['a' => 8]
+		]);
+		$slice = $loop->slice(2, 2);
+		$val = 0;
+		$slice->each(function() use (&$val) {
+			$val += $this->a;
+		});
+		$this->assertEquals(13, $val);
 	}
 }
