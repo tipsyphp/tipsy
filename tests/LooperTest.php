@@ -108,6 +108,53 @@ class LooperTest extends Tipsy_Test {
 		$this->assertEquals(6, $val);
 	}
 
+	public function testFilterFunc() {
+		$loop = new \Tipsy\Looper([
+			(object)['a' => 4, 'b' => 1],
+			(object)['a' => 5, 'b' => 1],
+			(object)['a' => 6, 'b' => 3]
+		]);
+		$loop = $loop->filter(function($item, $key) {
+			return $item->b == 3 ? false : true;
+		});
+		$val = 0;
+		$loop->each(function() use (&$val) {
+			$val += $this->a;
+		});
+		$this->assertEquals(9, $val);
+	}
+
+	public function testFilterMulti() {
+		$loop = new \Tipsy\Looper([
+			(object)['a' => 4, 'b' => 1, 'c' => 1, 'd' => 1],
+			(object)['a' => 5, 'b' => 2, 'c' => 2, 'd' => 1],
+			(object)['a' => 6, 'b' => 3, 'c' => 2, 'd' => 1]
+		]);
+		$loop = $loop->filter(
+			['d' => 1, 'c' => 1],
+			['b' => 3, 'c' => 2]
+		);
+		$val = 0;
+		$loop->each(function() use (&$val) {
+			$val += $this->a;
+		});
+		$this->assertEquals(10, $val);
+	}
+
+	public function testFilterSameShorthand() {
+		$loop = new \Tipsy\Looper([
+			(object)['a' => 4, 'b' => 1, 'c' => 1, 'd' => 1],
+			(object)['a' => 5, 'b' => 2, 'c' => 2, 'd' => 1],
+			(object)['a' => 6, 'b' => 3, 'c' => 2, 'd' => 1]
+		]);
+		$loop = $loop->filter(['d' => 1]);
+		$val = 0;
+		$loop->e(function() use (&$val) {
+			$val += $this->a;
+		});
+		$this->assertEquals(15, $val);
+	}
+
 	public function testEq() {
 		$loop = new \Tipsy\Looper([1,2,3]);
 		$val = $loop->eq(-1);
