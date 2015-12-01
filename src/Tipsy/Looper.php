@@ -238,6 +238,8 @@ class Looper implements \Iterator {
 		return $value;
 	}
 
+	/** these appear to never have been implimented correctly
+
 	public function __isset($property) {
 		if (isset($property{0}) && $property{0} == '_') {
 			return $this->_items[0]->{$property} ? true : false;
