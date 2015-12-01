@@ -8,11 +8,22 @@ class LoopItem {
 	public function exports() {
 		return ['test' => true];
 	}
+
+	public function __toString() {
+		return 'STRING';
+	}
 }
 
 class LoopItemJson {
 	public function json() {
 		return ['test' => true, 'other' => 'asd'];
+	}
+}
+
+class LoopResource extends \Tipsy\Resource {
+	public function __construct($d = null) {
+		$this->idVar('id')->table('test_user2');
+		parent::__construct($d);
 	}
 }
 
@@ -24,7 +35,12 @@ class LooperTest extends Tipsy_Test {
 		$this->useOb = true; // for debug use
 
 		$this->tip->config('tests/config.ini');
+
+		$env = getenv('TRAVIS') ? 'travis' : 'local';
+
+		$this->tip->config('tests/config.db.'.$env.'.ini');
 	}
+
 
 	public function testLoop() {
 		$loop = new \Tipsy\Looper([1,2,3]);
@@ -212,6 +228,11 @@ class LooperTest extends Tipsy_Test {
 		$this->assertEquals('123456', "".$loop);
 	}
 
+	public function testToStringObject() {
+		$loop = new \Tipsy\Looper(new LoopItem, [4,5,6]);
+		$this->assertEquals('STRING456', "".$loop);
+	}
+
 	public function testToJson() {
 		$loop = new \Tipsy\Looper([1,"2"], new LoopItem);
 		$this->assertEquals('[1,"2",{"test":true}]', $loop->json());
@@ -293,5 +314,16 @@ class LooperTest extends Tipsy_Test {
 			break;
 		}
 		$this->assertEquals(0, $val);
+	}
+
+	public function testResource() {
+		$obj = new LoopResource(['test' => 3]);
+		$loop = new \Tipsy\Looper($obj, $obj);
+
+		$val = 0;
+		foreach ($loop as $item) {
+			$val += $item->test;
+		}
+		$this->assertEquals(6, $val);
 	}
 }
