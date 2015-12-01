@@ -39,7 +39,7 @@ class Looper implements \Iterator {
 	public function get($index) {
 		return $this->_items[$index];
 	}
-	
+
 	public function set($var, $val) {
 		if ($var) {
 			foreach ($this->_items as $item) {
@@ -263,4 +263,5 @@ class Looper implements \Iterator {
 		}
 		return $this;
 	}
+	**/
 }
