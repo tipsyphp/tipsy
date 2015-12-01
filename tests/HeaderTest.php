@@ -7,7 +7,7 @@ class HeaderTest extends Tipsy_Test {
 		$this->useOb = true; // for debug use
 	}
 
-	public function testRouterBasic() {
+	public function testHeaderSet() {
 		$_REQUEST['__url'] = 'router/basic';
 		$_SERVER['HTTP_TEST'] = 'win';
 
