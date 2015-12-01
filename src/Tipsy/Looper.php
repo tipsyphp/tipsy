@@ -14,7 +14,7 @@ class Looper implements \Iterator {
 		$args = array_reverse($args);
 
 		foreach ($args as $arg) {
-			if (is_object($arg) && (get_class($arg) == 'Looper' || is_subclass_of($arg, 'Looper'))) {
+			if (is_object($arg) && (get_class($arg) == 'Tipsy\Looper' || is_subclass_of($arg, 'Tipsy\Looper'))) {
 				$arg = $arg->items();
 			} elseif (is_object($arg)) {
 				$arg = [$arg];
@@ -91,8 +91,7 @@ class Looper implements \Iterator {
 		foreach ($this->_items as $key => $item) {
 			if (is_object($item) && (is_callable($item, 'json') || method_exists($item, 'json'))) {
 				$items[$key] = (new \ReflectionMethod($item, 'json'))->invokeArgs($item, $args);
-			}
-			if (is_object($item) && method_exists($item, 'exports')) {
+			} elseif (is_object($item) && method_exists($item, 'exports')) {
 				$items[$key] = $item->exports();
 			} else {
 				$items[$key] = $item;
