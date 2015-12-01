@@ -23,7 +23,7 @@ class Tipsy_Test extends PHPUnit_Framework_TestCase {
 			} else {
 				ob_end_clean();
 			}
-			
+
 			return $check;
 		}
 	}
@@ -32,5 +32,3 @@ class Tipsy_Test extends PHPUnit_Framework_TestCase {
 // Autoload files using Composer autoload
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// include the base file in case we have crap in there
-$t = new \Tipsy\Tipsy;
