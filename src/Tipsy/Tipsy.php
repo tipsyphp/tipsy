@@ -60,7 +60,7 @@ class_alias('\Tipsy\Tipsy', 't');
 
 
 // useful for nginx
-if (!function_exists('getallheaders'))  {
+if (!function_exists('getallheaders')) {
 	function getallheaders() {
 		if (!is_array($_SERVER)) {
 			return [];
