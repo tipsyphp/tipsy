@@ -6,7 +6,7 @@ class Request {
 	private $_properties;
 	private $_rawRequest;
 	private $_content;
-	private $_headers = [];
+	private $_headers;
 
 	public function __construct($args = []) {
 		$this->_properties = [];
