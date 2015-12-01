@@ -37,7 +37,7 @@ class Looper implements \Iterator {
 	}
 
 	public function get($index) {
-		return $this->_items[$index];
+		return $this->eq($index);
 	}
 
 	public function set($var, $val) {
