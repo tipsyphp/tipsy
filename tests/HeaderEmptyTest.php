@@ -1,16 +1,12 @@
 <?php
 
 class HeaderEmptyTest extends Tipsy_Test {
-
-	public function setUp() {
-		$this->tip = new Tipsy\Tipsy;
-		$this->useOb = true; // for debug use
-	}
-
 	public function testHeaderEmpty() {
 		$_REQUEST['__url'] = 'router/basic';
 		// i dont know when this would happen, but it could perhaps
 		$_SERVER = [];
+
+		$this->tip = new Tipsy\Tipsy;
 
 		$res = null;
 		$this->tip->router()
