@@ -10,6 +10,12 @@ class LoopItem {
 	}
 }
 
+class LoopItemJson {
+	public function json() {
+		return ['test' => true, 'other' => 'asd'];
+	}
+}
+
 
 class LooperTest extends Tipsy_Test {
 
@@ -266,5 +272,26 @@ class LooperTest extends Tipsy_Test {
 			$loop->next();
 		}
 		$this->assertEquals(30, $val);
+	}
+
+	public function testJsonFunction() {
+		$loop = new \Tipsy\Looper(new LoopItemJson);
+		$this->assertEquals('[{"test":true,"other":"asd"}]', $loop->json());
+	}
+
+	public function testCount() {
+		$loop = new \Tipsy\Looper([4,5,6]);
+		$this->assertEquals(3, $loop->count());
+	}
+
+	public function testWhileKey() {
+		$loop = new \Tipsy\Looper([4,5,6]);
+		$loop->rewind();
+
+		while ($loop->valid()){
+			$val = $loop->key();
+			break;
+		}
+		$this->assertEquals(0, $val);
 	}
 }
