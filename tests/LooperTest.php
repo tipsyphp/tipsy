@@ -1,15 +1,25 @@
 <?php
 
+class LoopItem {
+	public function test() {
+		return 'win';
+	}
+
+	public function exports() {
+		return ['test' => true];
+	}
+}
+
 
 class LooperTest extends Tipsy_Test {
-	
+
 	public function setUp() {
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
-		
+
 		$this->tip->config('tests/config.ini');
 	}
-	
+
 	public function testLoop() {
 		$loop = new \Tipsy\Looper([1,2,3]);
 		$val = 0;
@@ -18,7 +28,7 @@ class LooperTest extends Tipsy_Test {
 		});
 		$this->assertEquals(6, $val);
 	}
-	
+
 	public function testBreak() {
 		$loop = new \Tipsy\Looper([1,2,3]);
 		$val = 0;
@@ -28,7 +38,7 @@ class LooperTest extends Tipsy_Test {
 		});
 		$this->assertEquals(1, $val);
 	}
-	
+
 	public function testObjects() {
 		$loop = new \Tipsy\Looper([
 			(object)['a' => 1],
@@ -41,7 +51,7 @@ class LooperTest extends Tipsy_Test {
 		});
 		$this->assertEquals(6, $val);
 	}
-	
+
 	public function testRemove() {
 		$loop = new \Tipsy\Looper([1,2,3]);
 		$loop->remove(2);
@@ -51,7 +61,7 @@ class LooperTest extends Tipsy_Test {
 		});
 		$this->assertEquals(3, $val);
 	}
-	
+
 	public function testSet() {
 		$loop = new \Tipsy\Looper([
 			(object)['a' => 1],
@@ -65,7 +75,7 @@ class LooperTest extends Tipsy_Test {
 		});
 		$this->assertEquals(3, $val);
 	}
-	
+
 	public function testFilter() {
 		$loop = new \Tipsy\Looper([
 			(object)['a' => 1, 'b' => 1],
@@ -102,7 +112,7 @@ class LooperTest extends Tipsy_Test {
 		});
 		$this->assertEquals(21, $val);
 	}
-	
+
 	public function testMultiComplex() {
 		$loop = (new \Tipsy\Looper([
 				(object)['a' => 1, 'b' => 1, 'c' => 1],
@@ -121,5 +131,20 @@ class LooperTest extends Tipsy_Test {
 			$val += $this->c;
 		});
 		$this->assertEquals(8, $val);
+	}
+
+	public function testCall() {
+		$loop = new \Tipsy\Looper([new LoopItem]);
+		$this->assertEquals($loop->test(), 'win');
+	}
+
+	public function testToString() {
+		$loop = new \Tipsy\Looper([1,2,3], [4,5,6]);
+		$this->assertEquals('123456', "".$loop);
+	}
+
+	public function testToJson() {
+		$loop = new \Tipsy\Looper([1,"2"], new LoopItem);
+		$this->assertEquals('[1,"2",{"test":true}]', $loop->json());
 	}
 }
