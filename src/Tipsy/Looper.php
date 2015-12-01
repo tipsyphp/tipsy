@@ -222,6 +222,7 @@ class Looper implements \Iterator {
 	}
 
 	public function &__get($name) {
+		/** looper should never need this, but this might break stuff
 		if (property_exists($this,$name)) {
 			return $this->{$name};
 		} else {
@@ -231,15 +232,26 @@ class Looper implements \Iterator {
 				return $this->_items[0]->_properties[$name];
 			}
 		}
+		*/
+		if (isset($name{0}) && $name{0} == '_') {
+			return $this->_items[0]->{$name};
+		} else {
+			return $this->_items[0]->_properties[$name];
+		}
 	}
 
 	public function __set($name, $value) {
+		/** looper should never need this, but this might break stuff
 		if (property_exists($this,$name)) {
 			$this->{$name} = $value;
 		} else {
 			foreach ($this->_items as $key => $item) {
 				$this->_items[$key]->{$name} = $value;
 			}
+		}
+		*/
+		foreach ($this->_items as $key => $item) {
+			$this->_items[$key]->{$name} = $value;
 		}
 		return $value;
 	}
