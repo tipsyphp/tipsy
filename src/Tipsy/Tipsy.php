@@ -10,18 +10,8 @@
 
 namespace Tipsy;
 
-set_error_handler(function ($errno, $errstr){
-	throw new Exception($errstr);
-	return false;
-});
-try {
-	date_default_timezone_get();
-}
-catch(Exception $e) {
-	date_default_timezone_set('UTC');
-}
-restore_error_handler();
-
+// supress datetime warnings and set to UTC if not set
+@date_default_timezone_get();
 
 /**
  * Wrapper class
