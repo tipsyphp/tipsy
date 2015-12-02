@@ -40,6 +40,9 @@ class DBTest extends Tipsy_Test {
 			  `id_user` int(11) unsigned NOT NULL AUTO_INCREMENT,
 			  `name` varchar(255) DEFAULT NULL,
 			  `username` varchar(255) DEFAULT NULL,
+			  `datetime` datetime DEFAULT NULL,
+			  `date` datetime DEFAULT NULL,
+			  `active` tinyint(1) NOT NULL DEFAULT 1,
 			  PRIMARY KEY (`id_user`),
 			  UNIQUE KEY `username` (`username`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -104,6 +107,61 @@ class DBTest extends Tipsy_Test {
 
 		$this->assertEquals(2, $m->dbId());
 	}
+
+	public function testModelDBOIdSave() {
+		$this->tip->service('Tipsy\Resource/TestModel', [
+			_id => 'id',
+			_table => 'test_user2'
+		]);
+
+		$m = $this->tip->service('TestModel');
+		$m = $m->create([
+			'name' => 'test'
+		]);
+		$id = $m->dbId();
+
+		$m->name = 'not test';
+		$m->save();
+		$id2 = $m->dbId();
+
+		$this->assertEquals('not test', $m->name);
+		$this->assertEquals($id, $id2);
+	}
+
+	public function testModelDBOQuery() {
+		$this->tip->service('Tipsy\Resource/TestModel', [
+			_id => 'id',
+			_table => 'test_user2'
+		]);
+
+		$m = $this->tip->service('TestModel');
+		$m = $m->create([
+			'name' => 'testdelete'
+		]);
+		$id = $m->dbId();
+		$i = $m->q('select * from test_user2 where id=?', $id)->get(0);
+
+		$this->assertEquals($id, $i->id);
+	}
+
+	public function testModelDBODelete() {
+		$this->tip->service('Tipsy\Resource/TestModel', [
+			_id => 'id',
+			_table => 'test_user2'
+		]);
+
+		$m = $this->tip->service('TestModel');
+		$m = $m->create([
+			'name' => 'testdelete'
+		]);
+		$id = $m->dbId();
+		$m->delete();
+
+		$i = $this->tip->service('TestModel')->query('select * from test_user2 where id=?', $id)->get(0);
+
+		$this->assertEquals(null, $i->id);
+	}
+
 
 	public function testModelDBOStaticRetrieve() {
 		$test = ClassResourceTest::create([
@@ -206,34 +264,7 @@ class DBTest extends Tipsy_Test {
 		$this->assertTrue($m->exports()['test']);
 	}
 
-		/*
-	public function testModelDBOQuery() {
-
-		$_REQUEST['__url'] = 'user/devin';
-
-		$this->tip->model('Tipsy\DBO/TestUser', [
-			user => function($user) {
-				if (!$user) {
-					return false;
-				}
-				return $this->q('select * from user where username=?',$user);
-			}
-		]);
-
-		$this->tip->router()
-			->when('user/:id', function($Params, $TestUser) {
-				$u = $TestUser->user($Params['id']);
-				echo $u->username;
-			});
-
-		$this->ob();
-		$this->tip->start();
-		$check = $this->ob(false);
-
-		$this->assertEquals('devin', $check);
-	}
-
-
+	/*
 	public function testModelDBOAutoTable() {
 		$_REQUEST['__url'] = 'user/1';
 
