@@ -264,30 +264,45 @@ class DBTest extends Tipsy_Test {
 		$this->assertTrue($m->exports()['test']);
 	}
 
-	/*
+
 	public function testModelDBOAutoTable() {
 		$_REQUEST['__url'] = 'user/1';
 
-		$this->tip->model('Tipsy\DBO/TestUser', [
-			blah => function() {
-				echo 'asd';
-			}
+		$this->tip->db()->query('DROP TABLE IF EXISTS `test_auto_user`');
+
+		$this->tip->service('Tipsy\Resource/TestUser', [
+			_id => 'id',
+			_table => 'test_auto_user',
+			_fields => [
+				id => (object)[
+					'field' => 'id',
+					'type' => 'int',
+					'null' => false,
+					'auto' => true,
+					'length' => 11,
+					'unsigned' => true
+				],
+				name => (object)[
+					'field' => 'name',
+					'type' => 'char',
+					'null' => true,
+					'length' => 255
+				]
+			]
 		]);
 
 		$this->tip->router()
-			->when('user/:id', function($Params, $TestUser) {
-				$u = $TestUser->load($Params['id']);
-				echo $u->username;
+			->when('user/:id', function($Params, $TestUser) use (&$res) {
+				$u = $TestUser->create([
+					name => 'devin'
+				]);
+				$id = $u->id;
+				$u = null;
+				$u = $TestUser->load($id);
+				$res = $u->json();
 			});
 
-		$this->ob();
 		$this->tip->start();
-		$check = $this->ob(false);
-
-		$this->assertEquals('devin', $check);
+		$this->assertEquals(json_encode([id => 1, name => 'devin']), $res);
 	}
-
-
-	*/
-
 }

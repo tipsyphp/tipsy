@@ -158,7 +158,46 @@ class Resource extends Model {
 
 		$q = 'create table `'.$this->table().'` (';
 		foreach ($this->__fields as $k => $field) {
-			$q .= ' `'.$k.'` '.$field.' NULL, ';
+			$q .= ' `'.$k.'` '.$field->name.' ';
+
+			switch ($field->default) {
+				case null:
+					$default = 'NULL';
+					break;
+
+				case true:
+					$default = 'true';
+					break;
+
+				case false:
+					$default = 'false';
+					break;
+
+				default:
+					if (is_int($field->default)) {
+						$default = $field->default;
+					} else {
+						$default = "'".$field->default."'";
+					}
+					break;
+			}
+
+			switch ($field->type) {
+				case 'int':
+					$q .= 'int('.($field->length ? $field->length : 11).') '
+						.($field->unsigned ? 'unsigned' : '')
+						.($field->null ? '' : ' NOT NULL ')
+						.($field->auto ? ' AUTO_INCREMENT ' : '')
+						.($field->default ? ' DEFAULT '.$default : '');
+					break;
+
+				case 'char':
+					$q .= 'varchar('.($field->length ? $field->length : 255).') '
+						  .($field->null ? '' : ' NOT NULL ')
+						  .($field->default ? ' DEFAULT '.$default : '');
+					break;
+			}
+			$q .= ',';
 		}
 
 		$q .= 'PRIMARY KEY  (`'.$this->idVar().'`))';
