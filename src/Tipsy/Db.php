@@ -15,7 +15,7 @@ class Db extends Model {
 
 	public function connect($args = null) {
 		if (!$args) {
-			throw new Exception('Invalid DB config.');
+			throw new \Exception('Invalid DB config.');
 		}
 		$options = [];
 
@@ -39,13 +39,13 @@ class Db extends Model {
 		}
 
 		if ($args['persistent']) {
-			$options[PDO::ATTR_PERSISTENT] = true;
+			$options[\PDO::ATTR_PERSISTENT] = true;
 		}
 
 		if ($args['sslca']) {
-			$options[PDO::MYSQL_ATTR_SSL_CA] = $args['sslca'];
-			$options[PDO::ATTR_TIMEOUT] = 4;
-			$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+			$options[\PDO::MYSQL_ATTR_SSL_CA] = $args['sslca'];
+			$options[\PDO::ATTR_TIMEOUT] = 4;
+			$options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
 		}
 
 		if (!$args['driver']) {
