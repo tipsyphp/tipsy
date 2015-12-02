@@ -4,7 +4,7 @@ class LoginServiceMiddleware extends \Tipsy\Middleware {
 	function __construct() {
 		echo 'SERVICECONSTRUCT';
 	}
-	function run($test) {
+	function run($test = null) {
 		echo 'SERVICERUN'.$test['test'];
 	}
 }

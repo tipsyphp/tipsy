@@ -8,10 +8,10 @@ class Middleware extends Service {
 			return $this->inject($this->closure(), $this->_scope);
 		}
 	}
-	public function run() {
+	public function run($args = null) {
 		// dont need to do anything for now
 	}
-	
+
 	public static function _start($middleware, $tipsy) {
 		$m = $tipsy->service($middleware['service']);
 
