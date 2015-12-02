@@ -439,14 +439,22 @@ class Resource extends Model {
 	}
 
 	public static function __q_static() {
+		return (new \ReflectionMethod(self, '__query'))->invokeArgs(self, func_get_args());
+	}
+
+	public static function __query_static() {
 		$name = get_called_class();
 		$class = new $name();
 		$class->tipsy(Tipsy::app());
 		$class->service($name);
-		return (new \ReflectionMethod($class, '__q'))->invokeArgs($class, func_get_args());
+		return (new \ReflectionMethod($class, '__query'))->invokeArgs($class, func_get_args());
 	}
 
 	public function __q($query) {
+		return (new \ReflectionMethod($this, '__query'))->invokeArgs($this, func_get_args());
+	}
+
+	public function __query($query) {
 
 		$args = [];
 
