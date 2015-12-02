@@ -89,12 +89,6 @@ class App {
 		}
 	}
 
-	public function provider($service, $args = []) {
-		$this->service($service, $args);
-		$this->service($service);
-		return $this;
-	}
-
 	public function service($service, $args = null, $static = false) {
 		list($service, $extend) = $this->_serviceName($service, $args);
 
