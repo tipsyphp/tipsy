@@ -9,10 +9,10 @@
             <directory>./</directory>
         </testsuite>
     </testsuites>
-	
+
     <filter>
         <whitelist>
-            <directory suffix=".php" processUncoveredFilesFromWhitelist="true">../include</directory>
+            <directory suffix=".php" processUncoveredFilesFromWhitelist="true">../src</directory>
 			<exclude>
 				<directory>../examples</directory>
 			</exclude>
