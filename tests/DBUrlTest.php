@@ -11,11 +11,12 @@ class DBUrlTest extends Tipsy_Test {
 		$env = getenv('TRAVIS') ? 'travis' : 'local';
 		$this->tip->config('tests/config.db.'.$env.'.ini');
 
-		$url = 'mysql://'.$this->tip->config()['user'].($this->tip->config()['pass'] ? ':'.$this->tip->config()['pass'] : '').'@'.$this->tip->config()['host'].'/'.$this->tip->config()['database'].'?persistent=true&something=else';
+		$url = 'mysql://'.$this->tip->config()['db']['user'].($this->tip->config()['db']['pass'] ? ':'.$this->tip->config()['db']['pass'] : '').'@'.$this->tip->config()['db']['host'].'/'.$this->tip->config()['db']['database'].'?persistent=true&something=else';
 
 		// rebuild
 		$this->tip = new Tipsy\Tipsy;
 		$this->tip->config('tests/config.ini');
+		echo $url;
 		$this->tip->config([db => [url => $url]]);
 	}
 
@@ -25,7 +26,7 @@ class DBUrlTest extends Tipsy_Test {
 			$res = $this->tip->db()->query('select now()');
 			foreach ($res as $r) {
 			}
-		} catch (Excepction $e) {
+		} catch (Exception $e) {
 			$catch = true;
 		}
 		$this->assertFalse($catch);
