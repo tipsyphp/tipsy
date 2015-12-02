@@ -1,15 +1,6 @@
 <?php
 
-/**
- * Baic Curl wrapper
- *
- * @author		Devin Smith <devin@cana.la>
- * @date		2006.03.05
- *
- */
- 
 namespace Tipsy;
-
 
 class Http {
 	public function __call($name, $args) {
@@ -22,7 +13,6 @@ class Http {
 	}
 
 	public function request() {
-		
 		$fn = func_get_args();
 		if (is_string($fn[0])) {
 			$url = $fn[0];
@@ -37,14 +27,14 @@ class Http {
 		if (!$url && $args['url']) {
 			$url = $args['url'];
 		}
-		
+
 		if (!$data && $args['data']) {
 			$data = $args['data'];
 		}
-		
+
 		$method = strtolower($args['method'] ? $args['method'] : 'get');
 		$dataType = strtolower($args['dataType'] == 'json' ? 'json' : 'form');
-		
+
 		if ($dataType == 'json') {
 			$data = json_encode($data);
 		} elseif (is_array($data)) {
@@ -78,11 +68,11 @@ class Http {
 		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
 		curl_setopt($ch, CURLOPT_HEADER, true);
 
-		
+
 		$headers = [
 			'User-Agent: PHP/Tipsy/Http'
 		];
-		
+
 		if ($dataType == 'json' && $method == 'post') {
 			$headers[] = 'Content-Type: application/json';
 			$headers[] = 'Content-Length: ' . strlen($data);
@@ -111,10 +101,10 @@ class Http {
 			}
         }
 
-		return new Http_Response($error, $body, $heads);
+		return new Http\Response($error, $body, $heads);
 
 	}
-	
+
 	private function _parse($headers) {
 		$ret = [];
 		foreach (explode("\n",$headers) as $header) {
@@ -126,42 +116,6 @@ class Http {
 				$this->headers[$header[0]] = $header[1];
 			}
 		}
-	
-	}
-}
 
-class Http_Response {
-	private $_status;
-	private $_body;
-	private $_header;
-	
-	public function __construct($status, $body, $headers) {
-		$this->_body = $body;
-		$this->_headers = $headers;
-		$this->_status = $status;
-		
-		if ($headers['Content-Type'] == 'application/json') {
-			$this->_body = json_decode($this->_body);
-		}
-	}
-
-	public function headers() {
-		return $this->_headers;
-	}
-	public function body() {
-		return $this->_body;
-	}
-	public function complete($fn) {
-		$fn($this->body(), $this->headers());
-	}
-	public function error($fn) {
-		if (!$this->_status) {
-			$this->complete($fn);
-		}
-	}
-	public function success($fn) {
-		if ($this->_status) {
-			$this->complete($fn);
-		}
 	}
 }
