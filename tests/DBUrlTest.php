@@ -16,7 +16,6 @@ class DBUrlTest extends Tipsy_Test {
 		// rebuild
 		$this->tip = new Tipsy\Tipsy;
 		$this->tip->config('tests/config.ini');
-		echo $url;
 		$this->tip->config([db => [url => $url]]);
 	}
 
