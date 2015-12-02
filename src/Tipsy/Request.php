@@ -11,9 +11,11 @@ class Request {
 	public function __construct($args = []) {
 		$this->_properties = [];
 
+		/** dont think this is needed, but leaving here just in case
 		if ($args['tipsy']) {
 			$this->_tipsy = $args['tipsy'];
 		}
+		**/
 
 		if ($this->method()) {
 			switch ($this->method()) {
@@ -77,7 +79,7 @@ class Request {
 	}
 
 	public function url() {
-		return $this->host().$_SERVER['REQUEST_URI'];
+		return $this->host().'/'.$this->path();
 	}
 
 	public function path($url = null) {
