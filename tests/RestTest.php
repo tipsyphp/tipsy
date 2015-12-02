@@ -26,7 +26,7 @@ class RestTest extends Tipsy_Test {
 			});
 
 		$this->ob();
-		$this->tip->start();
+		$this->tip->run();
 		$check = $this->ob(false);
 		$this->assertEquals(json_encode(['test' => 'hi', 'data' => 'blah']), $check);
 	}
@@ -47,7 +47,7 @@ class RestTest extends Tipsy_Test {
 			});
 
 		$this->ob();
-		$this->tip->start();
+		$this->tip->run();
 		$check = $this->ob(false);
 		$this->assertEquals(json_encode(['test' => 'hi', 'data' => 'blah']), $check);
 	}
@@ -69,7 +69,7 @@ class RestTest extends Tipsy_Test {
 			});
 
 		$this->ob();
-		$this->tip->start();
+		$this->tip->run();
 		$check = $this->ob(false);
 		$this->assertEquals(json_encode(['test' => 'hi', 'id' => '1']), $check);
 	}
@@ -91,7 +91,7 @@ class RestTest extends Tipsy_Test {
 			});
 
 		$this->ob();
-		$this->tip->start();
+		$this->tip->run();
 		$check = $this->ob(false);
 		$this->assertEquals(json_encode(['test' => 'hi', 'data' => 'blah']), $check);
 	}
@@ -113,7 +113,7 @@ class RestTest extends Tipsy_Test {
 			});
 
 		$this->ob();
-		$this->tip->start();
+		$this->tip->run();
 		$check = $this->ob(false);
 		$this->assertEquals(json_encode(['test' => 'hi', 'data' => 'blah']), $check);
 	}
@@ -134,7 +134,7 @@ class RestTest extends Tipsy_Test {
 			});
 
 		$this->ob();
-		$this->tip->start();
+		$this->tip->run();
 		$check = $this->ob(false);
 		$this->assertEquals(json_encode(['test' => 'hi', 'data' => 'blah']), $check);
 	}
@@ -154,7 +154,7 @@ class RestTest extends Tipsy_Test {
 			});
 
 		$this->ob();
-		$this->tip->start();
+		$this->tip->run();
 		$check = $this->ob(false);
 		$this->assertEquals(json_encode(['test' => 'hi', 'id' => '1']), $check);
 	}
@@ -176,7 +176,7 @@ class RestTest extends Tipsy_Test {
 			});
 
 		$this->ob();
-		$this->tip->start();
+		$this->tip->run();
 		$check = $this->ob(false);
 		$this->assertEquals(json_encode(['test' => 'hi', 'data' => 'blah']), $check);
 	}
