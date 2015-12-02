@@ -36,6 +36,20 @@ class RouterTest extends Tipsy_Test {
 		$this->assertEquals('BASIC', $check);
 	}
 
+	public function testRouterOtherwise() {
+		$_REQUEST['__url'] = 'router/basic';
+		$this->ob();
+
+		$this->tip->router()
+			->otherwise(function() {
+				echo 'OTHER';
+			});
+		$this->tip->start();
+
+		$check = $this->ob(false);
+		$this->assertEquals('OTHER', $check);
+	}
+
 	public function testRouterBasicAlternate() {
 		$this->tip->router()
 			->when('router/basic', function() {
