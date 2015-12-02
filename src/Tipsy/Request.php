@@ -17,22 +17,6 @@ class Request {
 
 		if ($this->method()) {
 			switch ($this->method()) {
-				case 'PUT':
-				case 'DELETE':
-					if ($this->_contentType() === 'application/x-www-form-urlencoded') {
-						parse_str($this->_getContent(), $this->_properties);
-
-					} elseif ($this->_contentType() === 'application/json') {
-						$content = $this->_getContent();
-						$request = json_decode($content,'array');
-						if (!$request) {
-							$this->_properties = false;
-						} else {
-							$this->_properties = $request;
-						}
-					}
-					break;
-
 				case 'GET':
 					if ($this->_contentType() === 'application/x-www-form-urlencoded' || !$this->_contentType()) {
 						$this->_properties = $_GET;
@@ -49,6 +33,24 @@ class Request {
 						$this->_properties = $_POST;
 					}
 					break;
+
+				case 'PUT':
+				case 'DELETE':
+				default:
+					if ($this->_contentType() === 'application/x-www-form-urlencoded') {
+						parse_str($this->_getContent(), $this->_properties);
+
+					} elseif ($this->_contentType() === 'application/json') {
+						$content = $this->_getContent();
+						$request = json_decode($content,'array');
+						if (!$request) {
+							$this->_properties = false;
+						} else {
+							$this->_properties = $request;
+						}
+					}
+					break;
+
 			}
 		}
 
@@ -119,7 +121,7 @@ class Request {
 
 	private function _getContent() {
 		if (!isset($this->_content)) {
-			if (strlen(trim($this->_content = file_get_contents('php://input'))) === 0) {
+			if (strlen(trim($this->_content = file_get_contents(!is_null($_ENV['TESTS_PHP_INPUT']) ? $_ENV['TESTS_PHP_INPUT'] : 'php://input'))) === 0) {
 				$this->_content = false;
 			}
 		}
