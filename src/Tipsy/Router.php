@@ -18,7 +18,6 @@ class Router {
 	}
 
 	public function __call($method, $args = []) {
-
 		if (count($args) == 1) {
 			$args[0]['method'] = strtoupper($method);
 		} elseif (is_array($args[1])) {
@@ -33,8 +32,11 @@ class Router {
 	}
 
 	public function alias($from, $to) {
-		// @todo: not sure how to do this yet
-		$this->_aliass[] = new RouteAlias($from, $to);
+		$this->_aliass[] = new RouteAlias([
+			'to' => $to,
+			'from' => $from,
+			'tipsy' => $this->_tipsy
+		]);
 		return $this;
 	}
 
@@ -77,8 +79,8 @@ class Router {
 
 	public function match($page) {
 		foreach (array_reverse($this->aliass(), true) as $route) {
-			if ($route->match($page)) {
-				$page = $route->alias();
+			if ($alias = $route->match($page)) {
+				$page = $alias;
 				break;
 			}
 		}

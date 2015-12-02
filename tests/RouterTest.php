@@ -494,6 +494,25 @@ class RouterTest extends Tipsy_Test {
 		$this->assertEquals('BASIC', $check);
 	}
 
+	public function testRouterAlias() {
+		$_REQUEST['__url'] = 'item/1/edit';
+
+		$this->ob();
+
+		$this->tip->router()
+			->when('item/edit/:id', function($Params) {
+				echo $Params->id;
+			})
+			->alias('item/:id/edit', 'item/edit/:id')
+			->otherwise(function() {
+				echo 'OTHER';
+			});
+		$this->tip->start();
+
+		$check = $this->ob(false);
+		$this->assertEquals('1', $check);
+	}
+
 
 	/*
 	public function testRouterViewController() {

@@ -6,10 +6,10 @@ namespace Tipsy;
 /**
  * Route object
  */
-class Route  {
+class Route {
 
-	private $_tipsy;
-	private $_routeParams;
+	protected $_tipsy;
+	protected $_routeParams;
 
 	public function __construct($args) {
 		$this->_controller = $args['controller'];
