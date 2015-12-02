@@ -9,12 +9,15 @@ class LoginServiceMiddleware extends \Tipsy\Middleware {
 	}
 }
 
-class MiddleWareTestFail {
-	function run() {
+class MiddlewareClassFailure extends \Tipsy\Middleware {
+	function run($test = null) {
 		return false;
 	}
 }
 
+class MiddlewareClassDefault extends \Tipsy\Middleware {
+
+}
 
 class MiddlewareTest extends Tipsy_Test {
 
@@ -100,13 +103,13 @@ class MiddlewareTest extends Tipsy_Test {
 		$_REQUEST['__url'] = '';
 		$this->ob();
 
-		$this->tip->service('Tipsy\Service/LoginServiceException', [
+		$this->tip->service('Tipsy\Service/MiddlewareException', [
 			run => function() {
 				return false;
 			}
 		]);
 
-		$this->tip->middleware('LoginServiceException');
+		$this->tip->middleware('MiddlewareException');
 		$this->tip->router()->home(function() {});
 		try {
 			$this->tip->start();
@@ -116,6 +119,51 @@ class MiddlewareTest extends Tipsy_Test {
 		}
 		$this->assertTrue($check);
 	}
+
+	public function testMiddlewareClassFailure() {
+		$this->ob();
+		$this->tip->middleware('MiddlewareClassFailure');
+		$this->tip->router()->otherwise(function() {});
+		try {
+			$this->tip->start();
+			$check = false;
+		} catch (Exception $e) {
+			$check = true;
+		}
+		$this->assertTrue($check);
+	}
+
+	public function testMiddlewareDefault() {
+		$_REQUEST['__url'] = '';
+		$this->ob();
+
+		$this->tip->service('Tipsy\Service/MiddlewareDefault', [
+		]);
+
+		$this->tip->middleware('MiddlewareDefault');
+		$this->tip->router()->home(function() {});
+		try {
+			$this->tip->start();
+			$check = false;
+		} catch (Exception $e) {
+			$check = true;
+		}
+		$this->assertFalse($check);
+	}
+
+	public function testMiddlewareClassDefault() {
+		$this->ob();
+		$this->tip->middleware('MiddlewareClassDefault');
+		$this->tip->router()->otherwise(function() {});
+		try {
+			$this->tip->start();
+			$check = false;
+		} catch (Exception $e) {
+			$check = true;
+		}
+		$this->assertFalse($check);
+	}
+
 
 	/*
 	@todo: need to communicate with eachother
