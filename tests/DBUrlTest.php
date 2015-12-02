@@ -11,7 +11,7 @@ class DBUrlTest extends Tipsy_Test {
 		$env = getenv('TRAVIS') ? 'travis' : 'local';
 		$this->tip->config('tests/config.db.'.$env.'.ini');
 
-		$url = 'mysql://'.$this->tip->config()['user'].':'.$this->tip->config()['pass'].'@'.$this->tip->config()['host'].'/'.$this->tip->config()['database'].'?persistent=true&something=else';
+		$url = 'mysql://'.$this->tip->config()['user'].($this->tip->config()['pass'] ? ':'.$this->tip->config()['pass'] : '').'@'.$this->tip->config()['host'].'/'.$this->tip->config()['database'].'?persistent=true&something=else';
 
 		// rebuild
 		$this->tip = new Tipsy\Tipsy;
