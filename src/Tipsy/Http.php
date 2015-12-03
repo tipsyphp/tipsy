@@ -68,7 +68,6 @@ class Http {
 		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
 		curl_setopt($ch, CURLOPT_HEADER, true);
 
-
 		$headers = [
 			'User-Agent: PHP/Tipsy/Http'
 		];
@@ -102,9 +101,9 @@ class Http {
         }
 
 		return new Http\Response($error, $body, $heads);
-
 	}
 
+	/** dont this this is needed anymore
 	private function _parse($headers) {
 		$ret = [];
 		foreach (explode("\n",$headers) as $header) {
@@ -116,6 +115,6 @@ class Http {
 				$this->headers[$header[0]] = $header[1];
 			}
 		}
-
 	}
+	**/
 }

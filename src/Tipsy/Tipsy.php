@@ -12,6 +12,7 @@ namespace Tipsy;
 
 // supress datetime warnings and set to UTC if not set
 @date_default_timezone_get();
+ini_set('always_populate_raw_post_data', -1);
 
 /**
  * Wrapper class
