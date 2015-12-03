@@ -22,10 +22,11 @@ class DBUrlTest extends Tipsy_Test {
 	public function testDbUrl() {
 		$catch = false;
 		try {
-			$res = $this->tip->db()->query('select now()');
+			$res = $this->tip->db()->query('select now() as d');
 			foreach ($res as $r) {
 			}
 		} catch (Exception $e) {
+			echo $e->getMessage();
 			$catch = true;
 		}
 		$this->assertFalse($catch);
