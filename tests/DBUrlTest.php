@@ -8,8 +8,7 @@ class DBUrlTest extends Tipsy_Test {
 		$this->useOb = true; // for debug use
 
 		$this->tip->config('tests/config.ini');
-		$env = getenv('TRAVIS') ? 'travis' : 'local';
-		$this->tip->config('tests/config.db.'.$env.'.ini');
+		$this->setupDb($this->tip);
 
 		$url = 'mysql://'.$this->tip->config()['db']['user'].($this->tip->config()['db']['pass'] ? ':'.$this->tip->config()['db']['pass'] : '').'@'.$this->tip->config()['db']['host'].'/'.$this->tip->config()['db']['database'].'?persistent=true&something=else';
 
