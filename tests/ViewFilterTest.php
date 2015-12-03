@@ -116,5 +116,4 @@ class ViewFilterTest extends Tipsy_Test {
 
 		$this->assertEquals('Invalid filter.', trim($res));
 	}
-
 }
