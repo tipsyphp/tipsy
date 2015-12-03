@@ -118,4 +118,16 @@ class HttpTest extends Tipsy_Test {
 
 		$this->assertTrue($res);
 	}
+
+	public function testKwargsMethod() {
+		$http = (new Tipsy\Http())->get([
+			url => 'http://localhost:8000/item/1/json',
+			data => [key => 'value']
+		])
+		->complete(function($data) use (&$res) {
+			$res = $data == (object)[id => 1, key => 'value'];
+		});
+
+		$this->assertTrue($res);
+	}
 }
