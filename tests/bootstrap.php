@@ -8,7 +8,17 @@ if (trim(`whoami`) == 'arzynik') {
 	ini_set('mysqli.default_socket','/Applications/MAMP/tmp/mysql/mysql.sock');
 }
 
+//putenv('DB=pgsql');
+
 class Tipsy_Test extends PHPUnit_Framework_TestCase {
+	public function setupDb($tipsy) {
+		$tipsy->config('tests/config.db.'.(getenv('TRAVIS') ? 'travis' : 'local').'.'.(getenv('DB') ? getenv('DB') : 'mysql' ).'.ini');
+
+		if (getenv('DB') == 'pgsql') {
+			$this->tip->service('Db', ['class' => 'Tipsy\Db\MysqlToPgsql']);
+		}
+	}
+
 	public function ob($start = true) {
 		if (!$this->useOb) {
 			return;

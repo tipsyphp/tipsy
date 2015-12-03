@@ -1,18 +1,78 @@
 <?php
 
 
-class ClassResourceTest extends \Tipsy\Resource {
+class ClassResourceTestPg extends \Tipsy\Resource {
 	function test() {
 		return 'NO';
 	}
 
 	public function __construct($id = null) {
-		$this->idVar('id')->table('test_user')->load($id);
+		$this->idVar('id_user')->table('test_user')->load($id);
 	}
 }
 
 
-class DBTest extends Tipsy_Test {
+
+
+
+// transforms mysql queries to pgsql (kinda)
+class Db extends \Tipsy\Db {
+	public static function mysqlToPgsql($query, $args = []) {
+		// replace backticks
+		$query = str_replace('`','"', $query);
+
+		// replace add single quotes to interval statements
+		$query = preg_replace('/(interval) ([0-9]+) ([a-z]+)/i','\\1 \'\\2 \\3\'', $query);
+
+		// replace unix_timestamp
+		$query = preg_replace('/unix_timestamp( )?\((.*?)\)/i','extract(epoch FROM \\2)', $query);
+
+		// replace date_sub
+		$query = preg_replace('/(date_sub\((.*?),(.*?))\)/i','\\2 - \\3', $query);
+
+		// replace date formats
+		$query = preg_replace_callback('/date_format\(( )?(.*?),( )?("(.*?)"|\'(.*?)\')( )?\)/i',function($m) {
+			$find = ['/\%Y/', '/\%m/', '/\%d/', '/\%H/', '/\%i/', '/\%s/', '/\%W/'];
+			$replace = ['YYYY', 'MM', 'DD', 'HH24', 'MI', 'SS', 'D'];
+			$format = preg_replace($find, $replace, $m[6] ? $m[6] : $m[5]);
+			return 'to_char('.$m[2].', \''.$format.'\')';
+		}, $query);
+
+
+		if ($args) {
+			foreach ($args as $k => $v) {
+				if ($v === true) {
+					$args[$k] = 'true';
+				} elseif ($v === false) {
+					$args[$k] = 'false';
+				}
+			}
+		}
+		return [query => $query, args => $args];
+	}
+
+	public function query($query, $args = []) {
+		if (!$query) {
+			throw new Exception('Query is emtpy');
+		}
+		list($query, $args) = self::mysqlToPgsql($query, $args);
+		if (!$query) {
+			throw new Exception('mysqlToPgsql Query is emtpy');
+		}
+		return parent::query($query, $args);
+	}
+
+	public function exec($query) {
+		return parent::exec(self::mysqlToPgsql($query)['query']);
+	}
+}
+
+
+
+
+
+
+class DBPostgreSQLTest extends Tipsy_Test {
 
 	public static function setUpBeforeClass() {
 	}
@@ -22,20 +82,26 @@ class DBTest extends Tipsy_Test {
 
 	public function setUp() {
 		$this->tip = new Tipsy\Tipsy;
-		$this->useOb = true;
+		$this->useOb = true; // for debug use
 
 		$this->tip->config('tests/config.ini');
-		$this->setupDb($this->tip);
+
+		$env = getenv('TRAVIS') ? 'travis' : 'local';
+
+		$this->tip->config('tests/config.db.'.$env.'.pgsql.ini');
+
+		$bs->service('Db');
+
 	}
 
 
 	public function testDBCreateTable() {
 
-		$this->tip->db()->query('DROP TABLE IF EXISTS `test_user`');
+		$this->tip->db()->query('DROP TABLE IF EXISTS `test_auto_user`');
 
 		$this->tip->service('Tipsy\Resource/TestUser', [
 			_id => 'id',
-			_table => 'test_user',
+			_table => 'test_auto_user',
 			_fields => [
 				id => (object)[
 					'field' => 'id',
@@ -45,15 +111,20 @@ class DBTest extends Tipsy_Test {
 					'length' => 11,
 					'unsigned' => true
 				],
-				name => (object)[
-					'field' => 'name',
+				age => (object)[
+					'field' => 'age',
+					'type' => 'int',
+					'default' => 0
+				],
+				first_name => (object)[
+					'field' => 'first_name',
 					'type' => 'char',
 					'null' => true,
 					'length' => 255,
 					'default' => 'user'
 				],
-				username => (object)[
-					'field' => 'username',
+				last_name => (object)[
+					'field' => 'last_name',
 					'type' => 'char',
 					'null' => true
 				],
@@ -61,72 +132,10 @@ class DBTest extends Tipsy_Test {
 					'field' => 'active',
 					'type' => 'bool',
 					'null' => false,
-					'default' => true
+					'default' => false
 				]
 			]
 		]);
-
-		$this->tip->db()->query('DROP TABLE IF EXISTS `test_user2`');
-
-		$this->tip->service('Tipsy\Resource/TestUser2', [
-			_id => 'id',
-			_table => 'test_user2',
-			_fields => [
-				id => (object)[
-					'field' => 'id',
-					'type' => 'int',
-					'null' => false,
-					'auto' => true,
-					'length' => 11,
-					'unsigned' => true
-				],
-				name => (object)[
-					'field' => 'name',
-					'type' => 'char',
-					'null' => true,
-					'length' => 255,
-					'default' => 'user'
-				],
-				username => (object)[
-					'field' => 'username',
-					'type' => 'char',
-					'null' => true
-				]
-			]
-		]);
-
-
-		$this->tip->service('TestUser')->fields();
-		$this->tip->service('TestUser2')->fields();
-
-/*
-		$this->tip->db()->exec("
-			DROP TABLE IF EXISTS `test_user`;
-			CREATE TABLE `test_user` (
-			  `id_user` int(11) unsigned NOT NULL AUTO_INCREMENT,
-			  `name` varchar(255) DEFAULT NULL,
-			  `username` varchar(255) DEFAULT NULL,
-			  `datetime` datetime DEFAULT NULL,
-			  `date` datetime DEFAULT NULL,
-			  `active` tinyint(1) NOT NULL DEFAULT 1,
-			  PRIMARY KEY (`id_user`),
-			  UNIQUE KEY `username` (`username`)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-		");
-
-		$this->tip->db()->exec("
-			DROP TABLE IF EXISTS `test_user2`;
-			CREATE TABLE `test_user2` (
-			  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-			  `name` varchar(255) DEFAULT NULL,
-			  `username` varchar(255) DEFAULT NULL,
-			  PRIMARY KEY (`id`),
-			  UNIQUE KEY `username` (`username`)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-		");
-*/
-
-		$this->assertEquals('YES', 'YES');
 	}
 
 
@@ -245,17 +254,17 @@ class DBTest extends Tipsy_Test {
 	public function testModelDBOExtendRoute() {
 		$_REQUEST['__url'] = 'user/create';
 
-		$this->tip->service('Tipsy\Resource/TestModel', [
+		$this->tip->service('Tipsy\Resource/TestUser', [
 			test => function($user) {
 				return $this->test;
 			},
-			_id => 'id',
+			_id => 'id_user',
 			_table => 'test_user'
 		]);
 
 		$this->tip->router()
-			->when('user/create', function($Params, $TestModel) {
-				$u = $TestModel->load([
+			->when('user/create', function($Params, $TestUser) {
+				$u = $TestUser->load([
 					'username' => 'devin',
 					'name' => 'Devin Smith'
 				]);
@@ -387,6 +396,6 @@ class DBTest extends Tipsy_Test {
 			});
 
 		$this->tip->start();
-		$this->assertEquals('{"id":1,"age":0,"first_name":null,"last_name":"name","active":false}', $res);
+		$this->assertEquals('{"id":1,"age":0,"first_name":null,"last_name":"name","active":0}', $res);
 	}
 }

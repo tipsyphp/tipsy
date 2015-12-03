@@ -17,7 +17,7 @@ class DependencyInjector extends Model {
 	private function _getDependency($name, $scope = null) {
 		if ($this->tipsy()->services($name)) {
 			return $this->tipsy()->service($name);
-			
+
 		} else {
 			switch ($name) {
 				case 'Db':
@@ -46,7 +46,7 @@ class DependencyInjector extends Model {
 
 	public function inject($closure, $scope = null) {
 		$avail = ['Db', 'Route', 'Request', 'Headers', 'Params', 'Tipsy', 'View', 'Scope', 'RootScope'];
-		
+
 		if (!$this->tipsy()) {
 			throw new Exception('Tipsy is not defined!');
 		}

@@ -9,10 +9,15 @@ php:
   - 5.6
   - 7
 
+env:
+  - DB=mysql
+  - DB=pgsql
+
 before_script:
   - mkdir build
   - phpenv config-add tests/php.ini
   - mysql -e "create database IF NOT EXISTS tipsy;" -uroot;
+  - psql -c 'create database tipsy;' -U postgres
   - composer self-update
   - composer install
   - nohup php -S localhost:8000 -t tests/web &

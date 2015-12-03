@@ -63,6 +63,7 @@ class Db extends Model {
 		if (!$args['dsn']) {
 			$args['dsn'] = $args['driver'].':host='.$args['host'].($args['port'] ? ';port='.$args['port'] : '').';dbname='.$args['database'].($args['charset'] ? ';charset='.$args['charset'] : '');
 		}
+
 		$db = new \PDO($args['dsn'], $args['user'], $args['pass'], $options);
 		$this->_driver = $db->getAttribute(\PDO::ATTR_DRIVER_NAME);
 
@@ -78,13 +79,17 @@ class Db extends Model {
 		return $this->db()->exec($query);
 	}
 
-	public function query($query, $args = []) {
+	public function query($query, $args = null) {
 		$stmt = $this->db()->prepare($query);
-		$stmt->execute($args);
+		if ($args) {
+			$stmt->execute($args);
+		} else {
+			$stmt->execute();
+		}
 		return $stmt;
 	}
 
-	public function get($query, $args = [], $type = 'object') {
+	public function get($query, $args = null, $type = 'object') {
 		$stmt = $this->query($query, $args);
 		return $stmt->fetchAll($type == 'object' ? \PDO::FETCH_OBJ : \PDO::FETCH_ASSOC);
 	}

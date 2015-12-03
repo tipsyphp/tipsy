@@ -89,50 +89,54 @@ class Resource extends Model {
 			try {
 
 				$rows = $this->db()->get($q);
+				if (!count($rows)) {
+					$this->createTable();
+					} else {
 
-				foreach ($rows as $row) {
+					foreach ($rows as $row) {
 
-					switch ($this->db()->driver()) {
-						case 'sqlite':
-							$fields[$row->name] = (object)[
-								'field' => $row->name,
-								'type' => $row->type,
-								'null' => $row->notnull ? false : true
-							];
-							break;
+						switch ($this->db()->driver()) {
+							case 'sqlite':
+								$fields[$row->name] = (object)[
+									'field' => $row->name,
+									'type' => $row->type,
+									'null' => $row->notnull ? false : true
+								];
+								break;
 
-						case 'mysql':
-							$fields[$row->Field] = (object)[
-								'field' => $row->Field,
-								'type' => $row->Type,
-								'null' => $row->Null == 'YES' ? true : false,
-								'auto' => $row->Extra == 'auto_increment' ? true : false
-							];
+							case 'mysql':
+								$fields[$row->Field] = (object)[
+									'field' => $row->Field,
+									'type' => $row->Type,
+									'null' => $row->Null == 'YES' ? true : false,
+									'auto' => $row->Extra == 'auto_increment' ? true : false
+								];
 
-							if ($fields[$row->Field]->type == 'tinyint(1)' || $fields[$row->Field]->type == 'tinyint(1) unsigned') {
-								$fields[$row->Field]->type = 'boolean';
-							} elseif (strpos($fields[$row->Field]->type, 'int') !== false) {
-								$fields[$row->Field]->type = 'int';
-							}
+								if ($fields[$row->Field]->type == 'tinyint(1)' || $fields[$row->Field]->type == 'tinyint(1) unsigned') {
+									$fields[$row->Field]->type = 'boolean';
+								} elseif (strpos($fields[$row->Field]->type, 'int') !== false) {
+									$fields[$row->Field]->type = 'int';
+								}
 
-							break;
+								break;
 
-						case 'pgsql':
-							$fields[$row->field] = (object)[
-								'field' => $row->field,
-								'type' => $row->type,
-								'null' => $row->null == 'YES' ? true : false,
-								'auto' => $row->default && preg_match('/^nextval\(/',$row->default) ? true : false
-							];
+							case 'pgsql':
+								$fields[$row->field] = (object)[
+									'field' => $row->field,
+									'type' => $row->type,
+									'null' => $row->null == 'YES' ? true : false,
+									'auto' => $row->default && preg_match('/^nextval\(/',$row->default) ? true : false
+								];
 
-							if ($fields[$row->field]->type == 'integer') {
-								$fields[$row->field]->type = 'int';
-							}
+								if ($fields[$row->field]->type == 'integer') {
+									$fields[$row->field]->type = 'int';
+								}
 
-							if ($fields[$row->field]->auto && $fields[$row->field]->field == $this->idVar()) {
-								$fields[$row->field]->sequence = preg_replace('/^nextval\(\'(.*)\'.*\)$/i','\\1', $row->default);
-							}
-							break;
+								if ($fields[$row->field]->auto && $fields[$row->field]->field == $this->idVar()) {
+									$fields[$row->field]->sequence = preg_replace('/^nextval\(\'(.*)\'.*\)$/i','\\1', $row->default);
+								}
+								break;
+						}
 					}
 				}
 
@@ -174,11 +178,17 @@ class Resource extends Model {
 
 			switch ($field->type) {
 				case 'int':
-					$q .= 'int('.($field->length ? $field->length : 11).') '
-						.($field->unsigned ? 'unsigned' : '')
-						.($field->null ? '' : ' NOT NULL ')
-						.($field->auto ? ' AUTO_INCREMENT ' : '')
-						.($field->default ? ' DEFAULT '.$default : '');
+					if ($this->db()->driver() == 'pgsql') {
+						$int = $field->auto ? 'serial' : 'integer'
+							.($field->null ? '' : ' NOT NULL ');
+					} else {
+						$int = 'int('.($field->length ? $field->length : 11).')'
+							.($field->unsigned ? 'unsigned' : '')
+							.($field->null ? '' : ' NOT NULL ')
+							.($field->auto ? ' AUTO_INCREMENT ' : '')
+							.($field->default ? ' DEFAULT '.$default : '');
+					}
+					$q .= $int.' ';
 					break;
 
 				case 'char':
@@ -188,7 +198,12 @@ class Resource extends Model {
 					break;
 
 				case 'bool':
-					$q .= 'tinyint(1)  NOT NULL '
+					if ($this->db()->driver() == 'pgsql') {
+						$bool = 'bool NOT NULL ';
+					} else {
+						$bool = 'tinyint(1) NOT NULL ';
+					}
+					$q .= $bool.' '
 						  .($field->default ? ' DEFAULT '.$default : '');
 					break;
 			}
@@ -263,6 +278,17 @@ class Resource extends Model {
 		if (isset($node)) {
 			foreach(get_object_vars($node) as $var => $value) {
 				$this->$var = $value;
+			}
+		}
+
+		foreach ($this->fields() as $field) {
+			switch ($field->type) {
+				case 'int':
+					$this->{$field->field} = (int)$this->{$field->field};
+					break;
+				case 'boolean':
+					$this->{$field->field} = $this->{$field->field} ? true : false;
+					break;
 			}
 		}
 

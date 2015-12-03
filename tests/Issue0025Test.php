@@ -35,8 +35,7 @@ class Issue0025Test extends Tipsy_Test {
 		$this->tip = new Tipsy\Tipsy;
 
 		$this->tip->config('tests/config.ini');
-		$env = getenv('TRAVIS') ? 'travis' : 'local';
-		$this->tip->config('tests/config.db.'.$env.'.ini');
+		$this->setupDb($this->tip);
 
 		$this->tip->service('\UserOne');
 		$this->tip->service('\UserTwo');

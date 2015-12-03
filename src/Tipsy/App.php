@@ -101,13 +101,14 @@ class App {
 				])];
 
 
-			} elseif ($service && class_exists($service)) { //!$args && @note: not sure why i had this here. tests still pass without it
-				$extend = $service;
-				if (property_exists($service,'_id')) {
-					$config['_id'] = $service::$_id;
+			} elseif ($service && (class_exists($service) || (is_array($args) && class_exists($args['class'])))) { //!$args && @note: not sure why i had this here. tests still pass without it
+				$class = (is_array($args) && class_exists($args['class'])) ? $args['class'] : $service;
+				$extend = $class;
+				if (property_exists($class,'_id')) {
+					$config['_id'] = $class::$_id;
 				}
-				if (property_exists($service,'_table')) {
-					$config['_table'] = $service::$_table;
+				if (property_exists($class,'_table')) {
+					$config['_table'] = $class::$_table;
 				}
 
 			} elseif ($service && is_array($args)) {

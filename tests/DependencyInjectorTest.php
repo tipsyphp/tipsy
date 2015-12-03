@@ -7,10 +7,7 @@ class DependencyInjectorTest extends Tipsy_Test {
 		$this->useOb = true; // for debug use
 
 		$this->tip->config('tests/config.ini');
-
-		$env = getenv('TRAVIS') ? 'travis' : 'local';
-
-		$this->tip->config('tests/config.db.'.$env.'.ini');
+		$this->setupDb($this->tip);
 	}
 
 	public function testBaseInjectors() {
