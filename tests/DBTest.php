@@ -282,11 +282,28 @@ class DBTest extends Tipsy_Test {
 					'length' => 11,
 					'unsigned' => true
 				],
-				name => (object)[
-					'field' => 'name',
+				age => (object)[
+					'field' => 'age',
+					'type' => 'int',
+					'default' => 0
+				],
+				first_name => (object)[
+					'field' => 'first_name',
 					'type' => 'char',
 					'null' => true,
-					'length' => 255
+					'length' => 255,
+					'default' => 'user'
+				],
+				last_name => (object)[
+					'field' => 'last_name',
+					'type' => 'char',
+					'null' => true
+				],
+				active => (object)[
+					'field' => 'active',
+					'type' => 'bool',
+					'null' => false,
+					'default' => false
 				]
 			]
 		]);
@@ -294,7 +311,7 @@ class DBTest extends Tipsy_Test {
 		$this->tip->router()
 			->when('user/:id', function($Params, $TestUser) use (&$res) {
 				$u = $TestUser->create([
-					name => 'devin'
+					last_name => 'name'
 				]);
 				$id = $u->id;
 				$u = null;
@@ -303,6 +320,6 @@ class DBTest extends Tipsy_Test {
 			});
 
 		$this->tip->start();
-		$this->assertEquals(json_encode([id => 1, name => 'devin']), $res);
+		$this->assertEquals('{"id":1,"age":0,"first_name":null,"last_name":"name","active":0}', $res);
 	}
 }

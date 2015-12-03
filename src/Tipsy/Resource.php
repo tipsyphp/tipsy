@@ -160,26 +160,16 @@ class Resource extends Model {
 		foreach ($this->__fields as $k => $field) {
 			$q .= ' `'.$k.'` '.$field->name.' ';
 
-			switch ($field->default) {
-				case null:
-					$default = 'NULL';
-					break;
-
-				case true:
-					$default = 'true';
-					break;
-
-				case false:
-					$default = 'false';
-					break;
-
-				default:
-					if (is_int($field->default)) {
-						$default = $field->default;
-					} else {
-						$default = "'".$field->default."'";
-					}
-					break;
+			if ($field->default === null) {
+				$default = 'NULL';
+			} elseif ($field->default === true) {
+				$default = 'true';
+			} elseif ($field->default === false) {
+				$default = 'false';
+			} elseif (is_int($field->default)) {
+				$default = $field->default;
+			} else {
+				$default = "'".$field->default."'";
 			}
 
 			switch ($field->type) {
@@ -194,6 +184,11 @@ class Resource extends Model {
 				case 'char':
 					$q .= 'varchar('.($field->length ? $field->length : 255).') '
 						  .($field->null ? '' : ' NOT NULL ')
+						  .($field->default ? ' DEFAULT '.$default : '');
+					break;
+
+				case 'bool':
+					$q .= 'tinyint(1)  NOT NULL '
 						  .($field->default ? ' DEFAULT '.$default : '');
 					break;
 			}
