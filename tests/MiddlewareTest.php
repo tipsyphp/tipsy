@@ -63,13 +63,16 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->tip->middleware('LoginServiceTipsy');
 		$check = $this->ob(false);
 		$this->assertEquals('', $check);
+		$this->ob();
 
 		$this->tip->router()->home(function() {});
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('HI', $check);
+		$this->ob();
 
 		$check = $this->tip->service('LoginServiceTipsy')->test();
+		$this->ob(false);
 		$this->assertEquals('HELLO', $check);
 	}
 
@@ -89,19 +92,21 @@ class MiddlewareTest extends Tipsy_Test {
 
 		$check = $this->ob(false);
 		$this->assertEquals('', $check);
+		$this->ob();
 
 		$this->tip->router()->home(function() {});
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('HI', $check);
+		$this->ob();
 
 		$check = $this->tip->service('LoginServiceTipsy')->test();
+		$this->ob(false);
 		$this->assertEquals('HELLO', $check);
 	}
 
 	public function testMiddlewareFailure() {
 		$_REQUEST['__url'] = '';
-		$this->ob();
 
 		$this->tip->service('Tipsy\Service/MiddlewareException', [
 			run => function() {
@@ -121,7 +126,6 @@ class MiddlewareTest extends Tipsy_Test {
 	}
 
 	public function testMiddlewareClassFailure() {
-		$this->ob();
 		$this->tip->middleware('MiddlewareClassFailure');
 		$this->tip->router()->otherwise(function() {});
 		try {
@@ -135,7 +139,6 @@ class MiddlewareTest extends Tipsy_Test {
 
 	public function testMiddlewareDefault() {
 		$_REQUEST['__url'] = '';
-		$this->ob();
 
 		$this->tip->service('Tipsy\Service/MiddlewareDefault', [
 		]);
@@ -152,7 +155,6 @@ class MiddlewareTest extends Tipsy_Test {
 	}
 
 	public function testMiddlewareClassDefault() {
-		$this->ob();
 		$this->tip->middleware('MiddlewareClassDefault');
 		$this->tip->router()->otherwise(function() {});
 		try {
