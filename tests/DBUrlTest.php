@@ -10,7 +10,7 @@ class DBUrlTest extends Tipsy_Test {
 		$this->tip->config('tests/config.ini');
 		$this->setupDb($this->tip);
 
-		$url = ($this->tip->config()['db']['driver'] ? $this->tip->config()['db']['driver'] : 'pgsql').'://'.$this->tip->config()['db']['user'].($this->tip->config()['db']['pass'] ? ':'.$this->tip->config()['db']['pass'] : '').'@'.$this->tip->config()['db']['host'].'/'.$this->tip->config()['db']['database'].'?persistent=true&something=else';
+		$url = ($this->tip->config()['db']['driver'] ? $this->tip->config()['db']['driver'] : 'mysql').'://'.$this->tip->config()['db']['user'].($this->tip->config()['db']['pass'] ? ':'.$this->tip->config()['db']['pass'] : '').'@'.$this->tip->config()['db']['host'].'/'.$this->tip->config()['db']['database'].'?persistent=true&something=else';
 
 		// rebuild
 		$this->tip = new Tipsy\Tipsy;
