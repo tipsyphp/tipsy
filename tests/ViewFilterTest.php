@@ -84,21 +84,17 @@ class ViewFilterTest extends Tipsy_Test {
 	public function testViewFilterClassFail() {
 		$_REQUEST['__url'] = 'router/view';
 
-		$this->ob();
-
 		$this->tip->view()->filter('FAIL');
 
 		$this->tip->router()
-			->when('router/view', function($View) {
+			->when('router/view', function($View) use (&$res) {
 				try {
 					$View->display('ScopeTest');
 				} catch (Exception $e) {
-					echo $e->getMessage();
+					$res = $e->getMessage();
 				}
 			});
 		$this->tip->start();
-
-		$res = $this->ob(false);
 
 		$this->assertEquals('Filter class "FAIL" doest not exist.', trim($res));
 	}
@@ -106,21 +102,17 @@ class ViewFilterTest extends Tipsy_Test {
 	public function testViewFilterFail() {
 		$_REQUEST['__url'] = 'router/view';
 
-		$this->ob();
-
 		$this->tip->view()->filter(12);
 
 		$this->tip->router()
-			->when('router/view', function($View) {
+			->when('router/view', function($View) use (&$res) {
 				try {
 					$View->display('ScopeTest');
 				} catch (Exception $e) {
-					echo $e->getMessage();
+					$res = $e->getMessage();
 				}
 			});
 		$this->tip->start();
-
-		$res = $this->ob(false);
 
 		$this->assertEquals('Invalid filter.', trim($res));
 	}

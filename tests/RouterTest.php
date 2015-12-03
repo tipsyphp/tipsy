@@ -399,7 +399,6 @@ class RouterTest extends Tipsy_Test {
 	public function testRouterException() {
 		$_REQUEST['__url'] = 'router/exception';
 
-		$this->ob();
 		try {
 			$this->tip->start();
 			$caught = false;
@@ -413,7 +412,6 @@ class RouterTest extends Tipsy_Test {
 	public function testRouterNullException() {
 		$_REQUEST['__url'] = 'router/exception';
 
-		$this->ob();
 		try {
 			$this->tip->router()->when();
 			$caught = false;
