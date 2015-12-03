@@ -23,7 +23,7 @@ before_script:
   - nohup php -S localhost:8000 -t tests/web &
 
 script:
-  - phpunit --configuration tests/phpunit.xml
+  - phpunit --tap --configuration tests/phpunit.xml
 
 after_script:
   - php vendor/bin/coveralls -v
