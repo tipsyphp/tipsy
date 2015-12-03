@@ -487,16 +487,6 @@ class Resource extends Model {
 		}
 	}
 
-	public function s() {
-		if (func_num_args() == 2) {
-			$this->{func_get_arg(0)} = func_get_arg(1);
-		} elseif (func_num_args() == 1 && is_array(func_get_arg(0))) {
-			foreach (func_get_arg(0) as $key => $value) {
-				$this->{$key} = $value;
-			}
-		}
-		return $this;
-	}
 
 	public static function __q_static() {
 		return (new \ReflectionMethod(self, '__query'))->invokeArgs(self, func_get_args());
