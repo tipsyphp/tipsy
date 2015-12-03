@@ -30,9 +30,6 @@ class DBTest extends Tipsy_Test {
 
 
 	public function testDBCreateTable() {
-
-		$this->tip->db()->query('DROP TABLE IF EXISTS `test_user`');
-
 		$this->tip->service('Tipsy\Resource/TestUser', [
 			_id => 'id',
 			_table => 'test_user',
@@ -65,8 +62,7 @@ class DBTest extends Tipsy_Test {
 				]
 			]
 		]);
-
-		$this->tip->db()->query('DROP TABLE IF EXISTS `test_user2`');
+		$this->tip->service('TestUser')->dropTable();
 
 		$this->tip->service('Tipsy\Resource/TestUser2', [
 			_id => 'id',
@@ -94,7 +90,7 @@ class DBTest extends Tipsy_Test {
 				]
 			]
 		]);
-
+		$this->tip->service('TestUser2')->dropTable();
 
 		$this->tip->service('TestUser')->fields();
 		$this->tip->service('TestUser2')->fields();
