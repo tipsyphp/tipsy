@@ -4,7 +4,9 @@ namespace Tipsy;
 
 class Http {
 	public function __call($name, $args) {
-		if (count($args) == 3) {
+		if (is_array($args[0])) {
+			$args[0]['method'] = $name;
+		} elseif (count($args) == 3) {
 			$args[2]['method'] = $name;
 		} else {
 			$args[2] = ['method' => $name];
@@ -14,8 +16,11 @@ class Http {
 
 	public function request() {
 		$fn = func_get_args();
+
 		if (is_string($fn[0])) {
 			$url = $fn[0];
+		} elseif (is_array($fn[0])) {
+			$args = $fn[0];
 		}
 		if (count($fn) >= 2) {
 			$data = $fn[1];

@@ -96,4 +96,26 @@ class HttpTest extends Tipsy_Test {
 		$this->assertTrue($res['success']);
 		$this->assertNull($res['error']);
 	}
+
+	public function testKwargsCopy() {
+		$http = (new Tipsy\Http())->post('http://localhost:8000/item/1/json', [key => 'value'])
+		->complete(function($data) use (&$res) {
+			$res = $data == (object)[id => 1, key => 'value'];
+		});
+
+		$this->assertTrue($res);
+	}
+
+	public function testKwargs() {
+		$http = (new Tipsy\Http())->request([
+			url => 'http://localhost:8000/item/1/json',
+			method => 'post',
+			data => [key => 'value']
+		])
+		->complete(function($data) use (&$res) {
+			$res = $data == (object)[id => 1, key => 'value'];
+		});
+
+		$this->assertTrue($res);
+	}
 }
