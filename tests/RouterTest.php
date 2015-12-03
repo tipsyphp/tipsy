@@ -14,6 +14,13 @@ class InstanceController extends Tipsy\Controller {
 	}
 }
 
+class LibraryControllerParent extends Tipsy\Controller {
+	public function init($args = []) {
+		parent::init($args);
+		echo 'LIBRARY';
+	}
+}
+
 
 class RouterTest extends Tipsy_Test {
 
@@ -513,34 +520,19 @@ class RouterTest extends Tipsy_Test {
 		$this->assertEquals('1', $check);
 	}
 
+	public function testRouterLibraryControllerParent() {
+		$_REQUEST['__url'] = 'router/library';
 
-	/*
-	public function testRouterViewController() {
-		$_REQUEST['__url'] = 'router/view';
-
-		$this->tip->controller('ViewController', function() {
-			$this->scope->test = 'YES';
-		});
-
-		ob_start();
+		$this->ob();
 
 		$this->tip->router()
-			->when('router/views', function() {
-				echo 'YES';
-			})
-			->when('router/view', [
-				'controller' => 'ViewController'
+			->when('router/library', [
+				'controller' => 'LibraryControllerParent'
 			]);
 		$this->tip->start();
 
-		$check = ob_get_contents();
-		ob_end_clean();
-
-		$this->assertTrue($check == 'YES');
+		$check = $this->ob(false);
+		$this->assertEquals('LIBRARY', $check);
 	}
-	*/
-
-
-
 
 }
