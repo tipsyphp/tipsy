@@ -308,10 +308,6 @@ class Resource extends Model {
 			$insert = $this->dbId() ? false : true;
 		}
 
-		if ($id) {
-			$this->{$this->idVar()} = $id;
-		}
-
 		if ($insert) {
 			$query = 'INSERT INTO `'.$this->table().'`';
 		} else {
