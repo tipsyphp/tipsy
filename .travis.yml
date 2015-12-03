@@ -27,3 +27,9 @@ script:
 
 after_script:
   - php vendor/bin/coveralls -v
+
+addons:
+  postgresql: "9.4"
+
+services:
+  - postgresql
