@@ -62,4 +62,38 @@ class HttpTest extends Tipsy_Test {
 		$this->assertEquals(true, $res);
 	}
 	**/
+
+	public function testError() {
+		$http = (new Tipsy\Http())->post('http://localhost:8000/404')
+			->complete(function($data) use (&$res) {
+				$res['complete'] = true;
+			})
+			->success(function($data) use (&$res) {
+				$res['success'] = true;
+			})
+			->error(function($data) use (&$res) {
+				$res['error'] = true;
+			});
+
+		$this->assertTrue($res['complete']);
+		$this->assertNull($res['success']);
+		$this->assertTrue($res['error']);
+	}
+
+	public function testSuccess() {
+		$http = (new Tipsy\Http())->post('http://localhost:8000/item/1/plain')
+			->complete(function($data) use (&$res) {
+				$res['complete'] = true;
+			})
+			->success(function($data) use (&$res) {
+				$res['success'] = true;
+			})
+			->error(function($data) use (&$res) {
+				$res['error'] = true;
+			});
+
+		$this->assertTrue($res['complete']);
+		$this->assertTrue($res['success']);
+		$this->assertNull($res['error']);
+	}
 }
