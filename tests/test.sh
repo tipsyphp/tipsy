@@ -1,3 +1,3 @@
 #!/bin/sh
 
-phpunit --tap --configuration tests/phpunit.xml --coverage-text
+phpunit --configuration tests/phpunit.xml --coverage-text
