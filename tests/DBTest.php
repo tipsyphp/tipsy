@@ -327,7 +327,6 @@ class DBTest extends Tipsy_Test {
 		$this->assertTrue($m->exports()['test']);
 	}
 
-
 	public function testModelDBOAutoTable() {
 		$_REQUEST['__url'] = 'user/1';
 
@@ -384,5 +383,48 @@ class DBTest extends Tipsy_Test {
 
 		$this->tip->start();
 		$this->assertEquals('{"id":1,"age":0,"first_name":null,"last_name":"name","active":false}', $res);
+	}
+
+
+	public function testResourceGetGet() {
+		$this->tip->service('Tipsy\Resource/TestModel', [
+			_id => 'id',
+			_table => 'test_user2'
+		]);
+
+		$m = $this->tip->service('TestModel');
+		$o = $m->q('select * from '.$m->table().' limit 1')->get(0)->get(0)->get(0);
+		$this->assertTrue($o->id ? true : false);
+	}
+
+	public function testResourceCreateTableFail() {
+		$this->tip->service('Tipsy\Resource/TestModel', [
+			_id => 'id',
+			_table => 'test_user_fail'
+		]);
+
+		try {
+			$this->tip->service('TestModel')->fields();
+		} catch (Exception $e) {
+			$m = $e->getMessage();
+		}
+		$this->assertEquals('Could not create table "test_user_fail"', $m);
+	}
+
+	public function testResourceCreateObject() {
+		$o = new ClassResourceTest((object)[
+			name => 'devin'
+		]);
+		$this->assertEquals('devin', $o->name);
+	}
+
+	public function testResourceStaticO() {
+		$o = ClassResourceTest::o(1);
+		$this->assertEquals(1, $o->id);
+	}
+
+	public function testResourceStaticQ() {
+		$o = ClassResourceTest::q('select * from test_user limit 1')->get(0);
+		$this->assertEquals(1, $o->id);
 	}
 }

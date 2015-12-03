@@ -483,9 +483,8 @@ class Resource extends Model {
 		}
 	}
 
-
 	public static function __q_static() {
-		return (new \ReflectionMethod(self, '__query'))->invokeArgs(self, func_get_args());
+		return call_user_func_array([self, '__query_static'], func_get_args());
 	}
 
 	public static function __query_static() {
