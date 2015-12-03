@@ -2,45 +2,17 @@
 
 namespace Tipsy;
 
-/**
- * Object factory and cacher
- *
- * @author		Devin Smith <devin@tipsy.la>
- * @date		2011.12.16
- *
- * The factory automaticly figures out what you are passing it and returns
- * either the cached object, or caches it.
- *
- * ex:
- *		class myObject extends \Tipsy\Resource {
- *			...
- *		}
- *		$object = new myObject($id);
- *		$object->something = 'something else';
- * 		echo c::factory($object)->something;
- * 		// would output 'something else'
- *
- * ex2:
- *		// factory also loads the object from table if it doesnt have it
- *		$object = c::factory('myObject',$id);
- *
- * ex3:
- *		// iterator automaticly calls factory
- * 		foreach (myObject::o($id, $id2) as $object) {
- *			echo $object->something;
- *		}
- *
- */
 
 class Factory extends Model {
 	private $_objectMap;
-	public function __construct() {
+	public function __construct($tipsy) {
 		$this->_objectMap = [];
+		$this->_tipsy = $tipsy;
 	}
 	public function objectMap($a, $b = null) {
 
 		// create a new object if not caching
-		if (Tipsy::config()['tipsy']['factory'] === false) {
+		if ($this->_tipsy['tipsy']['factory'] === false) {
 			$obj = new $a($b);
 
 		} else {

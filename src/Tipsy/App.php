@@ -265,7 +265,7 @@ class App {
 
 	public function factory($a = null, $b = null) {
 		if (!$this->_factory) {
-			$this->_factory = new Factory;
+			$this->_factory = new Factory($this);
 		}
 		return $this->_factory->objectMap($a,$b);
 	}
