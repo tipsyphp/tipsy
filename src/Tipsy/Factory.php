@@ -5,14 +5,15 @@ namespace Tipsy;
 
 class Factory extends Model {
 	private $_objectMap;
+
 	public function __construct($tipsy) {
 		$this->_objectMap = [];
 		$this->_tipsy = $tipsy;
 	}
-	public function objectMap($a, $b = null) {
 
+	public function objectMap($a, $b = null) {
 		// create a new object if not caching
-		if ($this->_tipsy['tipsy']['factory'] === false) {
+		if ($this->_tipsy->config()['tipsy']['factory'] === false) {
 			$obj = new $a($b);
 
 		} else {
