@@ -14,6 +14,9 @@ class DependencyInjector extends Model {
 			$this->closure(\Closure::bind($args['closure'], $this, get_class()));
 		}
 	}
+	public function service($name) {
+		return $this->_getDependency($name, $this->_scope);
+	}
 	private function _getDependency($name, $scope = null) {
 		if ($this->tipsy()->services($name)) {
 			return $this->tipsy()->service($name);
