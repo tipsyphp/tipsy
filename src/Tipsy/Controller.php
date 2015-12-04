@@ -1,12 +1,12 @@
 <?php
-	
+
 namespace Tipsy;
 
 /**
  * Controller object
  */
 class Controller extends DependencyInjector {
-	private $_scope;
+	protected $_scope;
 
 	public function __construct($args = []) {
 		parent::__construct($args);
@@ -17,7 +17,10 @@ class Controller extends DependencyInjector {
 		$this->tipsy()->view()->scope($this->_scope);
 
 		if ($this->closure()) {
-			return $this->inject($this->closure(), $this->_scope);
+			return $this->inject($this->closure());
 		}
+	}
+	public function inject($closure, $scope = null) {
+		return parent::inject($closure, $this->_scope);
 	}
 }
