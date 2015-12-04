@@ -13,6 +13,26 @@ class Db extends Model {
 		$this->connect($config);
 	}
 
+	public function parseUrl($url) {
+		$url = parse_url($url);
+
+		$args['driver'] = $url['scheme'];
+		$args['user'] = $url['user'];
+		$args['pass'] = $url['pass'];
+		$args['host'] = $url['host'];
+		$args['port'] = $url['port'];
+		$args['database'] = substr($url['path'], 1);
+		parse_str($url['query'], $args['options']);
+
+		if ($args['options'] && is_array($args['options'])) {
+			foreach ($args['options'] as $key => $value) {
+				$args[$key] = $value;
+			}
+		}
+
+		return $args;
+	}
+
 	public function connect($args = null) {
 		if (!$args) {
 			throw new \Exception('Invalid DB config.');
@@ -21,21 +41,7 @@ class Db extends Model {
 
 		// will overwrite any existing args
 		if ($args['url']) {
-			$url = parse_url($args['url']);
-
-			$args['driver'] = $url['scheme'];
-			$args['user'] = $url['user'];
-			$args['pass'] = $url['pass'];
-			$args['host'] = $url['host'];
-			$args['port'] = $url['port'];
-			$args['database'] = substr($url['path'], 1);
-			parse_str($url['query'], $args['options']);
-
-			if ($args['options'] && is_array($args['options'])) {
-				foreach ($args['options'] as $key => $value) {
-					$args[$key] = $value;
-				}
-			}
+			array_merge($args, $this->parseUrl($args['url']));
 		}
 
 		if ($args['persistent']) {
