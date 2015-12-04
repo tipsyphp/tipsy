@@ -15,6 +15,7 @@ class Db extends Model {
 
 	public function parseUrl($url) {
 		$url = parse_url($url);
+		$args = [];
 
 		$args['driver'] = $url['scheme'];
 		$args['user'] = $url['user'];
@@ -41,7 +42,7 @@ class Db extends Model {
 
 		// will overwrite any existing args
 		if ($args['url']) {
-			array_merge($this->parseUrl($args['url']), $args);
+			$args = array_merge($this->parseUrl($args['url']), $args);
 		}
 
 		if ($args['persistent']) {
