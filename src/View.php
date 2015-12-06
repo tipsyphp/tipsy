@@ -93,9 +93,9 @@ class View {
 		return $this->file($this->_layout);
 	}
 
-	public function render($view, $params = null) {
-		if (isset($params['set'])) {
-			foreach ($params['set'] as $key => $value) {
+	public function render($view, $params = null, $display = false) {
+		if (isset($params)) {
+			foreach ($params as $key => $value) {
 				$this->scope()->{$key} = $value;
 			}
 		}
@@ -122,17 +122,17 @@ class View {
 				}
 			}
 
-			return $this->render($view, ['set' => $use]);
+			return $this->render($view, $use);
 		};
 
 		// @todo: add all the other services
 		$Request = $this->tipsy()->request();
 
-		if ($this->_rendering || !isset($params['display'])) {
+		if ($this->_rendering || !isset($display)) {
 
 			ob_start();
 			include($file);
-			$page = $this->filterContent(ob_get_contents(),$params);
+			$page = $this->filterContent(ob_get_contents());
 			ob_end_clean();
 
 		} else {
@@ -140,13 +140,13 @@ class View {
 			$this->_rendering = true;
 			ob_start();
 			include($file);
-			$this->content = $this->filterContent(ob_get_contents(),$params);
+			$this->content = $this->filterContent(ob_get_contents());
 			ob_end_clean();
 
 			if ($layout) {
 				ob_start();
 				include($layout);
-				$page = $this->filterContent(ob_get_contents(),$params);
+				$page = $this->filterContent(ob_get_contents());
 				ob_end_clean();
 				$this->_rendering = false;
 			} else {
@@ -162,18 +162,8 @@ class View {
 		return $page;
 	}
 
-	public function display($view,$params=null) {
-	/*
-		if (!headers_sent()) {
-			foreach ($this->headers->http as $key => $value) {
-				header(isset($value['name']) ? $value['name'].': ' : '' . $value['value'],isset($value['replace']) ? $value['replace'] : true);
-			}
-		}
-		*/
-		if (is_null($params)) {
-			$params['display'] = true;
-		}
-		echo $this->render($view,$params);
+	public function display($view, $params = null) {
+		echo $this->render($view, $params, true);
 	}
 
 	public function filterContent($content) {

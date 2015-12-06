@@ -3,7 +3,7 @@
 <? $this->display('ScopeTest'); ?>
 <? $test= 'THREE'; ?>
 <?=$this->render('ScopeTest')?>
-<?=$this->render('ScopeTest', ['set' => ['test' => 'FOUR']])?>
+<?=$this->render('ScopeTest', ['test' => 'FOUR'])?>
 <? $test= 'FIVE'; ?>
 <?=$include('ScopeTest')?>
 <?=$include('ScopeTest', ['test' => 'SIX'])?>

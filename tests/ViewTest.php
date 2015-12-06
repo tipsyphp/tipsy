@@ -196,4 +196,22 @@ class ViewTest extends Tipsy_Test {
 		$this->assertTrue($res);
 	}
 
+	public function testViewScopeDirect() {
+		$_REQUEST['__url'] = 'router/view';
+
+		$this->tip->config(['view' => [
+			'path' => 'tests'
+		]]);
+
+		$this->ob();
+		$this->tip->router()
+			->when('router/view', function($View, $Scope) {
+				$View->render('PrintTest', [test => 'ONE']);
+				echo $Scope->test;
+			});
+		$this->tip->start();
+		$res = $this->ob(false);
+
+		$this->assertEquals('ONE', $res);
+	}
 }
