@@ -9,7 +9,6 @@ class ServicePHP7 extends Tipsy_Test {
 
 	public function testServiceAnonymousClass() {
 		$_REQUEST['__url'] = 'router/library';
-
 		$this->ob();
 
 		$this->tip->service('Test', new class() extends \Tipsy\Service {
@@ -29,8 +28,6 @@ class ServicePHP7 extends Tipsy_Test {
 	}
 
 	public function testMiddlewareAnonymousClass() {
-		$_REQUEST['__url'] = 'router/library';
-
 		$this->ob();
 
 		$this->tip->middleware(new class() extends \Tipsy\Middleware {
@@ -41,11 +38,33 @@ class ServicePHP7 extends Tipsy_Test {
 
 		$this->tip->router()
 			->otherwise(function() {
-				
+
 			});
 		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('MIDDLEWARE', $check);
+	}
+
+	public function testServiceAnonymousClassFail() {
+		try {
+			$this->tip->service('Test', new class() {
+			});
+			$catch = false;
+		} catch (Exception $e) {
+			$catch = true;
+		}
+		$this->assertTrue ($catch);
+	}
+
+	public function testMiddlewareAnonymousClassFail() {
+		try {
+			$this->tip->middleware(new class() {
+			});
+			$catch = false;
+		} catch (Exception $e) {
+			$catch = true;
+		}
+		$this->assertTrue ($catch);
 	}
 
 }
