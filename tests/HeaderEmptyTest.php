@@ -4,7 +4,7 @@ class HeaderEmptyTest extends Tipsy_Test {
 	public function testHeaderEmpty() {
 		$_REQUEST['__url'] = 'router/basic';
 		// i dont know when this would happen, but it could perhaps
-		$_SERVER = [];
+		$_SERVER = null;
 
 		$this->tip = new Tipsy\Tipsy;
 
