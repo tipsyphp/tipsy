@@ -38,6 +38,12 @@ class ServicePHP7 extends Tipsy_Test {
 				echo 'MIDDLEWARE';
 			}
 		});
+
+		$this->tip->router()
+			->otherwise(function() {
+				
+			});
+		$this->tip->start();
 		$check = $this->ob(false);
 		$this->assertEquals('MIDDLEWARE', $check);
 	}
