@@ -94,17 +94,19 @@ class App {
 
 		if (!$this->_services[$service]) {
 
-			if (is_object($args) && !$args instanceof Service) {
+			if (is_object($args) && !is_callable($args) && !$args instanceof Service) {
 				throw new Exception('Service must be an instace of Tipsy\Service');
+
 			} elseif ($service && is_callable($args)) {
 				$config = ['_controller' => new Service([
 					'closure' => $args,
 					'tipsy' => $this
 				])];
 
-			} elseif ($service && (is_object($args) || class_exists($args))) {
+			} elseif ($service && (!is_array($args) && (is_object($args) || class_exists($args)))) {
 				$class = is_object($args) ? $args : class_exists($args) ? $args : $service;
 				$extend = $args ? $args : $service;
+
 				if (property_exists($class,'_id')) {
 					$config['_id'] = $class::$_id;
 				}
@@ -242,7 +244,7 @@ class App {
 			$service = uniqid();
 		}
 
-		if (is_object($args) && !$args instanceof Middleware) {
+		if (is_object($args) && !is_callable($args) && !$args instanceof Middleware) {
 			throw new Exception('Middleware must be an instace of Tipsy\Middleware');
 		}
 
