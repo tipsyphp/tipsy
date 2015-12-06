@@ -106,12 +106,6 @@ class App {
 			} elseif ($service && (class_exists($service) || (!is_array($args) && (is_object($args) || class_exists($args))))) {
 				$class = is_object($args) ? $args : ((is_string($args) && class_exists($args)) ? $args : $service);
 				$extend = $class;
-				if (property_exists($class,'_id')) {
-					$config['_id'] = $class::$_id;
-				}
-				if (property_exists($class,'_table')) {
-					$config['_table'] = $class::$_table;
-				}
 
 			} elseif ($service && is_array($args)) {
 				$config = $args ? $args : [];
