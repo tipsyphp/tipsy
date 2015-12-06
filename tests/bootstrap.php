@@ -15,7 +15,7 @@ class Tipsy_Test extends PHPUnit_Framework_TestCase {
 		$tipsy->config('tests/config.db.'.(getenv('TRAVIS') ? 'travis' : 'local').'.'.(getenv('DB') ? getenv('DB') : 'mysql' ).'.ini');
 
 		if (getenv('DB') == 'pgsql') {
-			$this->tip->service('Db', ['Tipsy\Db\MysqlToPgsql']);
+			$this->tip->service('Db', 'Tipsy\Db\MysqlToPgsql');
 		}
 	}
 
