@@ -94,16 +94,17 @@ class App {
 
 		if (!$this->_services[$service]) {
 
-			if ($service && is_callable($args)) {
+			if (is_object($args) && !$args instanceof Service) {
+				throw new Exception('Service must be an instace of Tipsy\Service');
+			} elseif ($service && is_callable($args)) {
 				$config = ['_controller' => new Service([
 					'closure' => $args,
 					'tipsy' => $this
 				])];
 
-
-			} elseif ($service && (class_exists($service) || (is_array($args) && class_exists($args['class'])))) { //!$args && @note: not sure why i had this here. tests still pass without it
-				$class = (is_array($args) && class_exists($args['class'])) ? $args['class'] : $service;
-				$extend = $class;
+			} elseif ($service && (is_object($args) || class_exists($args))) {
+				$class = is_object($args) ? $args : class_exists($args) ? $args : $service;
+				$extend = $args ? $args : $service;
 				if (property_exists($class,'_id')) {
 					$config['_id'] = $class::$_id;
 				}
@@ -115,7 +116,7 @@ class App {
 				$config = $args ? $args : [];
 			}
 
-			if ($this->_services[$extend]) {
+			if (is_string($extend) && $this->_services[$extend]) {
 				$extend = $this->_services[$extend];
 			}
 
@@ -236,6 +237,15 @@ class App {
 	}
 
 	public function middleware($service, $args = []) {
+		if (!is_string($service)) {
+			$args = $service;
+			$service = uniqid();
+		}
+
+		if (is_object($args) && !$args instanceof Middleware) {
+			throw new Exception('Middleware must be an instace of Tipsy\Middleware');
+		}
+
 		if (!$this->_services[$service]) {
 			$this->service($service, $args, true);
 		}

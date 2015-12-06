@@ -532,5 +532,4 @@ class RouterTest extends Tipsy_Test {
 		$check = $this->ob(false);
 		$this->assertEquals('LIBRARY', $check);
 	}
-
 }
