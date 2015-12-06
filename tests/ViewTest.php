@@ -162,4 +162,38 @@ class ViewTest extends Tipsy_Test {
 		$this->assertEquals('ONETWOTHREEFOURFIVESIXTWOTWO', trim($res));
 	}
 
+	public function testViewRender() {
+		$_REQUEST['__url'] = 'router/view';
+
+		$this->tip->config([
+			'view' => [
+				'path' => 'tests'
+			]
+		]);
+		$this->tip->router()
+			->when('router/view', function($View) use (&$res) {
+				$res = $View->render('LayoutTest') ? true : false;
+			});
+		$this->tip->start();
+
+		$this->assertTrue($res);
+	}
+
+	public function testViewMtime() {
+		$_REQUEST['__url'] = 'router/view';
+
+		$this->tip->config([
+			'view' => [
+				'path' => 'tests'
+			]
+		]);
+		$this->tip->router()
+			->when('router/view', function($View) use (&$res) {
+				$res = $View->mtime('ScopeTest') ? true : false;
+			});
+		$this->tip->start();
+
+		$this->assertTrue($res);
+	}
+
 }
