@@ -36,6 +36,10 @@ class RouterTest extends Tipsy_Test {
 		$this->tip->router()
 			->when('router/basic', function() {
 				echo 'BASIC';
+			})
+			->when('router/notbasic', function() {
+			})
+			->otherwise(function() {
 			});
 		$this->tip->start();
 
