@@ -269,8 +269,8 @@ class DBTest extends Tipsy_Test {
 	public function testResourceClass() {
 		// php7 fails this with a segment fault. no idea why
 		if (PHP_MAJOR_VERSION == 7) {
-			$this->markTestSkipped('PHP7 segment fault skip');
-			return;
+			//$this->markTestSkipped('PHP7 segment fault skip');
+			//return;
 		}
 
 		$this->tip->service('ClassResourceTest');
