@@ -49,7 +49,7 @@ class Model implements \JsonSerializable {
 		return $this->_properties ? $this->_properties : get_object_vars($this);
 	}
 
-	public function __property($name) {
+	public function &__property($name) {
 		return isset($this->_properties[$name]) ? $this->_properties[$name] : null;
 	}
 
