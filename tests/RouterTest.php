@@ -508,6 +508,7 @@ class RouterTest extends Tipsy_Test {
 			->when('item/edit/:id', function($Params) {
 				echo $Params->id;
 			})
+			->alias('something', 'item/edit/:id')
 			->alias('item/:id/edit', 'item/edit/:id')
 			->otherwise(function() {
 				echo 'OTHER';
