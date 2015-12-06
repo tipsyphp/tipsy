@@ -95,6 +95,7 @@ class ViewFilterTest extends Tipsy_Test {
 				}
 			});
 		$this->tip->start();
+		ob_end_clean();
 
 		$this->assertEquals('Filter class "FAIL" doest not exist.', trim($res));
 	}
@@ -113,6 +114,7 @@ class ViewFilterTest extends Tipsy_Test {
 				}
 			});
 		$this->tip->start();
+		ob_end_clean();
 
 		$this->assertEquals('Invalid filter.', trim($res));
 	}
