@@ -18,7 +18,6 @@ class TestModelStaticFail extends Tipsy\Model {
 }
 
 
-
 class ModelTest extends Tipsy_Test {
 
 	public function setUp() {
@@ -29,7 +28,6 @@ class ModelTest extends Tipsy_Test {
 	}
 
 	public function testModelBasic() {
-
 		$this->tip->service('TestModel', [
 			'test' => function() {
 				return 'YES';
@@ -41,7 +39,6 @@ class ModelTest extends Tipsy_Test {
 	}
 
 	public function testModelBasicFunc() {
-
 		$this->tip->service('TestModel', function() {
 			$model = [
 				'test' => function() {
@@ -126,5 +123,14 @@ class ModelTest extends Tipsy_Test {
 		}
 
 		$this->assertEquals('Could not call static test on TestModelStaticFail', $catch);
+	}
+
+	public function testModelProperty() {
+		$this->tip->service('TestModel', [
+		]);
+
+		$model = $this->tip->service('TestModel');
+		$model->test = true;
+		$this->assertTrue($model->test);
 	}
 }
