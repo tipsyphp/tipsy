@@ -20,8 +20,6 @@ class Router {
 	public function __call($method, $args = []) {
 		if (count($args) == 1) {
 			$args[0]['method'] = strtoupper($method);
-		} elseif (is_array($args[1])) {
-			$args[1]['method'] = strtoupper($method);
 		} else {
 			$args[1] = [
 				'controller' => $args[1],
@@ -94,16 +92,10 @@ class Router {
 	}
 
 	public function routes($routes = null) {
-		if (isset($$routes)) {
-			$this->_routes = $routes;
-		}
 		return $this->_routes;
 	}
 
 	public function aliass($aliass = null) {
-		if (isset($$aliass)) {
-			$this->_aliass = $aliass;
-		}
 		return $this->_aliass;
 	}
 
