@@ -131,6 +131,7 @@ class ModelTest extends Tipsy_Test {
 
 		$model = $this->tip->service('TestModel');
 		$model->test = true;
+		$this->assertTrue($model->property('test'));
 		$this->assertTrue($model->test);
 	}
 }
