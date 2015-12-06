@@ -166,9 +166,28 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->assertFalse($check);
 	}
 
+	public function testMiddlewareClosure() {
+		$this->ob();
+		$this->tip->service('Service', [
+			test => function() {
+				echo 'CLOSURE';
+			}
+		]);
+		$this->tip->middleware('Closure', function($Service) {
+			return [
+				run => function() use ($Service) {
+					$Service->test();
+				}
+			];
+		});
+		$this->tip->router()->otherwise(function() {});
+		$this->tip->start();
+		$check = $this->ob(false);
+		$this->assertEquals('CLOSURE', $check);
+	}
 
-	/*
-	@todo: need to communicate with eachother
+
+
 	public function testMiddlewareToMiddlewareReference() {
 		$_REQUEST['__url'] = '';
 		$this->ob();
@@ -181,7 +200,7 @@ class MiddlewareTest extends Tipsy_Test {
 
 		$this->tip->middleware('Tipsy\Service/SecondService', function($FirstService) {
 			return [
-				test => function() {
+				test => function() use ($FirstService) {
 					return $FirstService->test();
 				}
 			];
@@ -193,5 +212,5 @@ class MiddlewareTest extends Tipsy_Test {
 		$check = $this->tip->middleware('SecondService')->test();
 		$this->assertEquals('HELLO', $check);
 	}
-	*/
+
 }
