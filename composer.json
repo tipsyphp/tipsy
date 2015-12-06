@@ -27,7 +27,10 @@
 	"autoload": {
 		"psr-4": {
 			"Tipsy\\": "src/"
-		}
+		},
+		"files": [
+			"src/Tipsy.php"
+		]
 	},
 	"archive": {
 		"exclude": ["/tests", "/.travis.yml", "/.gitignore"]
