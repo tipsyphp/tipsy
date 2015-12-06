@@ -14,7 +14,7 @@ class RouterPHP7 extends Tipsy_Test {
 
 		$this->tip->router()
 			->when('router/library', new class() extends Tipsy\Controller {
-				public function init() {
+				public function init($args = null) {
 					echo 'ANONY';
 				}
 			});
