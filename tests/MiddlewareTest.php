@@ -186,8 +186,6 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->assertEquals('CLOSURE', $check);
 	}
 
-
-
 	public function testMiddlewareToMiddlewareReference() {
 		$_REQUEST['__url'] = '';
 		$this->ob();
@@ -213,4 +211,16 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->assertEquals('HELLO', $check);
 	}
 
+	public function testMiddlewarePromise() {
+		$this->ob();
+		$this->tip->router()->otherwise(function() {});
+		$this->tip->start();
+		$this->tip->middleware('Promise', [
+			run => function() {
+				echo 'PROMISE';
+			}
+		]);
+		$check = $this->ob(false);
+		$this->assertEquals('PROMISE', $check);
+	}
 }
