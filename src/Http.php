@@ -40,7 +40,7 @@ class Http {
 		$method = strtolower($args['method'] ? $args['method'] : 'get');
 		$dataType = strtolower($args['type'] == 'json' ? 'json' : 'form');
 
-		if ($dataType == 'json' && $method != 'get') {
+		if ($dataType == 'json' && $method == 'post') {
 			$data = json_encode($data);
 		} elseif (is_array($data)) {
 			if (is_array($data)) {
