@@ -90,6 +90,7 @@ class DBTest extends Tipsy_Test {
 				]
 			]
 		]);
+		$this->tip->db()->exec('drop table if exists test_user2');
 		$this->tip->service('TestUser2')->dropTable();
 
 		$this->tip->service('TestUser')->fields();
