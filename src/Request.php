@@ -132,7 +132,6 @@ class Request {
 
 	private function _getRawRequest() {
 		if (!isset($this->_rawRequest)) {
-
 			$request = trim($_SERVER['REQUEST_URI']);
 			$request = substr($request,strpos($request,'?')+1);
 			$request = urldecode($request);

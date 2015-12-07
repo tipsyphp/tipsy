@@ -20,7 +20,7 @@ before_script:
   - psql -c 'create database tipsy;' -U postgres
   - composer self-update
   - composer install
-  - nohup php -S localhost:8000 -t tests/web &
+  - nohup php -S localhost:8000 -c tests/php.ini -t tests/web &
 
 script:
   - phpunit --tap --configuration tests/phpunit.xml

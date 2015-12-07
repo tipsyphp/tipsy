@@ -33,13 +33,13 @@ class HttpTest extends Tipsy_Test {
 		$this->assertEquals(true, $res);
 	}
 
-	/** these tests are currently failing. unknown why
 	public function testJsonGetJson() {
 		$http = (new Tipsy\Http())->get('http://localhost:8000/item/1/json', [key => 'value'], [dataType => 'json'])->complete(function($data) use (&$res) {
-			$res = $data == (object)[id => 1, key => 'value'];
+			$res = $data == (object)[id => '1', key => 'value'];
 		});
 		$this->assertEquals(true, $res);
 	}
+
 
 	public function testJsonPostJson() {
 		$http = (new Tipsy\Http())->post('http://localhost:8000/item/1/json', [key => 'value'], [dataType => 'json'])->complete(function($data) use (&$res) {
@@ -47,6 +47,7 @@ class HttpTest extends Tipsy_Test {
 		});
 		$this->assertEquals(true, $res);
 	}
+
 
 	public function testJsonGetPlain() {
 		$http = (new Tipsy\Http())->get('http://localhost:8000/item/1/plain', [key => 'value'], [dataType => 'json'])->complete(function($data) use (&$res) {
@@ -61,7 +62,7 @@ class HttpTest extends Tipsy_Test {
 		});
 		$this->assertEquals(true, $res);
 	}
-	**/
+
 
 	public function testError() {
 		$http = (new Tipsy\Http())->post('http://localhost:8000/404')

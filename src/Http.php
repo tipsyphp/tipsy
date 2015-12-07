@@ -40,7 +40,7 @@ class Http {
 		$method = strtolower($args['method'] ? $args['method'] : 'get');
 		$dataType = strtolower($args['dataType'] == 'json' ? 'json' : 'form');
 
-		if ($dataType == 'json') {
+		if ($dataType == 'json' && $method != 'get') {
 			$data = json_encode($data);
 		} elseif (is_array($data)) {
 			if (is_array($data)) {
@@ -48,7 +48,7 @@ class Http {
 			}
 		}
 
-		if ($method == 'get' && $dataType == 'form') {
+		if ($method == 'get') {
 			$ch = curl_init($url.'?'.$data);
 		} else {
 			$ch = curl_init($url);
