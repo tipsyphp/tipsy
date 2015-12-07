@@ -6,7 +6,7 @@ class HttpTest extends Tipsy_Test {
 	}
 
 	public function testFormGetJson() {
-		$http = (new Tipsy\Http())->get('http://localhost:8000/item/1/json', [key => 'value'], [dataType => 'form'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->get('http://localhost:8000/item/1/json', [key => 'value'], [type => 'form'])->complete(function($data) use (&$res) {
 			$res = $data == (object)[id => 1, key => 'value'];
 		});
 		$this->assertEquals(true, $res);
@@ -27,14 +27,14 @@ class HttpTest extends Tipsy_Test {
 	}
 
 	public function testFormPostPlain() {
-		$http = (new Tipsy\Http())->post('http://localhost:8000/item/1/plain', [key => 'value'], [dataType => 'form'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->post('http://localhost:8000/item/1/plain', [key => 'value'], [type => 'form'])->complete(function($data) use (&$res) {
 			$res = $data == '1.value';
 		});
 		$this->assertEquals(true, $res);
 	}
 
 	public function testJsonGetJson() {
-		$http = (new Tipsy\Http())->get('http://localhost:8000/item/1/json', [key => 'value'], [dataType => 'json'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->get('http://localhost:8000/item/1/json', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
 			$res = $data == (object)[id => '1', key => 'value'];
 		});
 		$this->assertEquals(true, $res);
@@ -42,7 +42,8 @@ class HttpTest extends Tipsy_Test {
 
 
 	public function testJsonPostJson() {
-		$http = (new Tipsy\Http())->post('http://localhost:8000/item/1/json', [key => 'value'], [dataType => 'json'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->post('http://localhost:8000/item/1/json', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
+			var_dump($data);
 			$res = $data == (object)[id => 1, key => 'value'];
 		});
 		$this->assertEquals(true, $res);
@@ -50,14 +51,15 @@ class HttpTest extends Tipsy_Test {
 
 
 	public function testJsonGetPlain() {
-		$http = (new Tipsy\Http())->get('http://localhost:8000/item/1/plain', [key => 'value'], [dataType => 'json'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->get('http://localhost:8000/item/1/plain', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
 			$res = $data == '1.value';
 		});
 		$this->assertEquals(true, $res);
 	}
 
 	public function testJsonPostPlain() {
-		$http = (new Tipsy\Http())->post('http://localhost:8000/item/1/plain', [key => 'value'], [dataType => 'json'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->post('http://localhost:8000/item/1/plain', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
+			var_dump($data);
 			$res = $data == '1.value';
 		});
 		$this->assertEquals(true, $res);
