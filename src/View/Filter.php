@@ -2,6 +2,6 @@
 
 namespace Tipsy\View;
 
-class Filter {
-
+class Filter
+{
 }

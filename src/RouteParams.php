@@ -2,6 +2,6 @@
 
 namespace Tipsy;
 
-class RouteParams extends Scope {
-
+class RouteParams extends Scope
+{
 }
