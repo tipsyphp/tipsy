@@ -23,13 +23,13 @@ class Request {
 					if ($this->_contentType() === 'application/x-www-form-urlencoded' || !$this->_contentType()) {
 						$this->_properties = $_GET;
 					} elseif ($this->_contentType() === 'application/json') {
-						$this->_properties = $this->_getRawRequest();
+						$this->_properties = $this->raw();
 					}
 					break;
 
 				case 'POST':
 					if ($this->_contentType() === 'application/json') {
-						$this->_properties = json_decode($this->_getContent(), 'array');
+						$this->_properties = json_decode($this->content(), 'array');
 						// } elseif ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
 					} else  {
 						$this->_properties = $_POST;
@@ -40,10 +40,10 @@ class Request {
 				case 'DELETE':
 				default:
 					if ($this->_contentType() === 'application/x-www-form-urlencoded') {
-						parse_str($this->_getContent(), $this->_properties);
+						parse_str($this->content(), $this->_properties);
 
 					} elseif ($this->_contentType() === 'application/json') {
-						$content = $this->_getContent();
+						$content = $this->content();
 						$request = json_decode($content,'array');
 						if (!$request) {
 							$this->_properties = false;
@@ -121,7 +121,7 @@ class Request {
 		return $this->_path;
 	}
 
-	private function _getContent() {
+	public function content() {
 		if (!isset($this->_content)) {
 			if (strlen(trim($this->_content = file_get_contents(!is_null($_ENV['TESTS_PHP_INPUT']) ? $_ENV['TESTS_PHP_INPUT'] : 'php://input'))) === 0) {
 				$this->_content = false;
@@ -130,7 +130,7 @@ class Request {
 		return $this->_content;
 	}
 
-	private function _getRawRequest() {
+	public function raw() {
 		if (!isset($this->_rawRequest)) {
 			$request = trim($_SERVER['REQUEST_URI']);
 			$request = substr($request,strpos($request,'?')+1);
