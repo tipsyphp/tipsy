@@ -457,10 +457,30 @@ class Resource extends Model {
 	}
 
 	public function __o($args) {
-		$object = clone $this;
-		$object->tipsy($this->tipsy());
-		$object->load($args);
-		return $object;
+		//return call_user_func_array([self, '__o_static'], func_get_args());
+
+		$classname = get_called_class();
+
+		foreach (func_get_args() as $arg) {
+			if (is_array($arg)) {
+				foreach ($arg as $item) {
+					$items[] = $this->tipsy()->factory($classname,$item);
+				}
+			} else {
+				$items[] = $this->tipsy()->factory($classname,$arg);
+			}
+		}
+		foreach ($items as $item) {
+			$item->tipsy($this->tipsy());
+			echo '123'.get_called_class($item);
+		}
+
+
+		if (count($items) == 1) {
+			return array_pop($items);
+		} else {
+			return new Looper($items);
+		}
 	}
 
 	public static function __o_static() {
@@ -474,6 +494,9 @@ class Resource extends Model {
 			} else {
 				$items[] = Tipsy::factory($classname,$arg);
 			}
+		}
+		foreach ($items as $item) {
+			$item->tipsy(Tipsy::app());
 		}
 
 		if (count($items) == 1) {

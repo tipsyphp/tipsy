@@ -11,12 +11,12 @@ class LoginService extends \Tipsy\Service {
 
 
 class ServiceTest extends Tipsy_Test {
-	
+
 	public function setUp() {
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
 	}
-	
+
 	public function testServiceClass() {
 		$_REQUEST['__url'] = '';
 		$class = $this->tip->service('LoginService');
@@ -24,6 +24,17 @@ class ServiceTest extends Tipsy_Test {
 		$class = get_class($this->tip->service('LoginService'));
 
 		$this->assertEquals('LoginService', $class);
+	}
+
+	public function testServiceExtend() {
+		$_REQUEST['__url'] = '';
+		$this->tip->service('LoginService/Second', [
+			test => function() {
+				return 'SECOND';
+			}
+		]);
+
+		$this->assertEquals('SECONDYESA', $this->tip->service('Second')->test().$this->tip->service('Second')->stuff('A'));
 	}
 	/*
 	public function testServiceClassController() {
@@ -35,14 +46,14 @@ class ServiceTest extends Tipsy_Test {
 			->when('', function($LoginService) {
 				echo get_class($LoginService);
 			});
-			
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
 
 		$this->assertEquals('LoginService', $check);
 	}
-	
+
 	public function testServiceFunc() {
 		$_REQUEST['__url'] = '';
 		$this->tip->service('LoginService');
@@ -52,14 +63,14 @@ class ServiceTest extends Tipsy_Test {
 			die(get_class($LoginService));
 				echo $LoginService->stuff('MAM');
 			});
-			
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
 
 		$this->assertEquals('YESMAM', $check);
 	}
-	
+
 	public function testServiceConstruct() {
 		$_REQUEST['__url'] = '';
 		$this->tip->service('LoginService');
@@ -68,16 +79,16 @@ class ServiceTest extends Tipsy_Test {
 			->when('', function($LoginService) {
 				echo $LoginService->loggedin;
 			});
-			
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);
-		
+
 		die($this->tip->service('LoginService')->loggedin);
 
 		$this->assertEquals('YES', $check);
 	}
-	
+
 	public function testServiceAccess() {
 		$_REQUEST['__url'] = '';
 		$this->tip->service('LoginService');
@@ -87,7 +98,7 @@ class ServiceTest extends Tipsy_Test {
 			->when('', function($LoginService) {
 				echo $LoginService->testVar;
 			});
-			
+
 		$this->ob();
 		$this->tip->start();
 		$check = $this->ob(false);

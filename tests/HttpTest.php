@@ -43,14 +43,13 @@ class HttpTest extends Tipsy_Test {
 		$this->assertEquals($res, (object)[id => 1, key => 'value', method => 'get']);
 	}
 
-	/*
 	public function testJsonPostJson() {
+		$this->markTestSkipped('Test incomplete');
 		$http = (new Tipsy\Http())->post($this->host.'item/1/json', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
 		$this->assertEquals($res, (object)[id => 1, key => 'value', method => 'post']);
 	}
-	*/
 
 	public function testJsonGetPlain() {
 		$http = (new Tipsy\Http())->get($this->host.'item/1/plain', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
@@ -59,15 +58,13 @@ class HttpTest extends Tipsy_Test {
 		$this->assertEquals($res, '1.value.get');
 	}
 
-	/*
 	public function testJsonPostPlain() {
+		$this->markTestSkipped('Test incomplete');
 		$http = (new Tipsy\Http())->post($this->host.'item/1/plain', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
 		$this->assertEquals($res, '1.value.post');
 	}
-	*/
-
 
 	public function testError() {
 		$http = (new Tipsy\Http())->post($this->host.'404')
