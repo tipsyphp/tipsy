@@ -2,205 +2,220 @@
 
 namespace Tipsy;
 
-class View {
-	private $_layout = 'layout';
-	private $_headers;
-	private $_rendering = false;
-	private $_stack;
-	private $_path = '';
-	private $_tipsy;
-	private $_filters = [];
-	private $_extension = '.phtml';
+class View
+{
+    private $_layout = 'layout';
+    private $_headers;
+    private $_rendering = false;
+    private $_stack;
+    private $_path = '';
+    private $_tipsy;
+    private $_filters = [];
+    private $_extension = '.phtml';
 
-	public function __construct ($args = []) {
-		$this->headers = [];
+    public function __construct($args = [])
+    {
+        $this->headers = [];
 
-		$this->config($args);
+        $this->config($args);
 
-		$this->_tipsy = $args['tipsy'];
-		$this->_scope = $scope;
-	}
+        $this->_tipsy = $args['tipsy'];
+        $this->_scope = $scope;
+    }
 
-	public function config($args = null) {
-		if (isset($args['layout'])) {
-			$this->_layout = $args['layout'];
-		}
+    public function config($args = null)
+    {
+        if (isset($args['layout'])) {
+            $this->_layout = $args['layout'];
+        }
 
-		if (isset($args['stack'])) {
-			$this->_stack = $args['stack'];
-		}
+        if (isset($args['stack'])) {
+            $this->_stack = $args['stack'];
+        }
 
-		if (isset($args['path'])) {
-			$this->_path = $args['path'];
-		}
+        if (isset($args['path'])) {
+            $this->_path = $args['path'];
+        }
 
-		if (isset($args['filters'])) {
-			foreach ($args['filters'] as $filter) {
-				$this->filter($filter);
-			}
-		}
-	}
+        if (isset($args['filters'])) {
+            foreach ($args['filters'] as $filter) {
+                $this->filter($filter);
+            }
+        }
+    }
 
-	public function stack() {
-		$stack = $this->tipsy()->config()['view']['stack'];
-		if (!$stack) {
-			$stack = [''];
-		}
-		return $stack;
-	}
+    public function stack()
+    {
+        $stack = $this->tipsy()->config()['view']['stack'];
+        if (!$stack) {
+            $stack = [''];
+        }
 
-	public function mtime($file) {
-		return filemtime($this->file($file));
-	}
+        return $stack;
+    }
 
-	public function file($src) {
-		$stack = $this->stack();
+    public function mtime($file)
+    {
+        return filemtime($this->file($file));
+    }
 
-		// absolute path
-		if ($src{0} == '/' && file_exists($src)) {
-			return $src;
-		}
+    public function file($src)
+    {
+        $stack = $this->stack();
 
-		foreach ($stack as $dir) {
-			$path = self::joinPaths($this->_path, $dir, $src.$this->_extension);
-			if (file_exists($path) && is_file($path)) {
-				$file = $path;
-				break;
-			}
-			$path = self::joinPaths($this->_path, $dir, $src);
-			if (file_exists($path) && is_file($path)) {
-				$file = $path;
-				break;
-			}
-		}
+        // absolute path
+        if ($src{0} === '/' && file_exists($src)) {
+            return $src;
+        }
 
-		return $file;
-	}
+        foreach ($stack as $dir) {
+            $path = self::joinPaths($this->_path, $dir, $src.$this->_extension);
+            if (file_exists($path) && is_file($path)) {
+                $file = $path;
+                break;
+            }
+            $path = self::joinPaths($this->_path, $dir, $src);
+            if (file_exists($path) && is_file($path)) {
+                $file = $path;
+                break;
+            }
+        }
 
-	private static function joinPaths() {
-		$args = func_get_args();
-		$paths = [];
-		foreach ($args as $arg) {
-			$paths = array_merge($paths, (array)$arg);
-		}
+        return $file;
+    }
 
-		$paths = array_map(create_function('$p', 'return trim($p, "/");'), $paths);
-		$paths = array_filter($paths);
-		return join('/', $paths);
-	}
+    private static function joinPaths()
+    {
+        $args = func_get_args();
+        $paths = [];
+        foreach ($args as $arg) {
+            $paths = array_merge($paths, (array) $arg);
+        }
 
-	public function layout() {
-		return $this->file($this->_layout);
-	}
+        $paths = array_map(create_function('$p', 'return trim($p, "/");'), $paths);
+        $paths = array_filter($paths);
 
-	public function render($view, $params = null, $display = false) {
-		if (isset($params)) {
-			foreach ($params as $key => $value) {
-				$this->scope()->{$key} = $value;
-			}
-		}
+        return implode('/', $paths);
+    }
 
-		$file = $this->file($view);
-		if (!$file) {
-			throw new Exception('Could not find view file: "'.$view.'" in "'.(implode(',',$this->stack())).'"');
-		}
-		$layout = $this->layout();
+    public function layout()
+    {
+        return $this->file($this->_layout);
+    }
 
+    public function render($view, $params = null, $display = false)
+    {
+        if (isset($params)) {
+            foreach ($params as $key => $value) {
+                $this->scope()->{$key} = $value;
+            }
+        }
 
-		$p = $this->scope()->properties();
+        $file = $this->file($view);
+        if (!$file) {
+            throw new Exception('Could not find view file: "'.$view.'" in "'.(implode(',', $this->stack())).'"');
+        }
+        $layout = $this->layout();
 
-		extract($this->scope()->properties(), EXTR_REFS);
+        $p = $this->scope()->properties();
 
-		$difVars = get_defined_vars();
+        extract($this->scope()->properties(), EXTR_REFS);
 
-		$include = function($view, $scope = []) use ($difVars, $p) {
-			$use = [];
+        $difVars = get_defined_vars();
 
-			foreach ($scope as $k => $var) {
-				if ($scope[$k] != $difVars[$k] && !in_array($k, ['Request', 'difVars', 'include'])) {
-					$use[$k] = $var;
-				}
-			}
+        $include = function ($view, $scope = []) use ($difVars, $p) {
+            $use = [];
 
-			return $this->render($view, $use);
-		};
+            foreach ($scope as $k => $var) {
+                if ($scope[$k] !== $difVars[$k] && !in_array($k, ['Request', 'difVars', 'include'])) {
+                    $use[$k] = $var;
+                }
+            }
 
-		// @todo: add all the other services
-		$Request = $this->tipsy()->request();
+            return $this->render($view, $use);
+        };
 
-		if ($this->_rendering || !isset($display)) {
+        // @todo: add all the other services
+        $Request = $this->tipsy()->request();
 
-			ob_start();
-			include($file);
-			$page = $this->filterContent(ob_get_contents());
-			ob_end_clean();
+        if ($this->_rendering || !isset($display)) {
+            ob_start();
+            include $file;
+            $page = $this->filterContent(ob_get_contents());
+            ob_end_clean();
+        } else {
+            $this->_rendering = true;
+            ob_start();
+            include $file;
+            $this->content = $this->filterContent(ob_get_contents());
+            ob_end_clean();
 
-		} else {
+            if ($layout) {
+                ob_start();
+                include $layout;
+                $page = $this->filterContent(ob_get_contents());
+                ob_end_clean();
+                $this->_rendering = false;
+            } else {
+                $page = $this->content;
+            }
+        }
 
-			$this->_rendering = true;
-			ob_start();
-			include($file);
-			$this->content = $this->filterContent(ob_get_contents());
-			ob_end_clean();
+        /* directly modify view variables. i dont think we need this
+        if (isset($params['var'])) {
+            $this->{$params['var']} = $page;
+        }
+        */
+        return $page;
+    }
 
-			if ($layout) {
-				ob_start();
-				include($layout);
-				$page = $this->filterContent(ob_get_contents());
-				ob_end_clean();
-				$this->_rendering = false;
-			} else {
-				$page = $this->content;
-			}
-		}
+    public function display($view, $params = null)
+    {
+        echo $this->render($view, $params, true);
+    }
 
-		/* directly modify view variables. i dont think we need this
-		if (isset($params['var'])) {
-			$this->{$params['var']} = $page;
-		}
-		*/
-		return $page;
-	}
+    public function filterContent($content)
+    {
+        foreach ($this->_filters as $filter) {
+            if (is_callable($filter['filter'])) {
+                $content = $filter['filter']($content, $filter['arguments']);
+            } elseif (is_string($filter['filter'])) {
+                if (class_exists($filter['filter'])) {
+                    $content = $filter['filter']::filter($content, $filter['arguments']);
+                } else {
+                    throw new Exception('Filter class "'.$filter['filter'].'" doest not exist.');
+                }
+            } else {
+                throw new Exception('Invalid filter.');
+            }
+        }
 
-	public function display($view, $params = null) {
-		echo $this->render($view, $params, true);
-	}
+        return $content;
+    }
 
-	public function filterContent($content) {
-		foreach ($this->_filters as $filter) {
-			if (is_callable($filter['filter'])) {
-				$content = $filter['filter']($content, $filter['arguments']);
-			} else if (is_string($filter['filter'])) {
-				if (class_exists($filter['filter'])) {
-					$content = $filter['filter']::filter($content, $filter['arguments']);
-				} else {
-					throw new Exception('Filter class "'.$filter['filter'].'" doest not exist.');
-				}
-			} else {
-				throw new Exception('Invalid filter.');
-			}
-		}
-		return $content;
-	}
+    public function tipsy()
+    {
+        return $this->_tipsy;
+    }
 
-	public function tipsy() {
-		return $this->_tipsy;
-	}
+    public function scope(&$scope = null)
+    {
+        if ($scope) {
+            $this->_scope = $scope;
+        }
 
-	public function scope(&$scope = null) {
-		if ($scope) {
-			$this->_scope = $scope;
-		}
-		return $this->_scope;
-	}
+        return $this->_scope;
+    }
 
-	public function filter($filter, $arguments = []) {
-		if ($filter) {
-			$this->_filters[] = [
-				'filter' => $filter,
-				'arguments' => $arguments
-			];
-		}
-		return $this->_filter;
-	}
+    public function filter($filter, $arguments = [])
+    {
+        if ($filter) {
+            $this->_filters[] = [
+                'filter' => $filter,
+                'arguments' => $arguments,
+            ];
+        }
+
+        return $this->_filter;
+    }
 }

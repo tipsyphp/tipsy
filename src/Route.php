@@ -2,119 +2,116 @@
 
 namespace Tipsy;
 
-
 /**
- * Route object
+ * Route object.
  */
-class Route {
+class Route
+{
+    protected $_tipsy;
+    protected $_routeParams;
 
-	protected $_tipsy;
-	protected $_routeParams;
+    public function __construct($args)
+    {
+        $this->_controller = $args['controller'];
+        $this->_caseSensitive = $args['caseSensitive'] ? true : false;
+        $this->_view = $args['view'] ? true : false;
+        $this->_route = preg_replace('/^\/?(.*?)\/?$/i', '\\1', $args['route']);
+        $this->_tipsy = $args['tipsy'];
+        $this->_method = $args['method'] === 'all' ? '*' : $args['method'];
 
-	public function __construct($args) {
-		$this->_controller = $args['controller'];
-		$this->_caseSensitive = $args['caseSensitive'] ? true : false;
-		$this->_view = $args['view'] ? true : false;
-		$this->_route = preg_replace('/^\/?(.*?)\/?$/i','\\1',$args['route']);
-		$this->_tipsy = $args['tipsy'];
-		$this->_method = $args['method'] == 'all' ? '*' : $args['method'];
+        $this->_routeParams = new RouteParams();
+    }
 
-		$this->_routeParams = new RouteParams;
-	}
+    public function match($page)
+    {
+        if ($this->method() !== '*') {
+            $methods = explode(',', strtolower($this->method()));
+            $match = false;
 
-	public function match($page) {
+            foreach ($methods as $method) {
+                if ($method === strtolower($this->tipsy()->request()->method())) {
+                    $match = true;
+                    break;
+                }
+            }
 
-		if ($this->method() != '*') {
-			$methods = explode(',',strtolower($this->method()));
-			$match = false;
+            if (!$match) {
+                return false;
+            }
+        }
 
-			foreach ($methods as $method) {
-				if ($method == strtolower($this->tipsy()->request()->method())) {
-					$match = true;
-					break;
-				}
-			}
+        $pathParams = [];
+        $paths = explode('/', $this->_route);
 
-			if (!$match) {
-				return false;
-			}
-		}
+        // index page
+        if (($this->_route === '' || $this->_route === '/') && ($page === '' || $page === '/')) {
+            return $this;
+        }
 
-		$pathParams = [];
-		$paths = explode('/',$this->_route);
+        foreach ($paths as $key => $path) {
+            if (strpos($path, ':') === 0) {
+                $pathParams[$key] = substr($path, 1);
+            }
+        }
 
-		// index page
-		if (($this->_route === '' || $this->_route == '/') && ($page === '' || $page == '/')) {
-			return $this;
-		}
+        $r = preg_replace('/:[a-z]+/i', '.*', $this->_route);
+        $r = preg_replace('/\//', '\/', $r);
 
-		foreach ($paths as $key => $path) {
-			if (strpos($path,':') === 0) {
-				$pathParams[$key] = substr($path,1);
-			}
-		}
+        if (preg_match('/^'.$r.'$/'.($this->_caseSensitive ? '' : 'i'), $page)) {
+            $paths = explode('/', $page);
 
-		$r = preg_replace('/:[a-z]+/i','.*',$this->_route);
-		$r = preg_replace('/\//','\/',$r);
+            foreach ($pathParams as $key => $path) {
+                $this->_routeParams->{$path} = $paths[$key];
+            }
 
-		if (preg_match('/^'.$r.'$/'.($this->_caseSensitive ? '' : 'i'),$page)) {
-			$paths = explode('/',$page);
+            return $this;
+        }
 
-			foreach ($pathParams as $key => $path) {
-				$this->_routeParams->{$path} = $paths[$key];
-			}
+        return false;
+    }
 
-			return $this;
-		}
-		return false;
-	}
+    public function params()
+    {
+        return $this->_routeParams;
+    }
 
-	public function params() {
-		return $this->_routeParams;
-	}
+    public function controller()
+    {
+        if (!isset($this->_controllerRef)) {
+            if (is_callable($this->_controller)) {
+                $controller = new Controller([
+                    'closure' => $this->_controller,
+                    'tipsy' => $this->tipsy(),
+                ]);
+                $this->_controllerRef = $controller;
+            } elseif (is_object($this->_controller)) {
+                $this->_controllerRef = $this->_controller;
+                $this->_controllerRef->tipsy($this->tipsy());
+            } elseif (is_string($this->_controller) && $this->tipsy()->controller($this->_controller)) {
+                $this->_controllerRef = $this->tipsy()->controller($this->_controller);
+            } elseif (is_string($this->_controller) && class_exists($this->_controller)) {
+                $this->_controllerRef = new $this->_controller(['tipsy' => $this->tipsy()]);
+            }
 
-	public function controller() {
+            if ($this->_controllerRef) {
+                $this->_controllerRef->tipsy()->route($this);
+            }
+        }
 
-		if (!isset($this->_controllerRef)) {
+        if (!$this->_controllerRef) {
+            throw new Exception('No controller attached to route.');
+        }
 
-			if (is_callable($this->_controller)) {
+        return $this->_controllerRef;
+    }
 
-				$controller = new Controller([
-					'closure' => $this->_controller,
-					'tipsy' => $this->tipsy()
-				]);
-				$this->_controllerRef = $controller;
+    public function tipsy()
+    {
+        return $this->_tipsy;
+    }
 
-			} elseif(is_object($this->_controller)) {
-				$this->_controllerRef = $this->_controller;
-				$this->_controllerRef->tipsy($this->tipsy());
-
-			} elseif (is_string($this->_controller) && $this->tipsy()->controller($this->_controller)) {
-
-				$this->_controllerRef = $this->tipsy()->controller($this->_controller);
-
-			} elseif (is_string($this->_controller) && class_exists($this->_controller)) {
-
-				$this->_controllerRef = new $this->_controller(['tipsy' => $this->tipsy()]);
-			}
-
-			if ($this->_controllerRef) {
-				$this->_controllerRef->tipsy()->route($this);
-			}
-		}
-
-		if (!$this->_controllerRef) {
-			throw new Exception('No controller attached to route.');
-		}
-
-		return $this->_controllerRef;
-	}
-
-	public function tipsy() {
-		return $this->_tipsy;
-	}
-
-	public function method() {
-		return $this->_method;
-	}
+    public function method()
+    {
+        return $this->_method;
+    }
 }

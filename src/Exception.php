@@ -1,7 +1,7 @@
 <?php
-	
+
 namespace Tipsy;
 
-class Exception extends \Exception {
-
+class Exception extends \Exception
+{
 }
