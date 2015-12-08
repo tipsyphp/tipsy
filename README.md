@@ -7,6 +7,7 @@ Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [Angular
 [![Latest Stable Version](https://poser.pugx.org/arzynik/tipsy/v/stable)](https://packagist.org/packages/arzynik/tipsy)
 [![Build Status](https://travis-ci.org/arzynik/tipsy.svg?branch=master)](https://travis-ci.org/arzynik/tipsy)
 [![Coverage Status](https://coveralls.io/repos/arzynik/tipsy/badge.svg?branch=master&service=github)](https://coveralls.io/github/arzynik/tipsy?branch=master)
+[![Slack Status](https://tipsy-slack.herokuapp.com/badge.svg)](https://tipsy-slack.herokuapp.com/)
 
 ---
 
