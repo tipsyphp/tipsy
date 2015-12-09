@@ -66,15 +66,36 @@ class App {
 			return null;
 		}
 	}
-	public function config($args = null, $recursive = false) {
-		$merge = ($recursive ? 'array_merge_recursive' : 'array_merge');
-		if (is_string($args)) {
-			// assume its a config file
+	public function config($args = null, $recursive = 0) {
+		if ($recursive === 2) {
+			$merge = 'array_merge';
+		} elseif($recursive == 1) {
+			$merge = 'array_merge_recursive';
+		} else {
+			$merge = 'array_replace_recursive';
+		}
 
+		if (is_string($args)) {
 			$iterator = new \GlobIterator($args);
 
 			foreach($iterator as $file) {
-			    $config = parse_ini_file($file->getPathname(), true);
+				if ($file->getExtension() == 'ini') {
+					$config = parse_ini_file($file->getPathname(), true);
+
+				} elseif ($file->getExtension() == 'yaml' || $file->getExtension() == 'yml') {
+					if (function_exists('yaml_parse_file')) {
+						$config = yaml_parse_file($file->getPathname());
+					} elseif (class_exists('\Symfony\Component\Yaml\Parser')) {
+						$yaml = new \Symfony\Component\Yaml\Parser();
+						$config = $yaml->parse(file_get_contents($file->getPathname()));
+					} else {
+						throw new Exception('Could not find yaml parser. Try "composer require symfony/yaml"');
+					}
+
+				} else {
+					throw new Exception('Unknown file type: "'.$file->getFileName().'"');
+				}
+
 			    $this->_config = $merge($this->_config, $config);
 			}
 
