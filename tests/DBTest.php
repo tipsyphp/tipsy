@@ -422,4 +422,14 @@ class DBTest extends Tipsy_Test {
 		$o = ClassResourceTest::q('select * from test_user limit 1')->get(0);
 		$this->assertEquals(1, $o->id);
 	}
+
+
+	public function testResourceReload() {
+		$o = ClassResourceTest::q('select * from test_user limit 1')->get(0);
+		$name = $o->name;
+		$o->name = 'new';
+		$o->load();
+		$this->assertEquals($name, $o->name);
+	}
+
 }
