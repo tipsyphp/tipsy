@@ -3,10 +3,10 @@
 namespace Tipsy;
 
 class Db extends Model {
-	private $_db;
-	private $_fields;
+	protected $_db;
+	protected $_fields;
 
-	public function __construct($config = []) {
+	public function __construct($config = null) {
 		if ($config['_tipsy']) {
 			return;
 		}
