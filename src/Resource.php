@@ -458,7 +458,6 @@ class Resource extends Model {
 
 	public function __o($args) {
 		//return call_user_func_array([self, '__o_static'], func_get_args());
-
 		$classname = get_called_class();
 
 		foreach (func_get_args() as $arg) {
@@ -472,9 +471,8 @@ class Resource extends Model {
 		}
 		foreach ($items as $item) {
 			$item->tipsy($this->tipsy());
-			echo '123'.get_called_class($item);
+			echo get_called_class($item);
 		}
-
 
 		if (count($items) == 1) {
 			return array_pop($items);
