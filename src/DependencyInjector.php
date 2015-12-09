@@ -18,7 +18,7 @@ class DependencyInjector extends Model {
 		return $this->_getDependency($name, $this->_scope);
 	}
 	private function _getDependency($name, $scope = null) {
-		if ($this->tipsy()->services($name)) {
+		if ($this->tipsy()->services($name) && $name != 'Db') {
 			return $this->tipsy()->service($name);
 
 		} else {
