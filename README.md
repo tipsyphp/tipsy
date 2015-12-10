@@ -4,9 +4,9 @@
 Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [AngularJS](https://angularjs.org/). It provides a very lightweight, easy to use interface for websites, rest apis, and dependency injection.
 
 
-[![Latest Stable Version](https://poser.pugx.org/arzynik/tipsy/v/stable)](https://packagist.org/packages/arzynik/tipsy)
-[![Build Status](https://travis-ci.org/arzynik/tipsy.svg?branch=master)](https://travis-ci.org/arzynik/tipsy)
-[![Coverage Status](https://coveralls.io/repos/arzynik/tipsy/badge.svg?branch=master&service=github)](https://coveralls.io/github/arzynik/tipsy?branch=master)
+[![Latest Stable Version](https://poser.pugx.org/tipsyphp/tipsy/v/stable)](https://packagist.org/packages/arzynik/tipsy)
+[![Build Status](https://travis-ci.org/tipsyphp/tipsy.svg?branch=master)](https://travis-ci.org/arzynik/tipsy)
+[![Coverage Status](https://coveralls.io/repos/tipsyphp/tipsy/badge.svg?branch=master&service=github)](https://coveralls.io/github/arzynik/tipsy?branch=master)
 [![Slack Status](https://tipsy-slack.herokuapp.com/badge.svg)](https://tipsy-slack.herokuapp.com/)
 
 ---
@@ -14,7 +14,7 @@ Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [Angular
 
 ### Example Usage
 
-See [Examples](https://github.com/arzynik/tipsy/wiki/Examples) for more detailed examples. See [Documentation](https://github.com/arzynik/tipsy/wiki) for more information.
+See [Examples](https://github.com/tipsyphp/tipsy/wiki/Examples) for more detailed examples. See [Documentation](https://github.com/tipsyphp/tipsy/wiki) for more information.
 
 #### View Template Example
 
@@ -52,7 +52,7 @@ $tipsy->router()
 
 
 ### Installation
-To install using composer use the command below. For additional installation information see [Installation](https://github.com/arzynik/tipsy/wiki/Installation).
+To install using composer use the command below. For additional installation information see [Installation](https://github.com/tipsyphp/tipsy/wiki/Installation).
 
 ```sh
 composer require arzynik/tipsy
