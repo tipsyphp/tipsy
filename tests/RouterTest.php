@@ -537,4 +537,33 @@ class RouterTest extends Tipsy_Test {
 		$check = $this->ob(false);
 		$this->assertEquals('LIBRARY', $check);
 	}
+
+	public function testRouterShorthandGet() {
+		$_REQUEST['__url'] = 'router/shorthand';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+		$this->tip->get('router/shorthand', function() use (&$res) {
+			$res = true;
+		});
+		$this->tip->start();
+		$this->assertTrue($res);
+	}
+
+	public function testRouterShorthandPost() {
+		$_REQUEST['__url'] = 'router/shorthand';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$this->tip->post('router/shorthand', function() use (&$res) {
+			$res = true;
+		});
+		$this->tip->start();
+		$this->assertTrue($res);
+	}
+
+	public function testRouterShorthandWhen() {
+		$_REQUEST['__url'] = 'router/shorthand';
+		$this->tip->when('router/shorthand', function() use (&$res) {
+			$res = true;
+		});
+		$this->tip->start();
+		$this->assertTrue($res);
+	}
 }
