@@ -8,6 +8,7 @@ class RestTest extends Tipsy_Test {
 		$this->useOb = true; // for debug use
 
 		$this->tip->config('tests/config.ini');
+		$this->setupDb($this->tip);
 	}
 
 	public function testFormPost() {
@@ -179,5 +180,30 @@ class RestTest extends Tipsy_Test {
 		$this->tip->run();
 		$check = $this->ob(false);
 		$this->assertEquals(json_encode(['test' => 'hi', 'data' => 'blah']), $check);
+	}
+
+	public function testPostSave() {
+		$_REQUEST['__url'] = 'drink/1';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['CONTENT_TYPE'] = 'application/x-www-form-urlencoded';
+		$_POST['name'] = 'maitai';
+
+		$this->tip->service('Tipsy\Resource/Drink', [
+			_id => 'id',
+			_table => 'test_user'
+		]);
+
+		$this->tip->post('drink/:id',function($Drink, $Request, $Params) {
+			$Drink
+				->load($Params->id)
+				->serialize($Request->request())
+				->save();
+        		echo $Drink->json();
+		});
+
+		$this->ob();
+		$this->tip->run();
+		$check = $this->ob(false);
+		$this->assertEquals(json_encode(['id' => 1, 'name' => 'maitai', 'username' => null, 'active' => false]), $check);
 	}
 }
