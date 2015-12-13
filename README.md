@@ -20,11 +20,10 @@ See [Examples](https://github.com/tipsyphp/tipsy/wiki/Examples) for more detaile
 
 ###### index.php
 ```php
-$tipsy->router()
-    ->home(function($Scope, $View) {
-        $Scope->user = 'Mai Tai';
-        $View->display('hello');
-    });
+$app->home(function($Scope, $View) {
+    $Scope->user = 'Mai Tai';
+    $View->display('hello');
+});
 ```
 
 ###### hello.phtml
@@ -37,15 +36,18 @@ $tipsy->router()
 ###### index.php
 
 ```php
-$tipsy->router()
-    ->delete('api/maitai/:id', function($Params) {
-        echo json_encode([message => $Params->id]);
+$app->post('drink/:id', function($Params, $Request, $Maitai) {
+    $Maitai
+        ->load($Params->id)
+        ->serialize($Request->request())
+        ->save();
+        echo $Maitai->json()
     });
 ```
 
-###### DELETE /api/maitai/1
+###### POST /drink/1?rating=5&name=maitai
 ```
-{"message": 1}
+{"id": 1, "name": "maitai", "rating": 5}
 ```
 
 ---
