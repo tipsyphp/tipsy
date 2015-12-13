@@ -16,38 +16,16 @@ Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [Angular
 
 See [Examples](https://github.com/tipsyphp/tipsy/wiki/Examples) for more detailed examples. See [Documentation](https://github.com/tipsyphp/tipsy/wiki) for more information.
 
-#### View Template Example
-
 ###### index.php
 ```php
-$app->home(function($Scope, $View) {
-    $Scope->user = 'Mai Tai';
-    $View->display('hello');
+$app->home(function($View) {
+    $View->display('index', [user => 'crystal']);
 });
 ```
 
-###### hello.phtml
+###### index.phtml
 ```phtml
-<h1>Hello <?=$user?>!</h1>
-```
-
-#### API Example
-
-###### index.php
-
-```php
-$app->post('drink/:id', function($Params, $Request, $Maitai) {
-    $Maitai
-        ->load($Params->id)
-        ->serialize($Request->request())
-        ->save();
-        echo $Maitai->json()
-    });
-```
-
-###### POST /drink/1?rating=5&name=maitai
-```
-{"id": 1, "name": "maitai", "rating": 5}
+<h1>Hello <?=$user?></h1>
 ```
 
 ---
