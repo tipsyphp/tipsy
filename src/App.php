@@ -296,15 +296,7 @@ class App {
 		return $this->_factory->objectMap($a,$b);
 	}
 
-	public function get() {
-		return call_user_func_array([$this->router(), 'get'], func_get_args());
-	}
-
-	public function post() {
-		return call_user_func_array([$this->router(), 'post'], func_get_args());
-	}
-
-	public function when() {
-		return call_user_func_array([$this->router(), 'when'], func_get_args());
+	public function __call($method, $args) {
+		return call_user_func_array([$this->router(), $method], $args);
 	}
 }

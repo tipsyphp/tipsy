@@ -566,4 +566,32 @@ class RouterTest extends Tipsy_Test {
 		$this->tip->start();
 		$this->assertTrue($res);
 	}
+
+	public function testRouterShorthandDelete() {
+		$_REQUEST['__url'] = 'router/shorthand';
+		$_SERVER['REQUEST_METHOD'] = 'DELETE';
+		$this->tip->delete('router/shorthand', function() use (&$res) {
+			$res = true;
+		});
+		$this->tip->start();
+		$this->assertTrue($res);
+	}
+
+	public function testRouterShorthandHome() {
+		$_REQUEST['__url'] = '';
+		$this->tip->home(function() use (&$res) {
+			$res = true;
+		});
+		$this->tip->start();
+		$this->assertTrue($res);
+	}
+
+	public function testRouterShorthandOtherwise() {
+		$_REQUEST['__url'] = 'router/shorthand';
+		$this->tip->otherwise(function() use (&$res) {
+			$res = true;
+		});
+		$this->tip->start();
+		$this->assertTrue($res);
+	}
 }

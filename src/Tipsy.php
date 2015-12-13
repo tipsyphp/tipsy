@@ -39,11 +39,13 @@ class Tipsy {
 	}
 
 	public static function __callStatic($name, $arguments) {
-		return (new \ReflectionMethod(self::app(), $name))->invokeArgs(self::app(), $arguments);
+		//return (new \ReflectionMethod(self::app(), $name))->invokeArgs(self::app(), $arguments);
+		return call_user_func_array([self::app(), $name], $arguments);
 	}
 
 	public function __call($name, $arguments) {
-		return (new \ReflectionMethod(self::app(), $name))->invokeArgs(self::app(), $arguments);
+		//return (new \ReflectionMethod(self::app(), $name))->invokeArgs(self::app(), $arguments);
+		return call_user_func_array([self::app(), $name], $arguments);
 	}
 }
 
