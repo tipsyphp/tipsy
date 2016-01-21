@@ -594,4 +594,24 @@ class RouterTest extends Tipsy_Test {
 		$this->tip->start();
 		$this->assertTrue($res);
 	}
+
+	public function testRegex() {
+		$_REQUEST['__url'] = 'router/reg/ex';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+		$this->tip->when('/^router\/.*\/ex$/',function() use (&$res) {
+			$res = true;
+		});
+		$this->tip->start();
+		$this->assertTrue($res);
+	}
+
+	public function testRegexSuffix() {
+		$_REQUEST['__url'] = 'assets/app.scss';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+		$this->tip->get('/\.scss$/',function() use (&$res) {
+			$res = true;
+		});
+		$this->tip->start();
+		$this->assertTrue($res);
+	}
 }

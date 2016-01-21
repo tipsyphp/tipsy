@@ -15,7 +15,14 @@ class Route {
 		$this->_controller = $args['controller'];
 		$this->_caseSensitive = $args['caseSensitive'] ? true : false;
 		$this->_view = $args['view'] ? true : false;
-		$this->_route = preg_replace('/^\/?(.*?)\/?$/i','\\1',$args['route']);
+
+		if ($args['route']{0} == '/' && !@preg_match($args['route'], null)) {
+			$this->_route = $args['route'];
+			$this->_regex = true;
+		} else {
+			$this->_route = preg_replace('/^\/?(.*?)\/?$/i','\\1', $args['route']);
+		}
+
 		$this->_tipsy = $args['tipsy'];
 		$this->_method = $args['method'] == 'all' ? '*' : $args['method'];
 
@@ -40,31 +47,40 @@ class Route {
 			}
 		}
 
-		$pathParams = [];
-		$paths = explode('/',$this->_route);
-
 		// index page
 		if (($this->_route === '' || $this->_route == '/') && ($page === '' || $page == '/')) {
 			return $this;
 		}
 
-		foreach ($paths as $key => $path) {
-			if (strpos($path,':') === 0) {
-				$pathParams[$key] = substr($path,1);
+		$pathParams = [];
+
+		if ($this->_regex) {
+			if (preg_match($this->_route, $page, $matches)) {
+				$this->_routeParams = $matches;
+				return $this;
 			}
-		}
+		} else {
 
-		$r = preg_replace('/:[a-z]+/i','.*',$this->_route);
-		$r = preg_replace('/\//','\/',$r);
+			$paths = explode('/',$this->_route);
 
-		if (preg_match('/^'.$r.'$/'.($this->_caseSensitive ? '' : 'i'),$page)) {
-			$paths = explode('/',$page);
-
-			foreach ($pathParams as $key => $path) {
-				$this->_routeParams->{$path} = $paths[$key];
+			foreach ($paths as $key => $path) {
+				if (strpos($path,':') === 0) {
+					$pathParams[$key] = substr($path,1);
+				}
 			}
 
-			return $this;
+			$r = preg_replace('/:[a-z]+/i','.*',$this->_route);
+			$r = preg_replace('/\//','\/',$r);
+
+			if (preg_match('/^'.$r.'$/'.($this->_caseSensitive ? '' : 'i'),$page)) {
+				$paths = explode('/',$page);
+
+				foreach ($pathParams as $key => $path) {
+					$this->_routeParams->{$path} = $paths[$key];
+				}
+
+				return $this;
+			}
 		}
 		return false;
 	}
