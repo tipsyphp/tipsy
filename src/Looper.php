@@ -2,11 +2,22 @@
 
 namespace Tipsy;
 
-class Looper implements \Iterator {
+class Looper implements \Iterator, \JsonSerializable {
 	private $_items;
 	private $_position;
 
 	const DONE = 'looper\break';
+
+	public function jsonSerialize() {
+		foreach ($this->_items as $key => $item) {
+			if (is_object($item) && method_exists($item, 'exports')) {
+				$items[$key] = $item->exports();
+			} else {
+				$items[$key] = $item;
+			}
+		}
+		return $items;
+	}
 
 	public function __construct() {
 		$items = [];
@@ -88,16 +99,7 @@ class Looper implements \Iterator {
 	}
 
 	public function json($args = []) {
-		foreach ($this->_items as $key => $item) {
-			if (is_object($item) && (is_callable($item, 'json') || method_exists($item, 'json'))) {
-				$items[$key] = (new \ReflectionMethod($item, 'json'))->invokeArgs($item, $args);
-			} elseif (is_object($item) && method_exists($item, 'exports')) {
-				$items[$key] = $item->exports();
-			} else {
-				$items[$key] = $item;
-			}
-		}
-		return json_encode($items);
+		return json_encode($this->jsonSerialize());
 	}
 
 	public function e($f) {

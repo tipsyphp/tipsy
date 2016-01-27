@@ -15,7 +15,7 @@ class LoopItem {
 }
 
 class LoopItemJson {
-	public function json() {
+	public function exports() {
 		return ['test' => true, 'other' => 'asd'];
 	}
 }
@@ -295,6 +295,11 @@ class LooperTest extends Tipsy_Test {
 	public function testJsonFunction() {
 		$loop = new \Tipsy\Looper(new LoopItemJson);
 		$this->assertEquals('[{"test":true,"other":"asd"}]', $loop->json());
+	}
+
+	public function testJsonSerialize() {
+		$loop = new \Tipsy\Looper(new LoopItemJson);
+		$this->assertEquals('[{"test":true,"other":"asd"}]', json_encode($loop));
 	}
 
 	public function testCount() {
