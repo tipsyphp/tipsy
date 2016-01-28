@@ -2,7 +2,7 @@
 @import url(https://fonts.googleapis.com/css?family=Amatic+SC:400,700);
 
 body {
-	font-family: "Opens Sans", Helvetica, Verdana, sans-serif;
+	font-family: "Opens Sans", Helvetica, Verdana, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 	font-weight: 100;
 	background: #fff;
 	color: #393939;
@@ -113,7 +113,7 @@ h1 {
 	margin: 0 auto;
 	margin-top: 1em;
 	margin-bottom: 5em;
-	
+
 }
 
 .cocktail {
