@@ -430,6 +430,9 @@ class Resource extends Model {
 	}
 
 	public function serialize($array) {
+		if (!is_array($array)) {
+			$array = get_object_vars($array);
+		}
 		foreach ($array as $key => $val) {
 			if (array_key_exists($key, $this->properties())) {
 				$this->$key = $val;

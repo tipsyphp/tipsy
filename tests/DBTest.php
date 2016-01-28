@@ -435,9 +435,17 @@ class DBTest extends Tipsy_Test {
 	public function testResourceSerialize() {
 		$o = ClassResourceTest::q('select * from test_user limit 1')->get(0);
 		$o->serialize([
-			name => 'new'
+			name => 'newarray'
 		]);
-		$this->assertEquals('new', $o->name);
+		$this->assertEquals('newarray', $o->name);
+	}
+
+	public function testResourceSerializeObject() {
+		$o = ClassResourceTest::q('select * from test_user limit 1')->get(0);
+		$o->serialize((object)[
+			name => 'newobject'
+		]);
+		$this->assertEquals('newobject', $o->name);
 	}
 
 }
