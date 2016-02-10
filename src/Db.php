@@ -75,7 +75,7 @@ class Db extends Model {
 		$this->_driver = $db->getAttribute(\PDO::ATTR_DRIVER_NAME);
 
 		$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-		$db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+		$db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, $args['sslca'] ? true : false);
 
 		$this->db($db);
 
