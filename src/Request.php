@@ -31,10 +31,10 @@ class Request {
 				case 'POST':
 					if ($this->_contentType() === 'application/json') {
 						$this->_properties = json_decode($this->content(), 'array');
-						// } elseif ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
+					} elseif ($this->_contentType() === 'multipart/form-data') {
+						$this->_properties = $_REQUEST;
 					} else  {
 						$this->_properties = $_POST;
-						$this->_properties = $_REQUEST;
 					}
 					break;
 

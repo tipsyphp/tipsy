@@ -11,6 +11,28 @@ class RestTest extends Tipsy_Test {
 		$this->setupDb($this->tip);
 	}
 
+	public function testMultipartFormPost() {
+		$_REQUEST['__url'] = 'test';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['CONTENT_TYPE'] = 'multipart/form-data; separater blah blah';
+		$_REQUEST['data'] = 'blah';
+
+		$this->tip->service('TestModel', []);
+
+		$this->tip->router()
+			->post('test',function($TestModel, $Request) {
+				$TestModel->test = 'hi';
+				$TestModel->data = $Request->data;
+				echo $TestModel->json();
+			});
+
+		$this->ob();
+		$this->tip->run();
+		$check = $this->ob(false);
+		$this->assertEquals(json_encode(['test' => 'hi', 'data' => 'blah']), $check);
+	}
+
+
 	public function testFormPost() {
 		$_REQUEST['__url'] = 'test';
 		$_SERVER['REQUEST_METHOD'] = 'POST';
