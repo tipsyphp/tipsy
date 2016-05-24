@@ -34,6 +34,7 @@ class Request {
 						// } elseif ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
 					} else  {
 						$this->_properties = $_POST;
+						$this->_properties = $_REQUEST;
 					}
 					break;
 
