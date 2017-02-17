@@ -203,4 +203,15 @@ class View {
 		}
 		return $this->_filter;
 	}
+
+    public function json($data, $display = true) {
+        $this->content = json_encode($data);
+
+        if ($display) {
+            header('Content-Type: application/json');
+            echo $this->content;
+        } else {
+            return $this->content;
+        }
+    }
 }
