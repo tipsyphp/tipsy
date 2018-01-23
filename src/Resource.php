@@ -460,7 +460,6 @@ class Resource extends Model {
 	}
 
 	public function __o($args) {
-		//return call_user_func_array([self, '__o_static'], func_get_args());
 		$classname = get_called_class();
 
 		foreach (func_get_args() as $arg) {
@@ -508,7 +507,7 @@ class Resource extends Model {
 	}
 
 	public static function __q_static() {
-		return call_user_func_array([self, '__query_static'], func_get_args());
+		return forward_static_call_array('__query_static', func_get_args());
 	}
 
 	public static function __query_static() {
