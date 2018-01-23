@@ -84,7 +84,9 @@ class View {
 			$paths = array_merge($paths, (array)$arg);
 		}
 
-		$paths = array_map(create_function('$p', 'return trim($p, "/");'), $paths);
+		$paths = array_map(function($p) {
+			return trim($p, '/');
+		}, $paths);
 		$paths = array_filter($paths);
 		return join('/', $paths);
 	}

@@ -38,7 +38,7 @@ class Router {
 		return $this;
 	}
 
-	public function when($r, $args = null) {
+	public function when($r = null, $args = null) {
 		if (is_array($r)) {
 			$route = $r;
 		} else {
