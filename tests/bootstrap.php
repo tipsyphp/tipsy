@@ -8,6 +8,9 @@ if (trim(`whoami`) == 'arzynik') {
 	ini_set('mysqli.default_socket','/Applications/MAMP/tmp/mysql/mysql.sock');
 }
 
+// Autoload files using Composer autoload
+require_once __DIR__ . '/../vendor/autoload.php';
+
 //putenv('DB=pgsql');
 
 class Tipsy_Test extends PHPUnit_Framework_TestCase {
@@ -38,7 +41,3 @@ class Tipsy_Test extends PHPUnit_Framework_TestCase {
 		}
 	}
 }
-
-// Autoload files using Composer autoload
-require_once __DIR__ . '/../vendor/autoload.php';
-
