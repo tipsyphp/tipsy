@@ -507,7 +507,7 @@ class Resource extends Model {
 	}
 
 	public static function __q_static() {
-		return forward_static_call_array('__query_static', func_get_args());
+		return forward_static_call_array([get_called_class(), '__query_static'], func_get_args());
 	}
 
 	public static function __query_static() {
