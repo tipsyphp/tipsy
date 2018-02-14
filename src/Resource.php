@@ -332,6 +332,9 @@ class Resource extends Model {
 			switch ($field->type) {
 				case 'boolean':
 					$this->{$field->field} = $this->{$field->field} ? true : false;
+					if ($this->db()->driver() == 'mysql') {
+						$this->{$field->field} = $this->{$field->field} ? 1 : 0;
+					}
 					break;
 
 				case 'int':
