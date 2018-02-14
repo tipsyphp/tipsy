@@ -69,7 +69,7 @@ class Route {
 				}
 			}
 
-			$r = preg_replace('/:[a-z]+/i','.*',$this->_route);
+			$r = preg_replace('/:[a-z_]+/i','.*',$this->_route);
 			$r = preg_replace('/\//','\/',$r);
 
 			if (preg_match('/^'.$r.'$/'.($this->_caseSensitive ? '' : 'i'),$page)) {
