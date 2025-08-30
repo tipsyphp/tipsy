@@ -1,29 +1,19 @@
 <?php
 
-// Simple autoloader for Tipsy Framework
-// Compatible with PHP 5.5+
+// Simple autoload for baseline testing
+// This loads the Tipsy framework from the mounted source directory
 
 spl_autoload_register(function ($class) {
-    // Handle Tipsy namespace
-    if (strpos($class, 'Tipsy\\') === 0) {
-        $file = __DIR__ . '/tipsy/' . str_replace('\\', '/', substr($class, 6)) . '.php';
-        if (file_exists($file)) {
-            require_once $file;
-            return true;
-        }
-    }
+    // Convert namespace to file path
+    $file = str_replace('\\', '/', $class) . '.php';
     
-    // Handle App namespace
-    if (strpos($class, 'App\\') === 0) {
-        $file = __DIR__ . '/../src/' . str_replace('\\', '/', substr($class, 4)) . '.php';
-        if (file_exists($file)) {
-            require_once $file;
-            return true;
-        }
+    // Try to load from mounted tipsy source
+    $tipsy_file = '/var/www/tipsy-src/' . str_replace('Tipsy/', '', $file);
+    if (file_exists($tipsy_file)) {
+        require_once $tipsy_file;
+        return;
     }
-    
-    return false;
 });
 
-// Load Tipsy main class
-require_once __DIR__ . '/tipsy/Tipsy.php';
+// Load the main Tipsy class
+require_once '/var/www/tipsy-src/Tipsy.php';
