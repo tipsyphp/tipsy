@@ -1,0 +1,9 @@
+# System Information
+Date: Fri Aug 29 22:33:38 PDT 2025
+Docker Version: Docker version 20.10.12, build e91ed57
+Docker Compose Version: docker-compose version 1.29.2, build 5becea4c
+
+# Container Information
+NAMES                      IMAGE                    STATUS
+baseline_tipsy-nextgen_1   baseline_tipsy-nextgen   Up 7 minutes
+

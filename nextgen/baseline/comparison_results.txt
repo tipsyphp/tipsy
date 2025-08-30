@@ -1,0 +1,36 @@
+Tipsy Framework Real Performance Comparison
+Generated: Fri Aug 29 23:02:55 PDT 2025
+
+Legacy (PHP 5.6): 167.46 req/sec, 47.91ms latency
+NextGen (PHP 8.3): 2474.34 req/sec, 3.24ms latency
+Improvement: 14.77x
+
+Full Legacy Results:
+Running 30s test @ http://localhost:8081/
+  4 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    47.91ms   13.60ms 162.58ms   87.49%
+    Req/Sec    41.97      9.33    60.00     82.34%
+  Latency Distribution
+     50%   45.96ms
+     75%   51.36ms
+     90%   57.17ms
+     99%  111.46ms
+  5033 requests in 30.06s, 1.22MB read
+Requests/sec:    167.46
+Transfer/sec:     41.69KB
+
+Full NextGen Results:
+Running 30s test @ http://localhost:8080/
+  4 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     3.24ms  846.23us  30.56ms   85.04%
+    Req/Sec   621.74     42.20   717.00     70.33%
+  Latency Distribution
+     50%    3.15ms
+     75%    3.57ms
+     90%    4.00ms
+     99%    5.32ms
+  74311 requests in 30.03s, 18.92MB read
+Requests/sec:   2474.34
+Transfer/sec:    645.15KB
