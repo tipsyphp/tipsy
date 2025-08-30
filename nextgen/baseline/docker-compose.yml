@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  tipsy-nextgen:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app-hello:/var/www/html
+      - ./vendor:/var/www/html/vendor
+      - ../src:/var/www/tipsy-src  # Mount Tipsy source files
+    environment:
+      - PHP_DISPLAY_ERRORS=1
+      - PHP_ERROR_REPORTING=E_ALL
+    networks:
+      - tipsy-network
+
+  composer:
+    build: .
+    working_dir: /var/www/html
+    volumes:
+      - ./app-hello:/var/www/html
+      - ./vendor:/var/www/html/vendor
+    command: composer install --no-dev
+    profiles:
+      - setup
+
+networks:
+  tipsy-network:
+    driver: bridge

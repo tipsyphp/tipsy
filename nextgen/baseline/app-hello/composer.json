@@ -1,0 +1,12 @@
+{
+    "require": {
+        "tipsy/tipsy": "dev-main"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/tipsyphp/tipsy"
+        }
+    ],
+    "minimum-stability": "dev"
+}

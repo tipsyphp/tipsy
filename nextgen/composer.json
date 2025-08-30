@@ -1,0 +1,40 @@
+{
+	"name": "tipsy/tipsy",
+	"description": "An MVW PHP framework",
+	"license": "MIT",
+	"time": "2014-07-24",
+	"keywords": [
+		"php",
+		"mvw",
+		"mvc",
+		"framework"
+	],
+	"authors": [
+		{
+			"name": "Devin Smith",
+			"email": "devin@tipsy.la",
+			"homepage": "http://devin.la",
+			"role": "Developer"
+		}
+	],
+	"minimum-stability": "stable",
+	"require": {
+		"php": ">=8.3.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^10.0",
+		"phpstan/phpstan": "^1.10",
+		"friendsofphp/php-cs-fixer": "^3.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Tipsy\\": "src/"
+		},
+		"files": [
+			"src/Tipsy.php"
+		]
+	},
+	"archive": {
+		"exclude": ["/tests", "/.travis.yml", "/.gitignore"]
+	}
+}
