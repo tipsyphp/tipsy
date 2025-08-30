@@ -1,0 +1,5 @@
+{
+    "require": {
+        "tipsy/tipsy": "~0.11"
+    }
+}
