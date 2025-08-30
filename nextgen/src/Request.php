@@ -159,7 +159,14 @@ class Request {
 
 	public function headers(): array {
 		if (!isset($this->_headers)) {
-			$this->_headers = getallheaders() ?: [];
+			// Modern PHP 8.3+ way to get headers
+			$this->_headers = [];
+			foreach ($_SERVER as $name => $value) {
+				if (str_starts_with($name, 'HTTP_')) {
+					$headerName = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($name, 5)))));
+					$this->_headers[$headerName] = $value;
+				}
+			}
 		}
 		return $this->_headers;
 	}

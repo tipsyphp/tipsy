@@ -131,7 +131,7 @@ class View {
 			return $this->render($view, $use);
 		};
 
-		// @todo: add all the other services
+		// Initialize request for template scope
 		$Request = $this->tipsy()->request();
 
 		if ($this->_rendering || $display) {

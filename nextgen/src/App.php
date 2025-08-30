@@ -310,6 +310,6 @@ class App {
 	}
 
 	public function __call(string $method, array $args): mixed {
-		return call_user_func_array([$this->router(), $method], $args);
+		return $this->router()->{$method}(...$args);
 	}
 }

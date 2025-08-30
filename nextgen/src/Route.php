@@ -26,9 +26,16 @@ class Route {
 		$this->_view = (bool)($args['view'] ?? false);
 
 		// Check if this is a regex route (starts with / and is valid regex)
-		if (isset($args['route'][0]) && $args['route'][0] === '/' && @preg_match($args['route'], '') !== false) {
-			$this->_route = $args['route'];
-			$this->_regex = true;
+		if (isset($args['route'][0]) && $args['route'][0] === '/') {
+			// Test if it's a valid regex pattern
+			try {
+				preg_match($args['route'], '');
+				$this->_route = $args['route'];
+				$this->_regex = true;
+			} catch (\Throwable) {
+				// Not a valid regex, treat as normal route
+				$this->_route = preg_replace('/^\/?(.*?)\/?$/i', '\\1', $args['route'] ?? '');
+			}
 		} else {
 			$this->_route = preg_replace('/^\/?(.*?)\/?$/i', '\\1', $args['route'] ?? '');
 		}
