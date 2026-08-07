@@ -8,6 +8,3 @@ If you are really awesome, fix an issue by making a pull request. PRs are gladly
 
 ##### License
 Tipsy is licensed under the [MIT License](https://github.com/tipsyphp/tipsy/blob/master/LICENSE).
-
-##### More Info
-For general questions join the [Tipsy Slack](https://tipsy-slack.herokuapp.com/) channel.

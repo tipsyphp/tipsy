@@ -7,6 +7,7 @@ Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [Angular
 
 [![Latest Stable Version](https://poser.pugx.org/tipsyphp/tipsy/v/stable)](https://packagist.org/packages/tipsyphp/tipsy)
 [![CI](https://github.com/tipsyphp/tipsy/actions/workflows/ci.yml/badge.svg)](https://github.com/tipsyphp/tipsy/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/tipsyphp/tipsy/graph/badge.svg)](https://codecov.io/gh/tipsyphp/tipsy)
 
 ---
 
