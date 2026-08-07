@@ -1,22 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="bootstrap.php" colors="true">
-	<logging>
-		<log type="coverage-clover" target="../build/logs/clover.xml"/>
-    </logging>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
+         bootstrap="bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache">
+
     <testsuites>
         <testsuite name="Tipsy Backend">
-            <directory>./</directory>
-			<directory phpVersion="7" phpVersionOperator=">=" suffix="PHP7.php">./</directory>
+            <directory suffix="Test.php">./</directory>
         </testsuite>
     </testsuites>
 
-    <filter>
-        <whitelist>
-            <directory suffix=".php" processUncoveredFilesFromWhitelist="true">../src</directory>
-			<exclude>
-				<directory>../examples</directory>
-			</exclude>
-        </whitelist>
-    </filter>
+    <source>
+        <include>
+            <directory suffix=".php">../src</directory>
+        </include>
+        <exclude>
+            <directory>../examples</directory>
+            <directory>../benchmarks</directory>
+            <directory>../vendor</directory>
+            <directory>../tests</directory>
+        </exclude>
+    </source>
+
+    <coverage>
+        <report>
+            <clover outputFile="../build/logs/clover.xml"/>
+        </report>
+    </coverage>
+
+    <logging>
+        <junit outputFile="../build/logs/junit.xml"/>
+    </logging>
 </phpunit>

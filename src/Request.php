@@ -1,121 +1,116 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy;
 
 class Request {
-	private $_properties;
-	private $_rawRequest;
-	private $_content;
-	private $_headers;
-	private $_path;
+	private array $_properties = [];
+	private array|false|null $_rawRequest = null;
+	private string|false|null $_content = null;
+	private ?array $_headers = null;
+	private ?string $_path = null;
+	private ?string $_base = null;
+	private ?string $_contentType = null;
+	private ?string $_method = null;
 
-	public function __construct($args = []) {
-		$this->_properties = [];
+	public function __construct(array $args = []) {
+		$method = $this->method();
+		if ($method) {
+			$contentType = $this->_contentType();
+			$this->_properties = match ($method) {
+				'GET' => $contentType === 'application/json' ? ($this->raw() ?: []) : ($_GET ?? []),
+				'POST' => match ($contentType) {
+					'application/json' => json_decode($this->content() ?: '', true) ?: [],
+					'multipart/form-data' => $_REQUEST ?? [],
+					default => $_POST ?? [],
+				},
+				default => $this->_parseBodyContent(),
+			};
 
-		/** dont think this is needed, but leaving here just in case
-		if ($args['tipsy']) {
-			$this->_tipsy = $args['tipsy'];
+			if (!is_array($this->_properties)) {
+				$this->_properties = [];
+			}
 		}
-		**/
+	}
 
-		if ($this->method()) {
-			switch ($this->method()) {
-				case 'GET':
-					if ($this->_contentType() === 'application/x-www-form-urlencoded' || !$this->_contentType()) {
-						$this->_properties = $_GET;
-					} elseif ($this->_contentType() === 'application/json') {
-						$this->_properties = $this->raw();
-					}
-					break;
+	private function _parseBodyContent(): array {
+		if ($this->_contentType() === 'application/x-www-form-urlencoded') {
+			$result = [];
+			parse_str($this->content() ?: '', $result);
+			return $result;
+		}
 
-				case 'POST':
-					if ($this->_contentType() === 'application/json') {
-						$this->_properties = json_decode($this->content(), 'array');
-					} elseif ($this->_contentType() === 'multipart/form-data') {
-						$this->_properties = $_REQUEST;
-					} else  {
-						$this->_properties = $_POST;
-					}
-					break;
-
-				case 'PUT':
-				case 'DELETE':
-				default:
-					if ($this->_contentType() === 'application/x-www-form-urlencoded') {
-						parse_str($this->content(), $this->_properties);
-
-					} elseif ($this->_contentType() === 'application/json') {
-						$content = $this->content();
-						$request = json_decode($content,'array');
-						if (!$request) {
-							$this->_properties = false;
-						} else {
-							$this->_properties = $request;
-						}
-					}
-					break;
-
+		if ($this->_contentType() === 'application/json') {
+			$content = $this->content();
+			if ($content) {
+				$request = json_decode($content, true);
+				return is_array($request) ? $request : [];
 			}
 		}
 
+		return [];
 	}
 
-	private function _contentType() {
-		if (!isset($this->_contentType)) {
-			$this->_contentType = explode(';',$_SERVER['CONTENT_TYPE'])[0];
+	private function _contentType(): ?string {
+		if ($this->_contentType === null) {
+			$this->_contentType = isset($_SERVER['CONTENT_TYPE'])
+				? explode(';', $_SERVER['CONTENT_TYPE'])[0]
+				: '';
 		}
-		return $this->_contentType;
+		return $this->_contentType ?: null;
 	}
 
-	public function base() {
+	public function base(): ?string {
 		return $this->_base;
 	}
 
-	public function loc($piece = 0) {
+	public function loc(int $piece = 0): string {
 		$paths = explode('/', $this->path());
-		return $paths[$piece];
+		return $paths[$piece] ?? '';
 	}
 
-	public function host() {
-		return 'http://'.$_SERVER['HTTP_HOST'];
+	public function host(): string {
+		$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+		return $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 	}
 
-	public function url() {
-		return $this->host().'/'.$this->path();
+	public function url(): string {
+		return $this->host() . '/' . $this->path();
 	}
 
-	public function path($url = null) {
+	public function path(?string $url = null): string {
 
-		if (!isset($this->_path)) {
+		if ($this->_path === null) {
 			if (!$url) {
-				if ($_REQUEST['__url']) {
+				if (!empty($_REQUEST['__url'])) {
 					$url = $_REQUEST['__url'];
 				} else {
+					$request = explode('?', $_SERVER['REQUEST_URI'] ?? '', 2)[0];
 
-					$request = explode('?', $_SERVER['REQUEST_URI'], 2)[0];
+					$script = $_SERVER['SCRIPT_NAME'] ?? '';
+					$dir = dirname($script);
 
-					$dir = $_SERVER['SCRIPT_NAME'];
-					$url = preg_replace('/^'.str_replace('/','\\/',''.$dir).'/','',$request);
+					// Strip script file then script directory prefixes without preg
+					if ($script !== '' && str_starts_with($request, $script)) {
+						$url = substr($request, strlen($script));
+					} elseif ($dir !== '' && $dir !== '/' && $dir !== '\\' && str_starts_with($request, $dir)) {
+						$url = substr($request, strlen($dir));
+					} else {
+						$url = $request;
+					}
 
-					$dir = dirname($_SERVER['SCRIPT_NAME']);
-					$url = preg_replace('/^'.str_replace('/','\\/',''.$dir).'/','',$url);
-
-					$url = substr($url, 0, 1) == '/' ? $url : '/'.$url;
-					$this->_base = substr($dir, -1) == '/' ? $dir : $dir.'/';
+					// dirname('file.php') => '.' — preserve historical "./" base
+					$this->_base = str_ends_with($dir, '/') ? $dir : $dir . '/';
 				}
 			}
 
-			while (strpos($url, '//') !== false) {
-				$url = str_replace('//', '/', $url);
+			$url = trim(str_replace('//', '/', $url), " \t\n\r\0\x0B/");
+			// Second pass covers residual triples like /// → /
+			if (str_contains($url, '//')) {
+				$url = preg_replace('#/+#', '/', $url) ?? $url;
+				$url = trim($url, '/');
 			}
-
-			if ($url{0} == '/') {
-				$url = substr($url, 1);
-			}
-			$url = trim($url);
-			$url = ltrim($url, '/');
-			$url = rtrim($url, '/');
-			$url = trim($url);
 
 			$this->_path = $url;
 		}
@@ -123,50 +118,49 @@ class Request {
 		return $this->_path;
 	}
 
-	public function content() {
-		if (!isset($this->_content)) {
-			if (strlen(trim($this->_content = file_get_contents(!is_null($_ENV['TESTS_PHP_INPUT']) ? $_ENV['TESTS_PHP_INPUT'] : 'php://input'))) === 0) {
-				$this->_content = false;
-			}
+	public function content(): string|false {
+		if ($this->_content === null) {
+			$input = $_ENV['TESTS_PHP_INPUT'] ?? 'php://input';
+			$raw = file_get_contents($input);
+			$this->_content = ($raw !== false && strlen(trim($raw)) > 0) ? $raw : false;
 		}
 		return $this->_content;
 	}
 
-	public function raw() {
-		if (!isset($this->_rawRequest)) {
-			$request = trim($_SERVER['REQUEST_URI']);
-			$request = substr($request,strpos($request,'?')+1);
+	public function raw(): array|false {
+		if ($this->_rawRequest === null) {
+			$request = trim($_SERVER['REQUEST_URI'] ?? '');
+			$request = substr($request, strpos($request, '?') + 1);
 			$request = urldecode($request);
-			$request = json_decode($request,'array');
+			$decoded = json_decode($request, true);
 
-			if (!$request) {
-				$this->_rawRequest = false;
-			} else {
-				$this->_rawRequest = $request;
-			}
+			$this->_rawRequest = is_array($decoded) ? $decoded : false;
 		}
-		return $this->_rawRequest;
+		return $this->_rawRequest ?: false;
 	}
 
-	public function method() {
-		return strtoupper($_SERVER['REQUEST_METHOD']);
+	public function method(): string {
+		if ($this->_method === null) {
+			$this->_method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+		}
+		return $this->_method;
 	}
 
-	public function &__get($name) {
+	public function &__get(string $name): mixed {
 		return $this->_properties[$name];
 	}
 
-	public function __set($name, $value) {
-		return $this->_properties[$name] = $value;
+	public function __set(string $name, mixed $value): void {
+		$this->_properties[$name] = $value;
 	}
 
-	public function &request() {
+	public function &request(): array {
 		return $this->_properties;
 	}
 
-	public function headers() {
-		if (!isset($this->_headers)) {
-			$this->_headers = getallheaders();
+	public function headers(): array {
+		if ($this->_headers === null) {
+			$this->_headers = getallheaders() ?: [];
 		}
 		return $this->_headers;
 	}

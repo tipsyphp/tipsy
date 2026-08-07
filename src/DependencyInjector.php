@@ -1,80 +1,81 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy;
 
 class DependencyInjector extends Model {
-	private $_closure;
-	private $_tipsy;
+	private ?\Closure $_closure = null;
+	private ?App $_tipsy = null;
 
-	public function __construct($args = []) {
+	/**
+	 * Cache for ReflectionFunction parameter names.
+	 * Keyed by spl_object_id — avoids re-reflecting the same closure.
+	 *
+	 * @var array<int, string[]>
+	 */
+	private static array $_reflectionCache = [];
+
+	public function __construct(array $args = []) {
 		if (isset($args['tipsy'])) {
 			$this->tipsy($args['tipsy']);
 		}
 		if (isset($args['closure'])) {
-			$this->closure(\Closure::bind($args['closure'], $this, get_class()));
+			$this->closure(\Closure::bind($args['closure'], $this, static::class));
 		}
 	}
-	public function service($name) {
-		return $this->_getDependency($name, $this->_scope);
+
+	public function service(string $name): mixed {
+		return $this->_getDependency($name, $this->_scope ?? null);
 	}
-	private function _getDependency($name, $scope = null) {
-		if ($this->tipsy()->services($name) && $name != 'Db') {
+
+	private function _getDependency(string $name, ?Scope $scope = null): mixed {
+		if ($name !== 'Db' && $this->tipsy()->services($name)) {
 			return $this->tipsy()->service($name);
-
-		} else {
-			switch ($name) {
-				case 'Db':
-					return $this->tipsy()->db();
-				case 'Route':
-					return $this->tipsy()->route();
-				case 'Request':
-					return $this->tipsy()->request();
-				case 'Headers':
-					return $this->tipsy()->request()->headers();
-				case 'Params':
-					return $this->tipsy()->route()->params();
-				case 'Tipsy':
-					return $this->tipsy();
-				case 'View':
-					return $this->tipsy()->view();
-				case 'Scope':
-					return $scope;
-				case 'RootScope':
-					return $this->tipsy()->rootScope();
-			}
 		}
 
-		return false;
+		return match ($name) {
+			'Db'        => $this->tipsy()->db(),
+			'Route'     => $this->tipsy()->route(),
+			'Request'   => $this->tipsy()->request(),
+			'Headers'   => $this->tipsy()->request()->headers(),
+			'Params'    => $this->tipsy()->route()->params(),
+			'Tipsy'     => $this->tipsy(),
+			'View'      => $this->tipsy()->view(),
+			'Scope'     => $scope,
+			'RootScope' => $this->tipsy()->rootScope(),
+			default     => null,
+		};
 	}
 
-	public function inject($closure, $scope = null) {
-		$avail = ['Db', 'Route', 'Request', 'Headers', 'Params', 'Tipsy', 'View', 'Scope', 'RootScope'];
-
+	public function inject(\Closure $closure, ?Scope $scope = null): mixed {
 		if (!$this->tipsy()) {
 			throw new Exception('Tipsy is not defined!');
 		}
 
-		foreach ($this->tipsy()->services() as $name => $service) {
-			$avail[] = $name;
+		// Cache reflection results — ReflectionFunction is expensive (~5μs)
+		$cacheKey = spl_object_id($closure);
+
+		if (!isset(self::$_reflectionCache[$cacheKey])) {
+			$refFunc = new \ReflectionFunction($closure);
+			$paramNames = [];
+			foreach ($refFunc->getParameters() as $refParameter) {
+				$paramNames[] = $refParameter->getName();
+			}
+			self::$_reflectionCache[$cacheKey] = $paramNames;
 		}
 
 		$args = [];
-		$refFunc = new \ReflectionFunction($closure);
-
-		foreach ($refFunc->getParameters() as $refParameter) {
-			$name = $refParameter->getName();
-			if (in_array($name, $avail)) {
-				$args[] = $this->_getDependency($name, $scope);
-			} else {
-				$args[] = null;
-			}
+		foreach (self::$_reflectionCache[$cacheKey] as $name) {
+			// _getDependency already resolves builtins, services, and unknown → null
+			$args[] = $this->_getDependency($name, $scope);
 		}
 
-		return call_user_func_array($closure, $args);
+		return $closure(...$args);
 	}
 
-	public function closure($closure = null) {
-		if ($closure) {
+	public function closure(?\Closure $closure = null): ?\Closure {
+		if ($closure !== null) {
 			$this->_closure = $closure;
 		}
 		return $this->_closure;

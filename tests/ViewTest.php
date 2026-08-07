@@ -3,7 +3,8 @@
 
 class ViewTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
 	}
@@ -206,7 +207,7 @@ class ViewTest extends Tipsy_Test {
 		$this->ob();
 		$this->tip->router()
 			->when('router/view', function($View, $Scope) {
-				$View->render('PrintTest', [test => 'ONE']);
+				$View->render('PrintTest', ['test' => 'ONE']);
 				echo $Scope->test;
 			});
 		$this->tip->start();

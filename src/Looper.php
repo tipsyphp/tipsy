@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy;
 
-class Looper implements \Iterator, \JsonSerializable {
-	private $_items;
-	private $_position;
+class Looper implements \Iterator, \JsonSerializable, \Countable {
+	private array $_items;
+	private int $_position = 0;
+	private ?self $_parent = null;
 
-	const DONE = 'looper\break';
+	public const string DONE = 'looper\break';
 
-	public function jsonSerialize() {
+	public function jsonSerialize(): array {
+		$items = [];
 		foreach ($this->_items as $key => $item) {
 			if (is_object($item) && method_exists($item, 'exports')) {
 				$items[$key] = $item->exports();
@@ -19,13 +23,12 @@ class Looper implements \Iterator, \JsonSerializable {
 		return $items;
 	}
 
-	public function __construct() {
+	public function __construct(mixed ...$args) {
 		$items = [];
-		$args = func_get_args();
 		$args = array_reverse($args);
 
 		foreach ($args as $arg) {
-			if (is_object($arg) && (get_class($arg) == 'Tipsy\Looper' || is_subclass_of($arg, 'Tipsy\Looper'))) {
+			if ($arg instanceof self) {
 				$arg = $arg->items();
 			} elseif (is_object($arg)) {
 				$arg = [$arg];
@@ -37,116 +40,116 @@ class Looper implements \Iterator, \JsonSerializable {
 		$this->_position = 0;
 	}
 
-	// if anyone knows any way to pass func_get_args by reference i would love you. i want string manipulation
-	public static function o() {
-		$iterator = new \ReflectionClass(get_called_class());
-		return $iterator->newInstanceArgs(func_get_args());
+	public static function o(mixed ...$args): static {
+		return new static(...$args);
 	}
 
-	public function items() {
+	public function items(): array {
 		return $this->_items;
 	}
 
-	public function get($index) {
+	public function get(int $index): mixed {
 		return $this->eq($index);
 	}
 
-	public function set($var, $val) {
+	public function set(string $var, mixed $val): static {
 		if ($var) {
 			foreach ($this->_items as $item) {
 				$item->{$var} = $val;
-			};
+			}
 		}
 		return $this;
 	}
 
-	public function eq($pos) {
+	public function eq(int $pos): mixed {
 		$pos = $pos < 0 ? count($this->_items) - abs($pos) : $pos;
-		return $this->_items[$pos];
+		return $this->_items[$pos] ?? null;
 	}
 
-	public function remove($start) {
+	public function remove(int $start): static {
 		unset($this->_items[$start]);
 		return $this;
 	}
 
-	public function slice($start, $end = null) {
-		$items = $this->_items;
-		$items = array_slice($items, $start, $end);
-
+	public function slice(int $start, ?int $end = null): static {
+		$items = array_slice($this->_items, $start, $end);
 		return $this->_returnItems($items);
 	}
 
-	public function not() {
-		$items = call_user_func_array([$this, '_filter'], func_get_args());
-		return $this->_returnItems($items['no']);
+	public function not(mixed ...$args): static {
+		$items = $this->_filter(...$args);
+		return $this->_returnItems($items['no'] ?? []);
 	}
 
-	public function filter() {
-		$items = call_user_func_array([$this, '_filter'], func_get_args());
-		return $this->_returnItems($items['yes']);
+	public function filter(mixed ...$args): static {
+		$items = $this->_filter(...$args);
+		return $this->_returnItems($items['yes'] ?? []);
 	}
 
-	public function each($func, $params = []) {
+	public function each(callable $func, array $params = []): void {
 		foreach ($this->_items as $key => $item) {
-			$func = $func->bindTo(!is_object($item) ? (object)$item : $item);
+			if ($func instanceof \Closure) {
+				$func = $func->bindTo(!is_object($item) ? (object)$item : $item);
+			}
 			$res = $func($key, $item);
 			$this->_items[$key] = $item;
-			if ($res == self::DONE) {
+			if ($res === self::DONE) {
 				break;
 			}
 		}
 	}
 
-	public function json($args = []) {
-		return json_encode($this->jsonSerialize());
+	public function json(array $args = []): string {
+		return json_encode($this->jsonSerialize()) ?: '[]';
 	}
 
-	public function e($f) {
-		self::each($f);
+	public function e(callable $f): void {
+		$this->each($f);
 	}
 
-	public function rewind() {
+	public function rewind(): void {
 		$this->_position = 0;
 	}
 
-	public function current() {
+	public function current(): mixed {
 		return $this->_items[$this->_position];
 	}
 
-	public function key() {
+	public function key(): int {
 		return $this->_position;
 	}
 
-	public function next() {
+	public function next(): void {
 		++$this->_position;
 	}
 
-	public function valid() {
+	public function valid(): bool {
 		return isset($this->_items[$this->_position]);
 	}
 
-	public function count() {
+	public function count(): int {
 		return count($this->_items);
 	}
 
-	public function parent() {
+	public function parent(): ?self {
 		return $this->_parent;
 	}
 
-	private function _filter() {
+	private function _filter(mixed ...$filterArgs): array {
 		$items = $this->_items;
 		$mismatch = [];
 		$strict = false;
+		$func = null;
+		$filters = [];
 
-		if (func_num_args() == 1 && is_callable(func_get_arg(0))) {
-			$func = func_get_arg(0);
+		if (count($filterArgs) === 1 && is_callable($filterArgs[0])) {
+			$func = $filterArgs[0];
 
-		} elseif (func_num_args() == 2 && !is_array(func_get_arg(0)) && !is_array(func_get_arg(1))) {
-			$filters[][func_get_arg(0)] = func_get_arg(1);
+		} elseif (count($filterArgs) === 2 && !is_array($filterArgs[0]) && !is_array($filterArgs[1])) {
+			$filters[][$filterArgs[0]] = $filterArgs[1];
 
 		} else {
-			foreach (func_get_args() as $arg) {
+			foreach ($filterArgs as $arg) {
 				if (is_array($arg)) {
 					$filters[] = $arg;
 				}
@@ -154,7 +157,7 @@ class Looper implements \Iterator, \JsonSerializable {
 		}
 
 		if ($filters) {
-			foreach ($filters as $key => $set) {
+			foreach ($filters as $set) {
 				foreach ($items as $key => $item) {
 					$mis = 0;
 					foreach ($set as $k => $v) {
@@ -162,8 +165,8 @@ class Looper implements \Iterator, \JsonSerializable {
 							$mis++;
 						}
 					}
-					if (($strict && count($set) == $mis) || $mis) {
-						$mismatch[$key]++;
+					if (($strict && count($set) === $mis) || $mis) {
+						$mismatch[$key] = ($mismatch[$key] ?? 0) + 1;
 					}
 				}
 			}
@@ -171,27 +174,30 @@ class Looper implements \Iterator, \JsonSerializable {
 
 		if ($func) {
 			foreach ($items as $key => $item) {
-				if (!$func($item,$key)) {
+				if (!$func($item, $key)) {
 					$mismatch[$key] = $key;
 					break;
 				}
 			}
 		}
 
+		$newitems = [];
+		$trash = [];
+
 		foreach ($items as $key => $value) {
-			if (array_key_exists($key, $mismatch) && ($func || $mismatch[$key] == count($filters))) {
+			if (array_key_exists($key, $mismatch) && ($func || ($mismatch[$key] ?? 0) === count($filters))) {
 				$trash[] = $items[$key];
 			} else {
 				$newitems[] = $items[$key];
 			}
 		}
 
-		return ['yes' => $newitems,'no' => $trash];
+		return ['yes' => $newitems, 'no' => $trash];
 	}
 
-	private function _returnItems($items) {
-		if (count($items) != count($this->_items)) {
-			$return = new self($items);
+	private function _returnItems(array $items): static {
+		if (count($items) !== count($this->_items)) {
+			$return = new static($items);
 			$return->_parent = $this;
 		} else {
 			$return = $this;
@@ -199,82 +205,40 @@ class Looper implements \Iterator, \JsonSerializable {
 		return $return;
 	}
 
-	public function __toString() {
+	public function __toString(): string {
 		$print = '';
-		foreach ($this->_items as $key => $item) {
-			if (is_object($item) && method_exists($item,'__toString')) {
+		foreach ($this->_items as $item) {
+			if (is_object($item) && method_exists($item, '__toString')) {
 				$print .= $item->__toString();
 			} elseif (is_string($item) || is_int($item)) {
-				$print .= $item;
+				$print .= (string)$item;
 			}
 		}
 		return $print;
 	}
 
-	public function __call($name, $arguments) {
-		foreach ($this->_items as $key => $item) {
-			if (is_callable($item, $name) || method_exists($item, $name)) {
-				$items[] = (new \ReflectionMethod($item, $name))->invokeArgs($item, $arguments);
-			} else {
-				// not callable
+	public function __call(string $name, array $arguments): static {
+		$items = [];
+		foreach ($this->_items as $item) {
+			if (is_callable([$item, $name]) || method_exists($item, $name)) {
+				$items[] = $item->$name(...$arguments);
 			}
 		}
 
-		return self::o($items);
+		return static::o($items);
 	}
 
-	public function &__get($name) {
-		/** looper should never need this, but this might break stuff
-		if (property_exists($this,$name)) {
-			return $this->{$name};
-		} else {
-			if (isset($name{0}) && $name{0} == '_') {
-				return $this->_items[0]->{$name};
-			} else {
-				return $this->_items[0]->_properties[$name];
-			}
-		}
-		*/
-		if (isset($name{0}) && $name{0} == '_') {
+	public function &__get(string $name): mixed {
+		if (isset($name[0]) && $name[0] === '_') {
 			return $this->_items[0]->{$name};
 		} else {
 			return $this->_items[0]->_properties[$name];
 		}
 	}
 
-	public function __set($name, $value) {
-		/** looper should never need this, but this might break stuff
-		if (property_exists($this,$name)) {
-			$this->{$name} = $value;
-		} else {
-			foreach ($this->_items as $key => $item) {
-				$this->_items[$key]->{$name} = $value;
-			}
-		}
-		*/
+	public function __set(string $name, mixed $value): void {
 		foreach ($this->_items as $key => $item) {
 			$this->_items[$key]->{$name} = $value;
 		}
-		return $value;
 	}
-
-	/** these appear to never have been implimented correctly
-
-	public function __isset($property) {
-		if (isset($property{0}) && $property{0} == '_') {
-			return $this->_items[0]->{$property} ? true : false;
-		} else {
-			return $this->_items[0]->_properties[$property] ? true : false;
-		}
-	}
-
-	public function __unset($property) {
-		if (isset($property{0}) && $property{0} == '_') {
-			unset($this->_items[0]->{$property});
-		} else {
-			unset($this->_items[0]->_properties[$property]);
-		}
-		return $this;
-	}
-	**/
 }

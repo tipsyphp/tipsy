@@ -1,0 +1,14 @@
+{
+	"name": "tipsyphp/vercel-example",
+	"description": "Tipsy deployed on Vercel with vercel-php community runtime",
+	"require": {
+		"tipsyphp/tipsy": "*@dev"
+	},
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../../"
+		}
+	],
+	"minimum-stability": "dev"
+}

@@ -12,7 +12,8 @@ class LoginService extends \Tipsy\Service {
 
 class ServiceTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
 	}
@@ -29,7 +30,7 @@ class ServiceTest extends Tipsy_Test {
 	public function testServiceExtend() {
 		$_REQUEST['__url'] = '';
 		$this->tip->service('LoginService/Second', [
-			test => function() {
+			'test' => function() {
 				return 'SECOND';
 			}
 		]);

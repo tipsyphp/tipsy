@@ -1,3 +1,7 @@
 /vendor/
 .DS_Store
 nohup.out
+tests/.phpunit.cache/
+/build/
+examples/*/vendor/
+examples/*/composer.lock

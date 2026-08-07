@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?=$title?></title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2.5rem;
+            max-width: 480px;
+            width: 100%;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #f1f5f9; }
+        .badge {
+            display: inline-block;
+            background: #059669;
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        dl { display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem; }
+        dt { color: #94a3b8; font-size: 0.875rem; }
+        dd { color: #f1f5f9; font-family: monospace; font-size: 0.875rem; }
+        .links {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #334155;
+        }
+        a { color: #38bdf8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <?=$this->content?>
+</body>
+</html>

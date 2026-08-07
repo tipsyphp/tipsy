@@ -1,0 +1,28 @@
+<div class="card">
+    <h1>🍸 <?=$title?> <span class="badge">running</span></h1>
+    <dl>
+        <dt>PHP Version</dt>
+        <dd><?=$php_version?></dd>
+
+        <dt>Server</dt>
+        <dd><?=$server?></dd>
+
+        <dt>SAPI</dt>
+        <dd><?=$sapi?></dd>
+
+        <dt>OPcache</dt>
+        <dd><?=$opcache ? '✅ enabled' : '❌ disabled'?></dd>
+
+        <?php if ($opcache): ?>
+        <dt>JIT</dt>
+        <dd><?=($opcache['jit']['enabled'] ?? false) ? '✅ enabled' : '❌ disabled'?></dd>
+
+        <dt>Cached Scripts</dt>
+        <dd><?=$opcache['opcache_statistics']['num_cached_scripts'] ?? 0?></dd>
+        <?php endif; ?>
+    </dl>
+
+    <div class="links">
+        <a href="/health">Health Check (JSON)</a>
+    </div>
+</div>

@@ -1,0 +1,14 @@
+{
+	"name": "tipsyphp/docker-example",
+	"description": "Tipsy Docker deployment example",
+	"require": {
+		"tipsyphp/tipsy": "*@dev"
+	},
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../../"
+		}
+	],
+	"minimum-stability": "dev"
+}

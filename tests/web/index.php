@@ -1,7 +1,7 @@
 <?php
 
-error_reporting(E_ALL ^ (E_NOTICE | E_STRICT));
-ini_set('display_errors',true);
+error_reporting(E_ALL & ~E_NOTICE);
+ini_set('display_errors', '1');
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -10,14 +10,14 @@ use Tipsy\Tipsy;
 Tipsy::router()
 	->get('item/:id/json', function($Params, $Request) {
 		header('Content-Type: application/json');
-		echo json_encode([id => $Params->id, key => $Request->key, method => 'get']);
+		echo json_encode(['id' => $Params->id, 'key' => $Request->key, 'method' => 'get']);
 	})
 	->get('item/:id/plain', function($Params, $Request) {
 		echo $Params->id.'.'.$Request->key.'.get';
 	})
 	->post('item/:id/json', function($Params, $Request) {
 		header('Content-Type: application/json');
-		echo json_encode([id => $Params->id, key => $Request->key, method => 'post']);
+		echo json_encode(['id' => $Params->id, 'key' => $Request->key, 'method' => 'post']);
 	})
 	->post('item/:id/plain', function($Params, $Request) {
 		echo $Params->id.'.'.$Request->key.'.post';

@@ -17,7 +17,8 @@ class factoryResource extends \Tipsy\Resource {
 }
 
 class FactoryTest extends Tipsy_Test {
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->tip->config('tests/config.ini');
 		$this->setupDb($this->tip);
@@ -99,7 +100,7 @@ class FactoryTest extends Tipsy_Test {
 
 	public function testStaticRefMulti() {
 		$this->markTestSkipped('Test incomplete');
-		$l = factoryResource::o(1,2,[id => 3, name => 'new']);
+		$l = factoryResource::o(1,2,['id' => 3, 'name' => 'new']);
 
 		$this->assertEquals(1, $l->dbId());
 		$this->assertEquals(2, $l->dbId());
@@ -109,7 +110,7 @@ class FactoryTest extends Tipsy_Test {
 	public function testObjRefMulti() {
 		$this->markTestSkipped('Test incomplete');
 		$m = new factoryResource;
-		$l = $m->o(1,2,[id => 3, name => 'new']);
+		$l = $m->o(1,2,['id' => 3, 'name' => 'new']);
 
 		$this->assertEquals(1, $l->dbId());
 		$this->assertEquals(2, $l->dbId());
@@ -117,7 +118,7 @@ class FactoryTest extends Tipsy_Test {
 	}
 
 	public function testObjAuto() {
-		return;
+		$this->markTestSkipped('Test incomplete');
 		$m = new factoryResource;
 		$a = $m->o(1);
 		$a->first = true;

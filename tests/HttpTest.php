@@ -1,58 +1,57 @@
 <?php
 
 class HttpTest extends Tipsy_Test {
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
-		$this->host = 'http://localhost:8000/';
-		//$this->host = 'http://192.168.99.100:8000/';
-		//$this->host = 'http://tipsy-http-test.localhost/';
+		$this->host = 'http://127.0.0.1:8000/';
 	}
 
 	public function testFormGetJson() {
-		$http = (new Tipsy\Http())->get($this->host.'item/1/json', [key => 'value'], [type => 'form'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->get($this->host.'item/1/json', ['key' => 'value'], ['type' => 'form'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
-		$this->assertEquals($res, (object)[id => 1, key => 'value', method => 'get']);
+		$this->assertEquals($res, (object)["id" => 1, "key" => "value", "method" => "get"]);
 	}
 
 	public function testFormPostJson() {
-		$http = (new Tipsy\Http())->post($this->host.'item/1/json', [key => 'value'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->post($this->host.'item/1/json', ['key' => 'value'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
-		$this->assertEquals($res, (object)[id => 1, key => 'value', method => 'post']);
+		$this->assertEquals($res, (object)["id" => 1, "key" => "value", "method" => "post"]);
 	}
 
 	public function testFormGetPlain() {
-		$http = (new Tipsy\Http())->get($this->host.'item/1/plain', [key => 'value'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->get($this->host.'item/1/plain', ['key' => 'value'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
 		$this->assertEquals($res, '1.value.get');
 	}
 
 	public function testFormPostPlain() {
-		$http = (new Tipsy\Http())->post($this->host.'item/1/plain', [key => 'value'], [type => 'form'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->post($this->host.'item/1/plain', ['key' => 'value'], ['type' => 'form'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
 		$this->assertEquals($res, '1.value.post');
 	}
 
 	public function testJsonGetJson() {
-		$http = (new Tipsy\Http())->get($this->host.'item/1/json', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->get($this->host.'item/1/json', ['key' => 'value'], ['type' => 'json'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
-		$this->assertEquals($res, (object)[id => 1, key => 'value', method => 'get']);
+		$this->assertEquals($res, (object)["id" => 1, "key" => "value", "method" => "get"]);
 	}
 
 	public function testJsonPostJson() {
 		$this->markTestSkipped('Test incomplete');
-		$http = (new Tipsy\Http())->post($this->host.'item/1/json', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->post($this->host.'item/1/json', ['key' => 'value'], ['type' => 'json'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
-		$this->assertEquals($res, (object)[id => 1, key => 'value', method => 'post']);
+		$this->assertEquals($res, (object)["id" => 1, "key" => "value", "method" => "post"]);
 	}
 
 	public function testJsonGetPlain() {
-		$http = (new Tipsy\Http())->get($this->host.'item/1/plain', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->get($this->host.'item/1/plain', ['key' => 'value'], ['type' => 'json'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
 		$this->assertEquals($res, '1.value.get');
@@ -60,7 +59,7 @@ class HttpTest extends Tipsy_Test {
 
 	public function testJsonPostPlain() {
 		$this->markTestSkipped('Test incomplete');
-		$http = (new Tipsy\Http())->post($this->host.'item/1/plain', [key => 'value'], [type => 'json'])->complete(function($data) use (&$res) {
+		$http = (new Tipsy\Http())->post($this->host.'item/1/plain', ['key' => 'value'], ['type' => 'json'])->complete(function($data) use (&$res) {
 			$res = $data;
 		});
 		$this->assertEquals($res, '1.value.post');
@@ -101,36 +100,36 @@ class HttpTest extends Tipsy_Test {
 	}
 
 	public function testKwargsCopy() {
-		$http = (new Tipsy\Http())->post($this->host.'item/1/json', [key => 'value'])
+		$http = (new Tipsy\Http())->post($this->host.'item/1/json', ['key' => 'value'])
 		->complete(function($data) use (&$res) {
 			$res = $data;
 		});
 
-		$this->assertEquals($res,  (object)[id => 1, key => 'value', method => 'post']);
+		$this->assertEquals($res,  (object)["id" => 1, "key" => "value", "method" => "post"]);
 	}
 
 	public function testKwargs() {
 		$http = (new Tipsy\Http())->request([
-			url => $this->host.'item/1/json',
-			method => 'post',
-			data => [key => 'value']
+			'url' => $this->host.'item/1/json',
+			'method' => 'post',
+			'data' => ['key' => 'value']
 		])
 		->complete(function($data) use (&$res) {
 			$res = $data;
 		});
 
-		$this->assertEquals($res, (object)[id => 1, key => 'value', method => 'post']);
+		$this->assertEquals($res, (object)["id" => 1, "key" => "value", "method" => "post"]);
 	}
 
 	public function testKwargsMethod() {
 		$http = (new Tipsy\Http())->get([
-			url => $this->host.'item/1/json',
-			data => [key => 'value']
+			'url' => $this->host.'item/1/json',
+			'data' => ['key' => 'value']
 		])
 		->complete(function($data) use (&$res) {
 			$res = $data;
 		});
 
-		$this->assertEquals($res,  (object)[id => 1, key => 'value', method => 'get']);
+		$this->assertEquals($res,  (object)["id" => 1, "key" => "value", "method" => "get"]);
 	}
 }
