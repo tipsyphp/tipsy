@@ -49,14 +49,8 @@ class DependencyInjector extends Model {
 	}
 
 	public function inject(\Closure $closure, ?Scope $scope = null): mixed {
-		$avail = ['Db', 'Route', 'Request', 'Headers', 'Params', 'Tipsy', 'View', 'Scope', 'RootScope'];
-
 		if (!$this->tipsy()) {
 			throw new Exception('Tipsy is not defined!');
-		}
-
-		foreach ($this->tipsy()->services() as $name => $service) {
-			$avail[] = $name;
 		}
 
 		// Cache reflection results — ReflectionFunction is expensive (~5μs)
@@ -71,15 +65,10 @@ class DependencyInjector extends Model {
 			self::$_reflectionCache[$cacheKey] = $paramNames;
 		}
 
-		$paramNames = self::$_reflectionCache[$cacheKey];
 		$args = [];
-
-		foreach ($paramNames as $name) {
-			if (in_array($name, $avail, true)) {
-				$args[] = $this->_getDependency($name, $scope);
-			} else {
-				$args[] = null;
-			}
+		foreach (self::$_reflectionCache[$cacheKey] as $name) {
+			// _getDependency already resolves builtins, services, and unknown → null
+			$args[] = $this->_getDependency($name, $scope);
 		}
 
 		return $closure(...$args);

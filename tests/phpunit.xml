@@ -8,7 +8,7 @@
 
     <testsuites>
         <testsuite name="Tipsy Backend">
-            <directory>./</directory>
+            <directory suffix="Test.php">./</directory>
         </testsuite>
     </testsuites>
 
@@ -18,6 +18,9 @@
         </include>
         <exclude>
             <directory>../examples</directory>
+            <directory>../benchmarks</directory>
+            <directory>../vendor</directory>
+            <directory>../tests</directory>
         </exclude>
     </source>
 

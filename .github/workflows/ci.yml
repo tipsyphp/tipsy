@@ -60,7 +60,13 @@ jobs:
       - name: Run tests
         env:
           DB: ${{ matrix.db }}
-        run: php -c tests/php.ini vendor/bin/phpunit --configuration tests/phpunit.xml
+        # Coverage only on one matrix cell — path-repo example symlinks can loop the file iterator
+        run: |
+          if [ "${{ matrix.php-version }}" = "8.3" ] && [ "${{ matrix.db }}" = "mysql" ]; then
+            php -c tests/php.ini vendor/bin/phpunit --configuration tests/phpunit.xml
+          else
+            php -c tests/php.ini vendor/bin/phpunit --configuration tests/phpunit.xml --no-coverage
+          fi
 
       - name: Upload coverage
         if: matrix.php-version == '8.3' && matrix.db == 'mysql'

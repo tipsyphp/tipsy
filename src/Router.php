@@ -118,15 +118,18 @@ class Router {
 	}
 
 	public function match(string $page): Route {
-		foreach (array_reverse($this->aliases(), true) as $route) {
-			if ($alias = $route->match($page)) {
+		// Last-registered wins — iterate backwards without array_reverse() allocations
+		for ($i = count($this->_aliases) - 1; $i >= 0; $i--) {
+			$alias = $this->_aliases[$i]->match($page);
+			if ($alias) {
 				$page = $alias;
 				break;
 			}
 		}
-		foreach (array_reverse($this->routes(), true) as $route) {
-			if ($route->match($page)) {
-				return $route;
+
+		for ($i = count($this->_routes) - 1; $i >= 0; $i--) {
+			if ($this->_routes[$i]->match($page)) {
+				return $this->_routes[$i];
 			}
 		}
 

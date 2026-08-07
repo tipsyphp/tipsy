@@ -19,7 +19,8 @@ In-repo `composer.json` files use a **path** repository (`../../`) so examples t
 
 ```bash
 cd examples/hello-world
-composer install
+# Mirror (copy) the path repo — avoids symlink loops with coverage tools
+COMPOSER_MIRROR_PATH_REPOS=1 composer install
 php -S localhost:8000 -t web
 ```
 

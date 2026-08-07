@@ -14,11 +14,14 @@ class Route {
 	protected RouteParams $_routeParams;
 	private string $_route = '';
 	private bool $_regex = false;
+	private bool $_exact = false;
 	private bool $_caseSensitive = false;
 	private bool $_view = false;
 	private string $_method = '*';
+	/** @var list<string>|null Uppercased allowed methods; null means any */
+	private ?array $_methods = null;
 	private ?string $_compiledRegex = null;
-	/** @var array<int, string> */
+	/** @var list<string> */
 	private array $_paramKeys = [];
 	private mixed $_controller = null;
 	private ?DependencyInjector $_controllerRef = null;
@@ -30,6 +33,17 @@ class Route {
 		$this->_tipsy = $args['tipsy'] ?? null;
 		$this->_method = ($args['method'] ?? '*') === 'all' ? '*' : ($args['method'] ?? '*');
 		$this->_routeParams = new RouteParams();
+
+		if ($this->_method !== '*') {
+			$methods = [];
+			foreach (explode(',', $this->_method) as $method) {
+				$method = strtoupper(trim($method));
+				if ($method !== '') {
+					$methods[] = $method;
+				}
+			}
+			$this->_methods = $methods;
+		}
 
 		$route = $args['route'] ?? '';
 		$this->_compileRoute($route);
@@ -49,10 +63,11 @@ class Route {
 		}
 
 		// Strip leading/trailing slashes for normalized matching
-		$this->_route = preg_replace('/^\\/?(.*?)\\/?$/i', '\\1', $route);
+		$this->_route = preg_replace('/^\\/?(.*?)\\/?$/i', '\\1', $route) ?? $route;
 
 		// Don't compile empty routes (home page) — handled by direct comparison
 		if ($this->_route === '' || $this->_route === '/') {
+			$this->_exact = true;
 			return;
 		}
 
@@ -60,43 +75,42 @@ class Route {
 		$paths = explode('/', $this->_route);
 		$paramKeys = [];
 
-		foreach ($paths as $key => $path) {
+		foreach ($paths as $path) {
 			if (str_starts_with($path, ':')) {
-				$paramKeys[$key] = substr($path, 1);
+				$paramKeys[] = substr($path, 1);
 			}
 		}
 
 		$this->_paramKeys = $paramKeys;
 
+		// Static route — string compare is cheaper than preg_match
+		if ($paramKeys === []) {
+			$this->_exact = true;
+			return;
+		}
+
 		// Build the compiled regex once
 		$r = preg_replace('/:[a-z_]+/i', '([^/]+)', $this->_route);
-		$r = preg_replace('/\\//', '\\/', $r);
+		$r = str_replace('/', '\\/', $r ?? '');
 		$flags = $this->_caseSensitive ? '' : 'i';
 		$this->_compiledRegex = '/^' . $r . '$/' . $flags;
 	}
 
 	public function match(string $page): static|string|false {
 
-		if ($this->_method !== '*') {
-			$methods = explode(',', strtolower($this->_method));
-			$match = false;
-
-			$requestMethod = strtolower($this->_tipsy?->request()->method() ?? 'GET');
-			foreach ($methods as $method) {
-				if (trim($method) === $requestMethod) {
-					$match = true;
-					break;
-				}
-			}
-
-			if (!$match) {
+		if ($this->_methods !== null) {
+			$requestMethod = $this->_tipsy?->request()->method() ?? 'GET';
+			if (!in_array($requestMethod, $this->_methods, true)) {
 				return false;
 			}
 		}
 
-		// Index page — direct comparison, no regex needed
-		if (($this->_route === '' || $this->_route === '/') && ($page === '' || $page === '/')) {
-			return $this;
+		// Exact / static routes — no regex
+		if ($this->_exact) {
+			if ($this->_caseSensitive) {
+				return $page === $this->_route ? $this : false;
+			}
+			return strcasecmp($page, $this->_route) === 0 ? $this : false;
 		}
 
 		// User-supplied regex route
@@ -112,10 +126,8 @@ class Route {
 
 		// Pre-compiled parametric route
 		if ($this->_compiledRegex !== null && preg_match($this->_compiledRegex, $page, $matches)) {
-			$captureIndex = 1;
-			foreach ($this->_paramKeys as $key) {
-				$this->_routeParams->{$key} = $matches[$captureIndex] ?? '';
-				$captureIndex++;
+			foreach ($this->_paramKeys as $i => $key) {
+				$this->_routeParams->{$key} = $matches[$i + 1] ?? '';
 			}
 			return $this;
 		}

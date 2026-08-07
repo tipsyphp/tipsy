@@ -23,12 +23,9 @@ class App {
 	private ?Request $_request = null;
 	private ?Factory $_factory = null;
 	private Scope $_rootScope;
-	private string $_id;
 
 	public function __construct() {
 		$this->_rootScope = new Scope();
-		// cryptographically secure and faster than sha1(rand())
-		$this->_id = bin2hex(random_bytes(16));
 	}
 
 	public function run(?string $url = null): void {

@@ -12,17 +12,17 @@ class Request {
 	private ?string $_path = null;
 	private ?string $_base = null;
 	private ?string $_contentType = null;
+	private ?string $_method = null;
 
 	public function __construct(array $args = []) {
-		if ($this->method()) {
-			$this->_properties = match ($this->method()) {
-				'GET' => match (true) {
-					$this->_contentType() === 'application/json' => $this->raw() ?: [],
-					default => $_GET ?? [],
-				},
-				'POST' => match (true) {
-					$this->_contentType() === 'application/json' => json_decode($this->content() ?: '', true) ?: [],
-					$this->_contentType() === 'multipart/form-data' => $_REQUEST ?? [],
+		$method = $this->method();
+		if ($method) {
+			$contentType = $this->_contentType();
+			$this->_properties = match ($method) {
+				'GET' => $contentType === 'application/json' ? ($this->raw() ?: []) : ($_GET ?? []),
+				'POST' => match ($contentType) {
+					'application/json' => json_decode($this->content() ?: '', true) ?: [],
+					'multipart/form-data' => $_REQUEST ?? [],
 					default => $_POST ?? [],
 				},
 				default => $this->_parseBodyContent(),
@@ -86,32 +86,31 @@ class Request {
 				if (!empty($_REQUEST['__url'])) {
 					$url = $_REQUEST['__url'];
 				} else {
-
 					$request = explode('?', $_SERVER['REQUEST_URI'] ?? '', 2)[0];
 
-					$dir = $_SERVER['SCRIPT_NAME'] ?? '';
-					$url = preg_replace('/^' . str_replace('/', '\\/', $dir) . '/', '', $request);
+					$script = $_SERVER['SCRIPT_NAME'] ?? '';
+					$dir = dirname($script);
 
-					$dir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
-					$url = preg_replace('/^' . str_replace('/', '\\/', $dir) . '/', '', $url);
+					// Strip script file then script directory prefixes without preg
+					if ($script !== '' && str_starts_with($request, $script)) {
+						$url = substr($request, strlen($script));
+					} elseif ($dir !== '' && $dir !== '/' && $dir !== '\\' && str_starts_with($request, $dir)) {
+						$url = substr($request, strlen($dir));
+					} else {
+						$url = $request;
+					}
 
-					$url = str_starts_with($url, '/') ? $url : '/' . $url;
+					// dirname('file.php') => '.' — preserve historical "./" base
 					$this->_base = str_ends_with($dir, '/') ? $dir : $dir . '/';
 				}
 			}
 
-			// Collapse double slashes
-			while (str_contains($url, '//')) {
-				$url = str_replace('//', '/', $url);
+			$url = trim(str_replace('//', '/', $url), " \t\n\r\0\x0B/");
+			// Second pass covers residual triples like /// → /
+			if (str_contains($url, '//')) {
+				$url = preg_replace('#/+#', '/', $url) ?? $url;
+				$url = trim($url, '/');
 			}
-
-			if (isset($url[0]) && $url[0] === '/') {
-				$url = substr($url, 1);
-			}
-			$url = trim($url);
-			$url = ltrim($url, '/');
-			$url = rtrim($url, '/');
-			$url = trim($url);
 
 			$this->_path = $url;
 		}
@@ -141,7 +140,10 @@ class Request {
 	}
 
 	public function method(): string {
-		return strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+		if ($this->_method === null) {
+			$this->_method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+		}
+		return $this->_method;
 	}
 
 	public function &__get(string $name): mixed {

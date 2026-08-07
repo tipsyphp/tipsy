@@ -31,7 +31,8 @@
 		"files": ["src/Tipsy.php"]
 	},
 	"scripts": {
-		"test": "php -c tests/php.ini vendor/bin/phpunit --configuration tests/phpunit.xml"
+		"test": "php -c tests/php.ini vendor/bin/phpunit --configuration tests/phpunit.xml --no-coverage",
+		"test:coverage": "php -c tests/php.ini vendor/bin/phpunit --configuration tests/phpunit.xml"
 	},
 	"archive": {
 		"exclude": ["/tests", "/examples", "/benchmarks", "/.github", "/.gitignore"]
