@@ -61,12 +61,13 @@ class Db extends Model {
 		}
 
 		if (empty($args['driver'])) {
-			$args['driver'] = 'mysql';
-		}
-
-		if ($args['driver'] === 'postgres') {
 			$args['driver'] = 'pgsql';
 		}
+
+		$args['driver'] = match ($args['driver']) {
+			'postgres', 'postgresql' => 'pgsql',
+			default => $args['driver'],
+		};
 
 		if ($args['driver'] === 'mysql') {
 			$args['charset'] = 'utf8';
@@ -127,6 +128,17 @@ class Db extends Model {
 
 	public function driver(): ?string {
 		return $this->_driver;
+	}
+
+	/**
+	 * Quote an SQL identifier for the active driver.
+	 * Postgres/SQLite use double quotes; MySQL uses backticks.
+	 */
+	public function quoteIdent(string $name): string {
+		return match ($this->_driver) {
+			'mysql' => '`' . str_replace('`', '``', $name) . '`',
+			default => '"' . str_replace('"', '""', $name) . '"',
+		};
 	}
 
 	public function tipsy(?App $tipsy = null): ?App {

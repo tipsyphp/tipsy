@@ -19,6 +19,38 @@ Tipsy 2.0 is a hard break from the 0.11.x line. It targets **PHP 8.3+**, uses st
 | `Http` verifies SSL by default | Pass `skipSslVerify => true` for self-signed/local HTTPS |
 | Curly-brace string offsets and bareword array keys | Use `$str[0]` and quoted keys (`['id' => 1]`) |
 | Typed constructors / method signatures | Align subclasses (`Controller::init`, `Middleware::run`, etc.) |
+| Default DB driver is **pgsql** (was mysql) | Set `driver=mysql` (or a `mysql://` URL) explicitly for MySQL |
+| Resource SQL is dialect-aware | No need for `MysqlToPgsql` on normal Resource usage; opt in only for raw MySQL SQL on Postgres |
+
+## Database
+
+Tipsy 2.0 defaults to **PostgreSQL**. Supported drivers: `pgsql` (aliases: `postgres`, `postgresql`), `mysql`, `sqlite`.
+
+```ini
+[db]
+host=127.0.0.1
+user=postgres
+pass=secret
+database=app
+driver=pgsql
+```
+
+MySQL:
+
+```ini
+[db]
+host=127.0.0.1
+user=root
+pass=
+database=app
+driver=mysql
+```
+
+Optional: if you still write raw MySQL-flavored SQL against Postgres, register the compatibility layer:
+
+```php
+$app->service('Db', Tipsy\Db\MysqlToPgsql::class);
+```
 
 ## Intentional non-goals (2.0)
 

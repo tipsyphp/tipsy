@@ -326,7 +326,7 @@ class DBTest extends Tipsy_Test {
 	public function testModelDBOAutoTable() {
 		$_REQUEST['__url'] = 'user/1';
 
-		$this->tip->db()->query('DROP TABLE IF EXISTS `test_auto_user`');
+		$this->tip->db()->query('DROP TABLE IF EXISTS ' . $this->tip->db()->quoteIdent('test_auto_user'));
 
 		$this->tip->service('Tipsy\Resource/TestUser', [
 			'_id' => 'id',

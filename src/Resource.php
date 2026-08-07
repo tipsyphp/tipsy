@@ -58,33 +58,35 @@ class Resource extends Model {
 		} else {
 
 			$fields = [];
+			$table = $this->db()->quoteIdent($this->table());
 			$q = match ($this->db()->driver()) {
-				'mysql' => 'SHOW COLUMNS FROM `' . $this->table() . '`',
-				'sqlite' => 'PRAGMA table_info("' . $this->table() . '")',
-				'pgsql' => 'SELECT column_name as Field, data_type as Type, is_nullable as Null, column_default as Default FROM information_schema.columns WHERE table_name = \'' . $this->table() . '\'',
+				'mysql' => 'SHOW COLUMNS FROM ' . $table,
+				'sqlite' => 'PRAGMA table_info(' . $table . ')',
+				'pgsql' => 'SELECT column_name AS field, data_type AS type, is_nullable AS nullable, column_default AS col_default'
+					. ' FROM information_schema.columns'
+					. ' WHERE table_schema = current_schema() AND table_name = ' . $this->db()->db()->quote($this->table()),
 				default => throw new Exception('Unsupported database driver: ' . ($this->db()->driver() ?? 'unknown')),
 			};
 
 			try {
-
 				$rows = $this->db()->get($q);
-				if (!count($rows)) {
-					$this->createTable();
-				} else {
-
-					foreach ($rows as $row) {
-						$fields = match ($this->db()->driver()) {
-							'sqlite' => $this->_parseSqliteField($row, $fields),
-							'mysql' => $this->_parseMysqlField($row, $fields),
-							'pgsql' => $this->_parsePgsqlField($row, $fields),
-							default => $fields,
-						};
-					}
-				}
-
 			} catch (\Exception $e) {
-				// table doesnt exist. create it if we can
+				$rows = [];
+			}
+
+			if (!count($rows)) {
+				// Create then re-read metadata — never cache an empty field list
 				$this->createTable();
+				$rows = $this->db()->get($q);
+			}
+
+			foreach ($rows as $row) {
+				$fields = match ($this->db()->driver()) {
+					'sqlite' => $this->_parseSqliteField($row, $fields),
+					'mysql' => $this->_parseMysqlField($row, $fields),
+					'pgsql' => $this->_parsePgsqlField($row, $fields),
+					default => $fields,
+				};
 			}
 
 			$this->_fields = $fields;
@@ -120,19 +122,23 @@ class Resource extends Model {
 	}
 
 	private function _parsePgsqlField(object $row, array $fields): array {
-		$fields[$row->field] = (object)[
-			'field' => $row->field,
+		$name = $row->field;
+		$default = $row->col_default ?? null;
+		$fields[$name] = (object)[
+			'field' => $name,
 			'type' => $row->type,
-			'null' => $row->null === 'YES',
-			'auto' => !empty($row->default) && preg_match('/^nextval\(/', $row->default) === 1
+			'null' => ($row->nullable ?? '') === 'YES',
+			'auto' => !empty($default) && preg_match('/^nextval\(/', (string)$default) === 1
 		];
 
-		if ($fields[$row->field]->type === 'integer') {
-			$fields[$row->field]->type = 'int';
+		if (in_array($fields[$name]->type, ['integer', 'bigint', 'smallint'], true)) {
+			$fields[$name]->type = 'int';
+		} elseif (in_array($fields[$name]->type, ['boolean', 'bool'], true)) {
+			$fields[$name]->type = 'boolean';
 		}
 
-		if ($fields[$row->field]->auto && $fields[$row->field]->field === $this->idVar()) {
-			$fields[$row->field]->sequence = preg_replace('/^nextval\(\'(.*?)\'.*\)$/i', '\\1', $row->default);
+		if ($fields[$name]->auto && $fields[$name]->field === $this->idVar()) {
+			$fields[$name]->sequence = preg_replace('/^nextval\(\'(.*?)\'.*\)$/i', '\\1', (string)$default);
 		}
 		return $fields;
 	}
@@ -146,31 +152,32 @@ class Resource extends Model {
 			throw new Exception('Could not create table "' . $this->table() . '"');
 		}
 
-		$q = 'create table `' . $this->table() . '` (';
+		$q = 'CREATE TABLE ' . $this->db()->quoteIdent($this->table()) . ' (';
 		foreach ($this->__fields as $k => $field) {
-			$q .= ' `' . $k . '` ' . $field->name . ' ';
+			$q .= ' ' . $this->db()->quoteIdent($k) . ' ';
 
+			$fieldDefault = $field->default ?? null;
 			$default = match (true) {
-				$field->default === null => 'NULL',
-				$field->default === true => 'true',
-				$field->default === false => 'false',
-				is_int($field->default) => (string)$field->default,
-				default => "'" . $field->default . "'",
+				$fieldDefault === null => 'NULL',
+				$fieldDefault === true => 'true',
+				$fieldDefault === false => 'false',
+				is_int($fieldDefault) => (string)$fieldDefault,
+				default => "'" . $fieldDefault . "'",
 			};
 
 			$q .= match ($field->type) {
 				'int' => $this->_createIntColumn($field, $default),
-				'char' => 'varchar(' . ($field->length ?: 255) . ') '
-					. ($field->null ? '' : ' NOT NULL ')
-					. ($field->default ? ' DEFAULT ' . $default : ''),
+				'char' => 'varchar(' . ($field->length ?? 255) . ') '
+					. (!empty($field->null) ? '' : ' NOT NULL ')
+					. ($fieldDefault !== null ? ' DEFAULT ' . $default : ''),
 				'bool' => ($this->db()->driver() === 'pgsql' ? 'bool NOT NULL ' : 'tinyint(1) NOT NULL ')
-					. ' ' . ($field->default ? ' DEFAULT ' . $default : ''),
+					. ($fieldDefault !== null ? ' DEFAULT ' . $default : ''),
 				default => '',
 			};
 			$q .= ',';
 		}
 
-		$q .= 'PRIMARY KEY  (`' . $this->idVar() . '`))';
+		$q .= 'PRIMARY KEY (' . $this->db()->quoteIdent($this->idVar()) . '))';
 
 		$this->db()->query($q);
 	}
@@ -188,7 +195,7 @@ class Resource extends Model {
 	}
 
 	public function dropTable(): void {
-		$this->db()->query('DROP TABLE IF EXISTS `' . $this->table() . '`');
+		$this->db()->query('DROP TABLE IF EXISTS ' . $this->db()->quoteIdent($this->table()));
 	}
 
 	public static function __create_static(array $args = []): static {
@@ -224,7 +231,10 @@ class Resource extends Model {
 		// fill the object with blank properties based on the fields of that table
 		$fields = $this->fields();
 		foreach ($fields as $key => $field) {
-			$this->{$key} = $this->{$key} ?: '';
+			// Use isset — `?:` would coerce false/0 into '' and break PG booleans/ints
+			if (!isset($this->{$key})) {
+				$this->{$key} = '';
+			}
 		}
 
 		if (!$id && $this->dbId()) {
@@ -240,7 +250,11 @@ class Resource extends Model {
 			$node = (object)$id;
 
 		} elseif ($id) {
-			$result = $this->db()->get('select * from `' . $this->table() . '` where `' . $this->idVar() . '` = ? limit 1', [$id]);
+			$result = $this->db()->get(
+				'SELECT * FROM ' . $this->db()->quoteIdent($this->table())
+				. ' WHERE ' . $this->db()->quoteIdent($this->idVar()) . ' = ? LIMIT 1',
+				[$id]
+			);
 			$node = !empty($result[0]) ? (object)$result[0] : null;
 		}
 
@@ -276,9 +290,10 @@ class Resource extends Model {
 			$insert = $this->dbId() ? false : true;
 		}
 
+		$table = $this->db()->quoteIdent($this->table());
 		$query = $insert
-			? 'INSERT INTO `' . $this->table() . '`'
-			: 'UPDATE `' . $this->table() . '`';
+			? 'INSERT INTO ' . $table
+			: 'UPDATE ' . $table;
 
 		$fields = $this->fields();
 		$numset = 0;
@@ -289,10 +304,14 @@ class Resource extends Model {
 				continue;
 			}
 
-			if ($this->{$field->field} == '' && $field->null) {
+			if ($this->{$field->field} === '' && $field->null) {
 				$this->{$field->field} = null;
-			} elseif ($this->{$field->field} == null && !$field->null) {
-				$this->{$field->field} = '';
+			} elseif ($this->{$field->field} === null && !$field->null) {
+				$this->{$field->field} = match ($field->type) {
+					'boolean' => false,
+					'int' => 0,
+					default => '',
+				};
 			}
 
 			match ($field->type) {
@@ -305,12 +324,13 @@ class Resource extends Model {
 
 			$this->{$field->field} = (!$this->{$field->field} && $field->null) ? null : $this->{$field->field};
 
+			$ident = $this->db()->quoteIdent($field->field);
 			$query .= !$numset ? ($insert ? '(' : ' SET ') : ',';
 			if ($insert) {
-				$query .= ' `' . $field->field . '` ';
+				$query .= ' ' . $ident . ' ';
 			} else {
 				if ($field->field !== $this->idVar()) {
-					$query .= ' `' . $field->field . '`=:' . $field->field;
+					$query .= ' ' . $ident . '=:' . $field->field;
 				} else {
 					// should probably be cleaned up a bit
 					$query = substr($query, 0, -5);
@@ -318,7 +338,9 @@ class Resource extends Model {
 				}
 			}
 
-			$fs[$field->field] = $this->{$field->field};
+			$fs[$field->field] = $field->type === 'boolean'
+				? $this->_boolForDriver((bool)$this->{$field->field})
+				: $this->{$field->field};
 
 			$numset++;
 
@@ -340,7 +362,7 @@ class Resource extends Model {
 
 			$query .= ')';
 		} else {
-			$query .= ' WHERE ' . $this->idVar() . '=:id';
+			$query .= ' WHERE ' . $this->db()->quoteIdent($this->idVar()) . '=:id';
 			$fs['id'] = $this->{$this->idVar()};
 		}
 
@@ -352,21 +374,26 @@ class Resource extends Model {
 			);
 		}
 
-		// Keep boolean properties as bools after MySQL 0/1 binding
-		foreach ($fields as $field) {
-			if ($field->type === 'boolean') {
-				$this->{$field->field} = (bool)$this->{$field->field};
-			}
-		}
-
 		return $this;
 	}
 
 	private function _prepareBoolField(object $field): void {
-		$this->{$field->field} = (bool)$this->{$field->field};
-		if ($this->db()->driver() === 'mysql') {
-			$this->{$field->field} = $this->{$field->field} ? 1 : 0;
+		$value = $this->{$field->field};
+		// Normalize empty strings left over from blank property fills
+		if ($value === '' || $value === null) {
+			$value = false;
 		}
+		// Keep a real bool on the model; driver literals are applied only when binding
+		$this->{$field->field} = (bool)$value;
+	}
+
+	private function _boolForDriver(bool $value): int|string|bool {
+		// PDO_PGSQL stringifies false as "" which Postgres rejects as boolean input
+		return match ($this->db()->driver()) {
+			'mysql' => $value ? 1 : 0,
+			'pgsql' => $value ? 'true' : 'false',
+			default => $value,
+		};
 	}
 
 	private function _prepareDatetimeField(object $field): void {
@@ -387,7 +414,11 @@ class Resource extends Model {
 	 */
 	public function delete(): static {
 		if ($this->dbId()) {
-			$this->db()->query('DELETE FROM `' . $this->table() . '` WHERE `' . $this->idVar() . '` = ?', [$this->dbId()]);
+			$this->db()->query(
+				'DELETE FROM ' . $this->db()->quoteIdent($this->table())
+				. ' WHERE ' . $this->db()->quoteIdent($this->idVar()) . ' = ?',
+				[$this->dbId()]
+			);
 		} else {
 			throw new Exception('Cannot delete. No ID was given.');
 		}

@@ -3,7 +3,7 @@
 
 Tipsy is an MVW (Model, View, Whatever) PHP micro framework inspired by [AngularJS](https://angularjs.org/). It provides a very lightweight, easy to use interface for websites, REST APIs, and dependency injection.
 
-**Tipsy 2.0** targets **PHP 8.3+** with a typed core and **zero runtime Composer dependencies**. See [UPGRADING.md](UPGRADING.md) for breaking changes from 0.11.x.
+**Tipsy 2.0** targets **PHP 8.3+** with a typed core, **zero runtime Composer dependencies**, and a **PostgreSQL-first** database layer (MySQL and SQLite still supported). See [UPGRADING.md](UPGRADING.md) for breaking changes from 0.11.x.
 
 [![Latest Stable Version](https://poser.pugx.org/tipsyphp/tipsy/v/stable)](https://packagist.org/packages/tipsyphp/tipsy)
 [![CI](https://github.com/tipsyphp/tipsy/actions/workflows/ci.yml/badge.svg)](https://github.com/tipsyphp/tipsy/actions/workflows/ci.yml)

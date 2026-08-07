@@ -4,7 +4,15 @@ declare(strict_types=1);
 
 namespace Tipsy\Db;
 
-// transforms mysql queries to pgsql (kinda)
+/**
+ * Optional compatibility layer: rewrite MySQL-flavored SQL for PostgreSQL.
+ *
+ * Tipsy 2.0 defaults to Postgres and Resource emits dialect-aware SQL, so this
+ * is only needed if your app still writes raw MySQL SQL (backticks, unix_timestamp, etc.)
+ * against a Postgres connection:
+ *
+ *   $app->service('Db', Tipsy\Db\MysqlToPgsql::class);
+ */
 class MysqlToPgsql extends \Tipsy\Db {
 	public static function convert(string &$query, array &$args = []): array {
 		// replace backticks
