@@ -12,6 +12,16 @@ on:
         description: "Release tag to (re)publish, e.g. v2.0.0"
         required: true
         type: string
+      repository:
+        description: "GitHub repo URL to update on Packagist"
+        required: false
+        default: "https://github.com/tipsyphp/tipsy"
+        type: string
+      package:
+        description: "Packagist package name for verify step (e.g. tipsyphp/tipsy)"
+        required: false
+        default: "tipsyphp/tipsy"
+        type: string
 
 permissions:
   contents: write
@@ -33,6 +43,7 @@ jobs:
         env:
           PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
           PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+          REPOSITORY: ${{ inputs.repository || 'https://github.com/tipsyphp/tipsy' }}
         run: |
           if [ -z "$PACKAGIST_USERNAME" ] || [ -z "$PACKAGIST_TOKEN" ]; then
             echo "::warning::PACKAGIST_USERNAME / PACKAGIST_TOKEN secrets are not set."
@@ -40,10 +51,15 @@ jobs:
             echo "Add secrets from https://packagist.org/profile/ (username + API token)."
             exit 0
           fi
+          # On release events, always update the main tipsy package.
+          if [ "${{ github.event_name }}" = "release" ]; then
+            REPOSITORY="https://github.com/tipsyphp/tipsy"
+          fi
+          echo "Updating Packagist for $REPOSITORY"
           RESP=$(curl -sS -w "\n%{http_code}" -X POST \
             -H "Content-Type: application/json" \
             "https://packagist.org/api/update-package?username=${PACKAGIST_USERNAME}&apiToken=${PACKAGIST_TOKEN}" \
-            -d '{"repository":{"url":"https://github.com/tipsyphp/tipsy"}}')
+            -d "{\"repository\":{\"url\":\"${REPOSITORY}\"}}")
           HTTP_CODE=$(echo "$RESP" | tail -n1)
           BODY=$(echo "$RESP" | sed '$d')
           echo "Packagist response ($HTTP_CODE): $BODY"
@@ -57,20 +73,21 @@ jobs:
         env:
           VERSION: ${{ steps.tag.outputs.version }}
           TAG: ${{ steps.tag.outputs.tag }}
+          PACKAGE: ${{ inputs.package || 'tipsyphp/tipsy' }}
         run: |
           # Packagist indexing can lag a few seconds; retry briefly.
           for i in 1 2 3 4 5 6; do
-            if curl -sS "https://repo.packagist.org/p2/tipsyphp/tipsy.json" \
-              | jq -e --arg v "$TAG" --arg v2 "$VERSION" \
-                '.packages["tipsyphp/tipsy"][] | select(.version == $v or .version == $v2 or .version_normalized == ($v2 + ".0") or .version == ("v" + $v2))' \
+            if curl -sS "https://repo.packagist.org/p2/${PACKAGE}.json" \
+              | jq -e --arg pkg "$PACKAGE" --arg v "$TAG" --arg v2 "$VERSION" \
+                '.packages[$pkg][] | select(.version == $v or .version == $v2 or .version_normalized == ($v2 + ".0") or .version == ("v" + $v2))' \
               >/dev/null; then
-              echo "Found tipsyphp/tipsy@$TAG on Packagist"
+              echo "Found ${PACKAGE}@${TAG} on Packagist"
               exit 0
             fi
-            echo "Waiting for Packagist to index $TAG (attempt $i/6)..."
+            echo "Waiting for Packagist to index $PACKAGE@$TAG (attempt $i/6)..."
             sleep 10
           done
-          echo "::warning::Could not confirm $TAG on Packagist yet — check https://packagist.org/packages/tipsyphp/tipsy"
+          echo "::warning::Could not confirm $PACKAGE@$TAG on Packagist yet — check https://packagist.org/packages/$PACKAGE"
 
       - name: Update release description with Packagist URL
         if: github.event_name == 'release'
