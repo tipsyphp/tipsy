@@ -175,6 +175,7 @@ jobs:
           extra_plugins: |
             @semantic-release/commit-analyzer@^13.0.0
             @semantic-release/release-notes-generator@^14.1.0
+            conventional-changelog-conventionalcommits@^8.0.0
         env:
           TIPSY_SEMANTIC_RELEASE_CI: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -215,6 +216,7 @@ jobs:
           extra_plugins: |
             @semantic-release/commit-analyzer@^13.0.0
             @semantic-release/release-notes-generator@^14.1.0
+            conventional-changelog-conventionalcommits@^8.0.0
         env:
           TIPSY_SEMANTIC_RELEASE_CI: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

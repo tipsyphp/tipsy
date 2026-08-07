@@ -1,14 +1,15 @@
 /**
  * Semantic-release config (cosmiconfig name: "release").
  *
- * cosmiconfig prefers `.releaserc.json` over `release.config.cjs` in the same directory,
- * so the full plugin list lives in `release.full.config.json` (not auto-discovered).
+ * Full plugin list lives in `release.full.config.json` (not auto-discovered as .releaserc).
  *
  * - TIPSY_SEMANTIC_RELEASE_CI=1: file:// repo + analyzer only (CI dry-runs, no git push).
  * - Otherwise: full config (GitHub plugin, real remote).
  *
- * ParserOpts extend the angular preset with Conventional-Commits `!` breaking shorthand
- * (feat!:, fix(scope)!:). Same pattern as tishlang/tish.
+ * Use preset "conventionalcommits" (NOT angular). Stock angular does not understand
+ * `feat!:` / `fix!:` — those headers parse as no-type and produce no release. The
+ * conventionalcommits preset supports the `!` breaking shorthand natively. The footer
+ * form `BREAKING CHANGE: ...` also works on both presets and is the safest major trigger.
  */
 const path = require("path");
 const { execSync } = require("child_process");

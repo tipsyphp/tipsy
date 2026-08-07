@@ -24,18 +24,44 @@ Also ensure the Packagist package `tipsyphp/tipsy` has GitHub as its repository 
 
 ### Step 1: Commit with a release-triggering message
 
-Use [conventional commits](https://www.conventionalcommits.org/):
+Use [conventional commits](https://www.conventionalcommits.org/). Tipsy CI uses the
+**`conventionalcommits` preset** (not angular), so both of these cut a **major**:
 
 ```
-feat: add something new        → minor (1.0.0 → 1.1.0)
-fix: fix a bug                 → patch (1.0.0 → 1.0.1)
+feat!: Tipsy 2.0 PHP 8.3 hard break
+
+# OR (always works, even on stock angular — prefer this if you want belt-and-suspenders):
+feat: Tipsy 2.0 PHP 8.3 hard break
+
+BREAKING CHANGE: requires PHP 8.3+; default DB is PostgreSQL; typed public API.
+```
+
+Other bumps:
+
+```
+feat: add something new        → minor
+fix: fix a bug                 → patch
 perf: make it faster           → patch
-feat!: breaking change         → major (1.0.0 → 2.0.0)
 ```
 
 `docs:` and `chore:` do **not** trigger a release.
 
-For the Tipsy **2.0** hard break, use a breaking commit (e.g. `feat!: PHP 8.3 modernization`) so semantic-release bumps the major version. If you need an exact tag like `v2.0.0` and the dry-run suggests something else, edit the prerelease tag/name in the GitHub UI before promoting (or create the prerelease manually).
+**Do not rely on PR titles alone** — semantic-release reads **git commit messages on
+`master`/`main`**. If you squash-merge, put `feat!:` / `BREAKING CHANGE:` in the
+**squash commit subject/body**.
+
+### Cutting `v2.0.0` specifically (from `0.11.x`)
+
+A major bump from `0.11.12` becomes **`1.0.0`**, not `2.0.0` (semver/semrel rule for
+0.x). To ship Tipsy 2.0 as `v2.0.0`:
+
+1. Let CI open the prerelease (likely `v1.0.0`), **or**
+2. Before promoting: edit the GitHub release/tag to **`v2.0.0`** (and the
+   `release/v…` branch name if you care), **or**
+3. Create an annotated `v1.0.0` tag on the pre-2.0 tip first, then push a `feat!:`
+   commit so the next major is `2.0.0`.
+
+Then uncheck “pre-release” to publish to Packagist.
 
 ### Step 2: Push to `master` (or `main`)
 
