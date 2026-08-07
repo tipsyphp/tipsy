@@ -1,9 +1,14 @@
-name: CI
+# CI: test matrix + coverage, then on master/main push create a release branch + GitHub prerelease.
+# Promote the prerelease to a full release to publish to Packagist (see packagist-release.yml).
+# Pattern adapted from tishlang/tish CI (test, coverage, build) → release pipeline.
+
+name: CI (test, coverage, release)
 
 on:
   push:
     branches: [master, main, v2]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,13 +22,17 @@ jobs:
     name: PHP ${{ matrix.php }} / ${{ matrix.db }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      checks: write
+      issues: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
         php: ['8.3', '8.4']
         db: ['pgsql', 'mysql']
         include:
-          # Attach coverage only to the default Postgres cell
           - php: '8.3'
             db: 'pgsql'
             coverage: true
@@ -122,5 +131,206 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           files: build/logs/clover.xml
+          flags: php
           fail_ci_if_error: false
+          handle_no_reports_found: true
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Publish test results
+        if: ${{ matrix.coverage && always() }}
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: build/logs/junit.xml
+          check_name: Test results (PHPUnit)
+
+      - name: Upload coverage artifact
+        if: ${{ matrix.coverage && always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-clover
+          path: build/logs/clover.xml
+          if-no-files-found: ignore
+
+  release_check:
+    name: Release check (semantic-release dry-run)
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Dry-run (read-only config)
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          dry_run: true
+          semantic_version: 25
+          extra_plugins: |
+            @semantic-release/commit-analyzer@^13.0.0
+            @semantic-release/release-notes-generator@^14.1.0
+        env:
+          TIPSY_SEMANTIC_RELEASE_CI: "1"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report release status
+        run: |
+          if [ "${{ steps.semantic.outputs.new_release_published }}" != "true" ]; then
+            echo "::notice::No version bump in these commits — skipping the release check (no feat/fix/perf/BREAKING CHANGE per conventional commits)."
+            echo "No incremental release would be triggered; skipping rather than failing."
+            exit 0
+          fi
+          echo "Release would be triggered — check passed (next: ${{ steps.semantic.outputs.new_release_version }})."
+
+  release:
+    name: Release (prerelease branch + GitHub API)
+    needs: [test, release_check]
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Get next version (semantic-release dry-run)
+        id: next_version_semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          dry_run: true
+          semantic_version: 25
+          extra_plugins: |
+            @semantic-release/commit-analyzer@^13.0.0
+            @semantic-release/release-notes-generator@^14.1.0
+        env:
+          TIPSY_SEMANTIC_RELEASE_CI: "1"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Export next version for release steps
+        id: next_version
+        run: |
+          VERSION="${{ steps.next_version_semantic.outputs.new_release_version }}"
+          if [ -z "$VERSION" ]; then
+            echo "::notice::No version bump in these commits — skipping the release/publish steps."
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          echo "Next version: $VERSION"
+
+      - name: Create or update release branch and push
+        if: steps.next_version.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          BRANCH="release/v${{ steps.next_version.outputs.version }}"
+          git checkout -B "$BRANCH"
+          git push origin "$BRANCH" --force
+
+      - name: Generate release notes from commits
+        if: steps.next_version.outputs.published == 'true'
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            CHANGELOG=$(git log "$LAST_TAG..HEAD" --pretty=format:"- %s (%h)" --no-merges 2>/dev/null || echo "")
+          else
+            CHANGELOG=$(git log -30 --pretty=format:"- %s (%h)" --no-merges 2>/dev/null || echo "")
+          fi
+          [ -z "$CHANGELOG" ] && CHANGELOG="- No commits to list"
+          {
+            echo "## Changes"
+            echo ""
+            echo "$CHANGELOG"
+            echo ""
+            echo "---"
+            echo ""
+            echo "Promote this prerelease to a **full release** to publish \`tipsyphp/tipsy\` to Packagist."
+          } > release-body.md
+
+      - name: Create or update GitHub prerelease via API
+        if: steps.next_version.outputs.published == 'true'
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.next_version.outputs.version }}
+        run: |
+          TAG="v${VERSION}"
+          BRANCH="release/v${VERSION}"
+          BODY=$(cat release-body.md)
+          RESP=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/releases" \
+            -d "{\"tag_name\":\"$TAG\",\"target_commitish\":\"$BRANCH\",\"name\":\"$TAG\",\"body\":$(echo "$BODY" | jq -Rs .),\"prerelease\":true}")
+          HTTP_CODE=$(echo "$RESP" | tail -n1)
+          BODY_RESP=$(echo "$RESP" | sed '$d')
+          if [ "$HTTP_CODE" = "201" ]; then
+            echo "Created prerelease $TAG"
+            RELEASE_ID=$(echo "$BODY_RESP" | jq -r .id)
+          elif [ "$HTTP_CODE" = "422" ]; then
+            RELEASE_ID=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG" | jq -r .id)
+            if [ "$RELEASE_ID" != "null" ] && [ -n "$RELEASE_ID" ]; then
+              curl -s -X PATCH \
+                -H "Authorization: Bearer $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID" \
+                -d "{\"target_commitish\":\"$BRANCH\",\"body\":$(echo "$BODY" | jq -Rs .),\"prerelease\":true}"
+              echo "Updated existing prerelease $TAG"
+            else
+              echo "Release creation failed (422) and could not find release by tag"
+              exit 1
+            fi
+          else
+            echo "Unexpected response: $HTTP_CODE"
+            echo "$BODY_RESP"
+            exit 1
+          fi
+          echo "release_id=$RELEASE_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download coverage artifact
+        if: steps.next_version.outputs.published == 'true'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-clover
+          path: coverage
+
+      - name: Upload coverage clover to prerelease
+        if: steps.next_version.outputs.published == 'true'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_ID="${{ steps.create_release.outputs.release_id }}"
+          REPO="${{ github.repository }}"
+          CLOVER="coverage/clover.xml"
+          if [ ! -f "$CLOVER" ]; then
+            echo "No clover.xml artifact — skipping asset upload"
+            exit 0
+          fi
+          curl -s -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -H "Content-Type: application/xml" \
+            --data-binary @"$CLOVER" \
+            "https://uploads.github.com/repos/${REPO}/releases/${RELEASE_ID}/assets?name=clover.xml&label=PHPUnit%20coverage%20(clover)"

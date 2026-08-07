@@ -1,0 +1,17 @@
+{
+  "branches": ["master", "main"],
+  "plugins": [
+    ["@semantic-release/commit-analyzer", { "parserOpts": {
+      "headerPattern": "^(\\w*)(?:\\((.*)\\))?!?: (.*)$",
+      "headerCorrespondence": ["type", "scope", "subject"],
+      "breakingHeaderPattern": "^(\\w*)(?:\\((.*)\\))?!: (.*)$"
+    } }],
+    ["@semantic-release/release-notes-generator", { "parserOpts": {
+      "headerPattern": "^(\\w*)(?:\\((.*)\\))?!?: (.*)$",
+      "headerCorrespondence": ["type", "scope", "subject"],
+      "breakingHeaderPattern": "^(\\w*)(?:\\((.*)\\))?!: (.*)$"
+    } }],
+    ["@semantic-release/npm", { "npmPublish": false }],
+    ["@semantic-release/github", {}]
+  ]
+}

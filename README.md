@@ -44,4 +44,4 @@ composer install
 composer test
 ```
 
-CI runs PHP 8.3/8.4 × MySQL/PostgreSQL. Performance notes live in [benchmarks/](benchmarks/).
+CI runs PHP 8.3/8.4 × MySQL/PostgreSQL, then on `master`/`main` can open a GitHub prerelease (promote it to publish to Packagist). See [docs/RELEASE.md](docs/RELEASE.md). Performance notes live in [benchmarks/](benchmarks/).
