@@ -23,7 +23,7 @@ class Tipsy_Test extends PHPUnit\Framework\TestCase {
 
 	public function setupDb(Tipsy\Tipsy $tipsy): void {
 		// Default DB is Postgres (Tipsy 2.0). Set DB=mysql for the MySQL matrix.
-		$tipsy->config('tests/config.db.' . (getenv('TRAVIS') || getenv('CI') ? 'travis' : 'local') . '.' . (getenv('DB') ?: 'pgsql') . '.ini');
+		$tipsy->config('tests/config.db.' . (getenv('CI') ? 'ci' : 'local') . '.' . (getenv('DB') ?: 'pgsql') . '.ini');
 	}
 
 	public function ob(bool $start = true): ?string {

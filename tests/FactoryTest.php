@@ -118,7 +118,7 @@ class FactoryTest extends Tipsy_Test {
 	}
 
 	public function testObjAuto() {
-		return;
+		$this->markTestSkipped('Test incomplete');
 		$m = new factoryResource;
 		$a = $m->o(1);
 		$a->first = true;

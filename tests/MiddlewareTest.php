@@ -208,6 +208,7 @@ class MiddlewareTest extends Tipsy_Test {
 
 		$this->tip->router()->home(function() {});
 		$this->tip->start();
+		$this->ob(false);
 
 		$check = $this->tip->middleware('SecondService')->test();
 		$this->assertEquals('HELLO', $check);
