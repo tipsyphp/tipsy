@@ -1,67 +1,60 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Tipsy
  * An MVW PHP Framework
- *
- * A little bit of a mess. Still a work in progress.
  */
 
-
 namespace Tipsy;
-
-// supress datetime warnings and set to UTC if not set
-@date_default_timezone_get();
-ini_set('always_populate_raw_post_data', -1);
 
 /**
  * Wrapper class
  */
 class Tipsy {
 
-	private static $_app;
+	private static ?App $_app = null;
 
-	public function __construct($params = null) {
-		self::init();
+	public function __construct() {
+		static::init();
 	}
 
-	public static function init($params = null) {
-		self::app(new App($params));
+	public static function init(): void {
+		static::app(new App());
 	}
 
-	public static function app($app = null) {
-		if (!is_null($app)) {
-			self::$_app = $app;
-		} elseif (is_null(self::$_app)) {
-			self::init();
+	public static function app(?App $app = null): App {
+		if ($app !== null) {
+			static::$_app = $app;
+		} elseif (static::$_app === null) {
+			static::init();
 		}
-		return self::$_app;
+		return static::$_app;
 	}
 
-	public static function __callStatic($name, $arguments) {
-		//return (new \ReflectionMethod(self::app(), $name))->invokeArgs(self::app(), $arguments);
-		return call_user_func_array([self::app(), $name], $arguments);
+	public static function __callStatic(string $name, array $arguments): mixed {
+		return static::app()->$name(...$arguments);
 	}
 
-	public function __call($name, $arguments) {
-		//return (new \ReflectionMethod(self::app(), $name))->invokeArgs(self::app(), $arguments);
-		return call_user_func_array([self::app(), $name], $arguments);
+	public function __call(string $name, array $arguments): mixed {
+		return static::app()->$name(...$arguments);
 	}
 }
 
-class_alias('\Tipsy\Tipsy', 't');
+class_alias(Tipsy::class, 't');
 
 
-// useful for nginx
+// Polyfill for nginx — kept for server compatibility
 if (!function_exists('getallheaders')) {
-	function getallheaders() {
+	function getallheaders(): array {
 		if (!is_array($_SERVER)) {
 			return [];
 		}
 
 		$headers = [];
 		foreach ($_SERVER as $name => $value) {
-			if (substr($name, 0, 5) == 'HTTP_') {
+			if (str_starts_with($name, 'HTTP_')) {
 				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
 			}
 		}

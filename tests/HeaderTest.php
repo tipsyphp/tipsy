@@ -2,7 +2,8 @@
 
 class HeaderTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
 	}

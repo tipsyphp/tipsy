@@ -3,7 +3,8 @@
 
 class RestTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
 
@@ -211,8 +212,8 @@ class RestTest extends Tipsy_Test {
 		$_POST['name'] = 'maitai';
 
 		$this->tip->service('Tipsy\Resource/Drink', [
-			_id => 'id',
-			_table => 'test_user'
+			'_id' => 'id',
+			'_table' => 'test_user'
 		]);
 
 		$this->tip->post('drink/:id',function($Drink, $Request, $Params) {

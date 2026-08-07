@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy;
 
 /**
@@ -7,18 +9,58 @@ namespace Tipsy;
  */
 class Router {
 
-	private $_routes;
-	private $_aliass;
-	private $_tipsy;
+	/** @var Route[] */
+	private array $_routes = [];
+	/** @var RouteAlias[] */
+	private array $_aliases = [];
+	private ?App $_tipsy = null;
+	private ?Route $_default = null;
 
-	public function __construct($args = []) {
-		$this->_routes = [];
-		$this->_aliass = [];
-		$this->_tipsy = $args['tipsy'];
+	public function __construct(array $args = []) {
+		$this->_tipsy = $args['tipsy'] ?? null;
 	}
 
-	public function __call($method, $args = []) {
-		if (count($args) == 1) {
+	/**
+	 * Explicit HTTP verb methods — avoids __call overhead on the hot path.
+	 * __call has ~200ns overhead per invocation on PHP 8.3.
+	 */
+	public function get(string $route, callable|array $controller): static {
+		return $this->_addMethodRoute('GET', $route, $controller);
+	}
+
+	public function post(string $route, callable|array $controller): static {
+		return $this->_addMethodRoute('POST', $route, $controller);
+	}
+
+	public function put(string $route, callable|array $controller): static {
+		return $this->_addMethodRoute('PUT', $route, $controller);
+	}
+
+	public function delete(string $route, callable|array $controller): static {
+		return $this->_addMethodRoute('DELETE', $route, $controller);
+	}
+
+	public function patch(string $route, callable|array $controller): static {
+		return $this->_addMethodRoute('PATCH', $route, $controller);
+	}
+
+	private function _addMethodRoute(string $method, string $route, callable|array $controller): static {
+		if (is_array($controller) && !is_callable($controller)) {
+			$controller['method'] = strtoupper($method);
+		} else {
+			$controller = [
+				'controller' => $controller,
+				'method' => strtoupper($method)
+			];
+		}
+		return $this->when($route, $controller);
+	}
+
+	/**
+	 * Fallback for less common HTTP methods (HEAD, OPTIONS, PATCH, etc.)
+	 */
+	public function __call(string $method, array $args = []): static {
+		if (count($args) === 1) {
 			$args[0]['method'] = strtoupper($method);
 		} else {
 			$args[1] = [
@@ -26,11 +68,11 @@ class Router {
 				'method' => strtoupper($method)
 			];
 		}
-		return call_user_func_array([$this, 'when'], $args);
+		return $this->when(...$args);
 	}
 
-	public function alias($from, $to) {
-		$this->_aliass[] = new RouteAlias([
+	public function alias(string $from, string $to): static {
+		$this->_aliases[] = new RouteAlias([
 			'to' => $to,
 			'from' => $from,
 			'tipsy' => $this->_tipsy
@@ -38,7 +80,7 @@ class Router {
 		return $this;
 	}
 
-	public function when($r = null, $args = null) {
+	public function when(string|array|null $r = null, callable|array|string|object|null $args = null): static {
 		if (is_array($r)) {
 			$route = $r;
 		} else {
@@ -49,12 +91,12 @@ class Router {
 			}
 			$route['route'] = $r;
 		}
-		if (is_null($route['route'])) {
+		if (!isset($route['route']) || $route['route'] === null) {
 			throw new Exception('Invalid route specified.');
 		}
 		$route['tipsy'] = $this->_tipsy;
 
-		if (!$route['method']) {
+		if (empty($route['method'])) {
 			$route['method'] = '*';
 		}
 
@@ -63,11 +105,11 @@ class Router {
 		return $this;
 	}
 
-	public function home($route) {
+	public function home(callable|array|string $route): static {
 		return $this->when('', $route);
 	}
 
-	public function otherwise($default) {
+	public function otherwise(callable|array|string $default): void {
 		$this->_default = new Route([
 			'controller' => $default,
 			'method' => '*',
@@ -75,8 +117,8 @@ class Router {
 		]);
 	}
 
-	public function match($page) {
-		foreach (array_reverse($this->aliass(), true) as $route) {
+	public function match(string $page): Route {
+		foreach (array_reverse($this->aliases(), true) as $route) {
 			if ($alias = $route->match($page)) {
 				$page = $alias;
 				break;
@@ -91,16 +133,21 @@ class Router {
 		return $this->defaultRoute();
 	}
 
-	public function routes($routes = null) {
+	/**
+	 * @return Route[]
+	 */
+	public function routes(): array {
 		return $this->_routes;
 	}
 
-	public function aliass($aliass = null) {
-		return $this->_aliass;
+	/**
+	 * @return RouteAlias[]
+	 */
+	public function aliases(): array {
+		return $this->_aliases;
 	}
 
-	public function defaultRoute() {
-		return $this->_default ? $this->_default : new Route(['tipsy' => $this->_tipsy]);
+	public function defaultRoute(): Route {
+		return $this->_default ?? new Route(['tipsy' => $this->_tipsy]);
 	}
-
 }

@@ -2,29 +2,33 @@
 
 // class for library controller test
 class LibraryController extends Tipsy\Controller {
-	public function init($args = []) {
+	public function init(array $args = []): mixed {
 		echo 'LIBRARY';
+		return null;
 	}
 }
 
 // class for instance controller test
 class InstanceController extends Tipsy\Controller {
-	public function init($args = []) {
+	public function init(array $args = []): mixed {
 		echo 'INSTANCE';
+		return null;
 	}
 }
 
 class LibraryControllerParent extends Tipsy\Controller {
-	public function init($args = []) {
+	public function init(array $args = []): mixed {
 		parent::init($args);
 		echo 'LIBRARY';
+		return null;
 	}
 }
 
 
 class RouterTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
 	}
@@ -603,6 +607,41 @@ class RouterTest extends Tipsy_Test {
 		});
 		$this->tip->start();
 		$this->assertTrue($res);
+	}
+
+	public function testParamIsSegmentBound() {
+		$_REQUEST['__url'] = 'item/1/extra';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+
+		$this->ob();
+
+		$this->tip->router()
+			->when('item/:id', function($Params) {
+				echo 'MATCH:'.$Params->id;
+			})
+			->otherwise(function() {
+				echo 'OTHER';
+			});
+		$this->tip->start();
+
+		$check = $this->ob(false);
+		$this->assertEquals('OTHER', $check);
+	}
+
+	public function testParamSingleSegment() {
+		$_REQUEST['__url'] = 'item/42';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+
+		$this->ob();
+
+		$this->tip->router()
+			->when('item/:id', function($Params) {
+				echo $Params->id;
+			});
+		$this->tip->start();
+
+		$check = $this->ob(false);
+		$this->assertEquals('42', $check);
 	}
 
 	public function testRegexSuffix() {

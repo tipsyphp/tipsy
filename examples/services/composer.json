@@ -1,0 +1,14 @@
+{
+	"name": "tipsyphp/services-example",
+	"description": "Tipsy dependency injection example",
+	"require": {
+		"tipsyphp/tipsy": "*@dev"
+	},
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../../"
+		}
+	],
+	"minimum-stability": "dev"
+}

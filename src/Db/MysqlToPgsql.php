@@ -1,56 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy\Db;
 
 // transforms mysql queries to pgsql (kinda)
 class MysqlToPgsql extends \Tipsy\Db {
-	public static function convert(&$query, &$args = []) {
+	public static function convert(string &$query, array &$args = []): array {
 		// replace backticks
-		$query = str_replace('`','"', $query);
+		$query = str_replace('`', '"', $query);
 
 		// replace add single quotes to interval statements
-		$query = preg_replace('/(interval) ([0-9]+) ([a-z]+)/i','\\1 \'\\2 \\3\'', $query);
+		$query = preg_replace('/(interval) ([0-9]+) ([a-z]+)/i', '\\1 \'\\2 \\3\'', $query) ?? $query;
 
 		// replace unix_timestamp
-		$query = preg_replace('/unix_timestamp( )?\((.*?)\)/i','extract(epoch FROM \\2)', $query);
+		$query = preg_replace('/unix_timestamp( )?\((.*?)\)/i', 'extract(epoch FROM \\2)', $query) ?? $query;
 
 		// replace date_sub
-		$query = preg_replace('/(date_sub\((.*?),(.*?))\)/i','\\2 - \\3', $query);
+		$query = preg_replace('/(date_sub\((.*?),(.*?))\)/i', '\\2 - \\3', $query) ?? $query;
 
 		// replace date formats
-		$query = preg_replace_callback('/date_format\(( )?(.*?),( )?("(.*?)"|\'(.*?)\')( )?\)/i',function($m) {
+		$query = preg_replace_callback('/date_format\(( )?(.*?),( )?("(.*?)"|\\\'(.*?)\\\')( )?\)/i', function(array $m): string {
 			$find = ['/\%Y/', '/\%m/', '/\%d/', '/\%H/', '/\%i/', '/\%s/', '/\%W/'];
 			$replace = ['YYYY', 'MM', 'DD', 'HH24', 'MI', 'SS', 'D'];
-			$format = preg_replace($find, $replace, $m[6] ? $m[6] : $m[5]);
-			return 'to_char('.$m[2].', \''.$format.'\')';
-		}, $query);
+			$format = preg_replace($find, $replace, $m[6] ?: $m[5]);
+			return 'to_char(' . $m[2] . ', \'' . $format . '\')';
+		}, $query) ?? $query;
 
 
-		if ($args) {
-			foreach ($args as $k => $v) {
-				if ($v === true) {
-					$args[$k] = 'true';
-				} elseif ($v === false) {
-					$args[$k] = 'false';
-				}
+		foreach ($args as $k => $v) {
+			if ($v === true) {
+				$args[$k] = 'true';
+			} elseif ($v === false) {
+				$args[$k] = 'false';
 			}
 		}
-		return [query => $query, args => $args];
+
+		return ['query' => $query, 'args' => $args];
 	}
 
-	public function query($query, $args = []) {
+	public function query(string $query, ?array $args = null): \PDOStatement {
 		if (!$query) {
-			throw new \Tipsy\Exception('Query is emtpy');
+			throw new \Tipsy\Exception('Query is empty');
 		}
+		$argsRef = $args ?? [];
+		self::convert($query, $argsRef);
+		if (!$query) {
+			throw new \Tipsy\Exception('mysqlToPgsql Query is empty');
+		}
+		return parent::query($query, $argsRef);
+	}
+
+	public function exec(string $query): int|false {
+		$args = [];
 		self::convert($query, $args);
-		if (!$query) {
-			throw new \Tipsy\Exception('mysqlToPgsql Query is emtpy');
-		}
-		return parent::query($query, $args);
-	}
-
-	public function exec($query) {
-		self::convert($query);
 		return parent::exec($query);
 	}
 }

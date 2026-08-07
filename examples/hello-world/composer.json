@@ -1,0 +1,14 @@
+{
+	"name": "tipsyphp/hello-world-example",
+	"description": "Tipsy hello world example",
+	"require": {
+		"tipsyphp/tipsy": "*@dev"
+	},
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../../"
+		}
+	],
+	"minimum-stability": "dev"
+}

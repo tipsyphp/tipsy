@@ -1,41 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy;
 
 
 class RouteAlias extends Route {
-	protected $_to;
-	protected $_from;
+	protected string $_to = '';
+	protected string $_from = '';
 
-	public function __construct($args = []) {
-		$this->tipsy($args['tipsy']);
+	public function __construct(array $args = []) {
+		$this->tipsy($args['tipsy'] ?? null);
 
-		$this->_to = $args['to'];
-		$this->_from = $args['from'];
+		$this->_to = $args['to'] ?? '';
+		$this->_from = $args['from'] ?? '';
 
-		$this->_caseSensitive = false;
-		$this->_route = preg_replace('/^\/?(.*?)\/?$/i','\\1', $args['from']);
-		$this->_tipsy = $args['tipsy'];
-		$this->_method = '*';
-		$this->_routeParams = new RouteParams;
+		// Build parent route configuration
+		parent::__construct([
+			'route' => $args['from'] ?? '',
+			'caseSensitive' => false,
+			'method' => '*',
+			'tipsy' => $args['tipsy'] ?? null,
+		]);
 	}
 
-	public function match($page) {
+	public function match(string $page): string|static|false {
 		if (parent::match($page)) {
 			// remap params and return new route as string
 			$to = explode('/', $this->_to);
 
-			foreach ($to as $k => $t) {
-				foreach ($this->_routeParams->properties() as $key => $value) {
-					$to[$k] = str_replace(':'.$key, $value, $t);
+			$params = $this->params();
+			if ($params instanceof Scope) {
+				foreach ($to as $k => $t) {
+					foreach ($params->properties() as $key => $value) {
+						$to[$k] = str_replace(':' . $key, (string)$value, $t);
+					}
 				}
 			}
-			$to = implode('/', $to);
-			return $to;
+			return implode('/', $to);
 
 		} else {
 			return false;
 		}
 	}
-
 }

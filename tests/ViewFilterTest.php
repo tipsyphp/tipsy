@@ -1,7 +1,7 @@
 <?php
 
 class ViewFilterForTest extends Tipsy\View\Filter {
-	public static function filter($content, $arguments = [] ) {
+	public static function filter(string $content, array $arguments = []): string {
 		return $arguments[0].$content.$arguments[1];
 	}
 }
@@ -9,7 +9,8 @@ class ViewFilterForTest extends Tipsy\View\Filter {
 
 class ViewFilterTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true;
 		$this->tip->config(['view' => [
@@ -97,7 +98,7 @@ class ViewFilterTest extends Tipsy_Test {
 		$this->tip->start();
 		ob_end_clean();
 
-		$this->assertEquals('Filter class "FAIL" doest not exist.', trim($res));
+		$this->assertEquals('Filter class "FAIL" does not exist.', trim($res));
 	}
 
 	public function testViewFilterFail() {
@@ -116,6 +117,6 @@ class ViewFilterTest extends Tipsy_Test {
 		$this->tip->start();
 		ob_end_clean();
 
-		$this->assertEquals('Invalid filter.', trim($res));
+		$this->assertEquals('Filter class "12" does not exist.', trim($res));
 	}
 }

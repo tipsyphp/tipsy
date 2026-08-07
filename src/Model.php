@@ -1,79 +1,88 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy;
 
+#[\AllowDynamicProperties]
 class Model implements \JsonSerializable {
-	private $_methods;
-	private $_properties;
+	private array $_methods = [];
+	private array $_properties = [];
 
-	public function json() {
+	public function json(): string {
 		return json_encode($this->exports());
 	}
 
-	public function jsonSerialize() {
+	public function jsonSerialize(): mixed {
 		return $this->exports();
 	}
 
-	public function addMethod($method, $closure) {
+	public function addMethod(string $method, callable $closure): void {
 		$this->_methods[$method] = $closure;
 	}
 
-	public function hasMethod($method) {
-		return $this->_methods[$method] ? true : false;
+	public function hasMethod(string $method): bool {
+		return isset($this->_methods[$method]) && is_callable($this->_methods[$method]);
 	}
 
-	public static function __callStatic($method, $args = []) {
-		$name = '__'.$method.'_static';
+	public static function __callStatic(string $method, array $args = []): mixed {
+		$name = '__' . $method . '_static';
 
-		if (method_exists(get_called_class(),$name)) {
-			return (new \ReflectionMethod(get_called_class(), $name))->invokeArgs(null, $args);
+		if (method_exists(static::class, $name)) {
+			return (new \ReflectionMethod(static::class, $name))->invokeArgs(null, $args);
 		} else {
-			throw new Exception('Could not call static ' . $method. ' on '.get_called_class());
+			throw new Exception('Could not call static ' . $method . ' on ' . static::class);
 		}
 	}
 
-	public function __call($method, $args = []) {
-		if (is_callable($this->_methods[$method])) {
+	public function __call(string $method, array $args = []): mixed {
+		if (isset($this->_methods[$method]) && is_callable($this->_methods[$method])) {
 			$this->_methods[$method] = $this->_methods[$method]->bindTo($this);
-			return call_user_func_array($this->_methods[$method], $args);
-		} elseif (method_exists($this,'__'.$method)) {
-			// @todo: internets say call_user_func_array is faster but who knows
-			//return (new \ReflectionMethod($this, '__'.$method))->invokeArgs($this, $args);
-			return call_user_func_array([$this, '__'.$method], $args);
+			return ($this->_methods[$method])(...$args);
+		} elseif (method_exists($this, '__' . $method)) {
+			return $this->{'__' . $method}(...$args);
 		} else {
-			throw new Exception('Could not call ' . $method. ' on '.get_class());
+			throw new Exception('Could not call ' . $method . ' on ' . static::class);
 		}
 	}
 
-	public function &__properties() {
-		return $this->_properties ? $this->_properties : get_object_vars($this);
+	public function &__properties(): array {
+		if (!$this->_properties) {
+			// Copy dynamic public props into the bag so we can return by reference safely
+			foreach (get_object_vars($this) as $key => $value) {
+				if ($key !== '_properties' && $key !== '_methods' && !(isset($key[0]) && $key[0] === '_')) {
+					$this->_properties[$key] = $value;
+				}
+			}
+		}
+		return $this->_properties;
 	}
 
-	public function &__property($name) {
-		return isset($this->_properties[$name]) ? $this->_properties[$name] : null;
+	public function &__property(string $name): mixed {
+		return $this->_properties[$name];
 	}
 
-	public function &__get($name) {
-		if (isset($name{0}) && $name{0} == '_') {
+	public function &__get(string $name): mixed {
+		if (isset($name[0]) && $name[0] === '_') {
 			return $this->{$name};
 		} else {
 			return $this->_properties[$name];
 		}
 	}
 
-	public function __set($name, $value) {
-		if ($name{0} == '_') {
-			return $this->{$name} = $value;
+	public function __set(string $name, mixed $value): void {
+		if ($name[0] === '_') {
+			$this->{$name} = $value;
 		} else {
-			return $this->_properties[$name] = $value;
+			$this->_properties[$name] = $value;
 		}
 	}
 
-	public function __isset($name) {
-		return $name{0} == '_' ? isset($this->{$name}) : isset($this->_properties[$name]);
+	public function __isset(string $name): bool {
+		return $name[0] === '_' ? isset($this->{$name}) : isset($this->_properties[$name]);
 	}
 
-	public function __exports() {
+	public function __exports(): array {
 		$out = $this->__properties();
 		foreach ($out as $k => $v) {
 			if (is_callable($v)) {
@@ -83,10 +92,10 @@ class Model implements \JsonSerializable {
 		return $out;
 	}
 
-	public function tipsy($tipsy = null) {
-		if (!is_null($tipsy)) {
+	public function tipsy(?App $tipsy = null): ?App {
+		if ($tipsy !== null) {
 			$this->_tipsy = $tipsy;
 		}
-		return $this->_tipsy;
+		return $this->_tipsy ?? null;
 	}
 }

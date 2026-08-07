@@ -19,21 +19,21 @@
 	],
 	"minimum-stability": "stable",
 	"require": {
-		"php": ">=5.5.0"
+		"php": ">=8.3"
 	},
 	"require-dev": {
-		"satooshi/php-coveralls": "0.7.0",
-		"phpunit/phpunit": "3.7.*"
+		"phpunit/phpunit": "^11.0"
 	},
 	"autoload": {
 		"psr-4": {
 			"Tipsy\\": "src/"
 		},
-		"files": [
-			"src/Tipsy.php"
-		]
+		"files": ["src/Tipsy.php"]
+	},
+	"scripts": {
+		"test": "php -c tests/php.ini vendor/bin/phpunit --configuration tests/phpunit.xml"
 	},
 	"archive": {
-		"exclude": ["/tests", "/.travis.yml", "/.gitignore"]
+		"exclude": ["/tests", "/examples", "/benchmarks", "/.github", "/.gitignore"]
 	}
 }

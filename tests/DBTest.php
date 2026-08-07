@@ -14,13 +14,14 @@ class ClassResourceTest extends \Tipsy\Resource {
 
 class DBTest extends Tipsy_Test {
 
-	public static function setUpBeforeClass() {
+	public static function setUpBeforeClass(): void {
 	}
 
-	public static function tearDownAfterClass() {
+	public static function tearDownAfterClass(): void {
 	}
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true;
 
@@ -31,10 +32,10 @@ class DBTest extends Tipsy_Test {
 
 	public function testDBCreateTable() {
 		$this->tip->service('Tipsy\Resource/TestUser', [
-			_id => 'id',
-			_table => 'test_user',
-			_fields => [
-				id => (object)[
+			'_id' => 'id',
+			'_table' => 'test_user',
+			'_fields' => [
+				'id' => (object)[
 					'field' => 'id',
 					'type' => 'int',
 					'null' => false,
@@ -42,19 +43,19 @@ class DBTest extends Tipsy_Test {
 					'length' => 11,
 					'unsigned' => true
 				],
-				name => (object)[
+				'name' => (object)[
 					'field' => 'name',
 					'type' => 'char',
 					'null' => true,
 					'length' => 255,
 					'default' => 'user'
 				],
-				username => (object)[
+				'username' => (object)[
 					'field' => 'username',
 					'type' => 'char',
 					'null' => true
 				],
-				active => (object)[
+				'active' => (object)[
 					'field' => 'active',
 					'type' => 'bool',
 					'null' => false,
@@ -65,10 +66,10 @@ class DBTest extends Tipsy_Test {
 		$this->tip->service('TestUser')->dropTable();
 
 		$this->tip->service('Tipsy\Resource/TestUser2', [
-			_id => 'id',
-			_table => 'test_user2',
-			_fields => [
-				id => (object)[
+			'_id' => 'id',
+			'_table' => 'test_user2',
+			'_fields' => [
+				'id' => (object)[
 					'field' => 'id',
 					'type' => 'int',
 					'null' => false,
@@ -76,14 +77,14 @@ class DBTest extends Tipsy_Test {
 					'length' => 11,
 					'unsigned' => true
 				],
-				name => (object)[
+				'name' => (object)[
 					'field' => 'name',
 					'type' => 'char',
 					'null' => true,
 					'length' => 255,
 					'default' => 'user'
 				],
-				username => (object)[
+				'username' => (object)[
 					'field' => 'username',
 					'type' => 'char',
 					'null' => true
@@ -130,11 +131,11 @@ class DBTest extends Tipsy_Test {
 	public function testModelDBOExtendCall() {
 
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			test => function() {
+			'test' => function() {
 				return $this->test;
 			},
-			_id => 'id_test_user',
-			_table => 'test_user'
+			'_id' => 'id_test_user',
+			'_table' => 'test_user'
 		]);
 
 		$m = $this->tip->service('TestModel');
@@ -145,8 +146,8 @@ class DBTest extends Tipsy_Test {
 
 	public function testModelDBOIdLoad() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			_id => 'id',
-			_table => 'test_user2'
+			'_id' => 'id',
+			'_table' => 'test_user2'
 		]);
 
 		$m = $this->tip->service('TestModel');
@@ -160,8 +161,8 @@ class DBTest extends Tipsy_Test {
 
 	public function testModelDBOIdCreate() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			_id => 'id',
-			_table => 'test_user2'
+			'_id' => 'id',
+			'_table' => 'test_user2'
 		]);
 
 		$m = $this->tip->service('TestModel');
@@ -174,8 +175,8 @@ class DBTest extends Tipsy_Test {
 
 	public function testModelDBOIdSave() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			_id => 'id',
-			_table => 'test_user2'
+			'_id' => 'id',
+			'_table' => 'test_user2'
 		]);
 
 		$m = $this->tip->service('TestModel');
@@ -194,8 +195,8 @@ class DBTest extends Tipsy_Test {
 
 	public function testModelDBOQuery() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			_id => 'id',
-			_table => 'test_user2'
+			'_id' => 'id',
+			'_table' => 'test_user2'
 		]);
 
 		$m = $this->tip->service('TestModel');
@@ -210,8 +211,8 @@ class DBTest extends Tipsy_Test {
 
 	public function testModelDBODelete() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			_id => 'id',
-			_table => 'test_user2'
+			'_id' => 'id',
+			'_table' => 'test_user2'
 		]);
 
 		$m = $this->tip->service('TestModel');
@@ -243,11 +244,11 @@ class DBTest extends Tipsy_Test {
 		$_REQUEST['__url'] = 'user/create';
 
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			test => function($user) {
+			'test' => function($user) {
 				return $this->test;
 			},
-			_id => 'id',
-			_table => 'test_user'
+			'_id' => 'id',
+			'_table' => 'test_user'
 		]);
 
 		$this->tip->router()
@@ -289,8 +290,8 @@ class DBTest extends Tipsy_Test {
 
 	public function testModelJsonExport() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			_id => 'id',
-			_table => 'test_user2'
+			'_id' => 'id',
+			'_table' => 'test_user2'
 		]);
 
 		$m = $this->tip->service('TestModel');
@@ -311,11 +312,11 @@ class DBTest extends Tipsy_Test {
 
 	public function testExtend() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			exports => function() {
-				return [test => true];
+			'exports' => function() {
+				return ['test' => true];
 			},
-			_id => 'id',
-			_table => 'test_user2'
+			'_id' => 'id',
+			'_table' => 'test_user2'
 		]);
 
 		$m = $this->tip->service('TestModel');
@@ -328,10 +329,10 @@ class DBTest extends Tipsy_Test {
 		$this->tip->db()->query('DROP TABLE IF EXISTS `test_auto_user`');
 
 		$this->tip->service('Tipsy\Resource/TestUser', [
-			_id => 'id',
-			_table => 'test_auto_user',
-			_fields => [
-				id => (object)[
+			'_id' => 'id',
+			'_table' => 'test_auto_user',
+			'_fields' => [
+				'id' => (object)[
 					'field' => 'id',
 					'type' => 'int',
 					'null' => false,
@@ -339,24 +340,24 @@ class DBTest extends Tipsy_Test {
 					'length' => 11,
 					'unsigned' => true
 				],
-				age => (object)[
+				'age' => (object)[
 					'field' => 'age',
 					'type' => 'int',
 					'default' => 0
 				],
-				first_name => (object)[
+				'first_name' => (object)[
 					'field' => 'first_name',
 					'type' => 'char',
 					'null' => true,
 					'length' => 255,
 					'default' => 'user'
 				],
-				last_name => (object)[
+				'last_name' => (object)[
 					'field' => 'last_name',
 					'type' => 'char',
 					'null' => true
 				],
-				active => (object)[
+				'active' => (object)[
 					'field' => 'active',
 					'type' => 'bool',
 					'null' => false,
@@ -368,7 +369,7 @@ class DBTest extends Tipsy_Test {
 		$this->tip->router()
 			->when('user/:id', function($Params, $TestUser) use (&$res) {
 				$u = $TestUser->create([
-					last_name => 'name'
+					'last_name' => 'name'
 				]);
 				$id = $u->id;
 				$u = null;
@@ -383,8 +384,8 @@ class DBTest extends Tipsy_Test {
 
 	public function testResourceGetGet() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			_id => 'id',
-			_table => 'test_user2'
+			'_id' => 'id',
+			'_table' => 'test_user2'
 		]);
 
 		$m = $this->tip->service('TestModel');
@@ -394,8 +395,8 @@ class DBTest extends Tipsy_Test {
 
 	public function testResourceCreateTableFail() {
 		$this->tip->service('Tipsy\Resource/TestModel', [
-			_id => 'id',
-			_table => 'test_user_fail'
+			'_id' => 'id',
+			'_table' => 'test_user_fail'
 		]);
 
 		try {
@@ -408,7 +409,7 @@ class DBTest extends Tipsy_Test {
 
 	public function testResourceCreateObject() {
 		$o = new ClassResourceTest((object)[
-			name => 'devin'
+			'name' => 'devin'
 		]);
 		$this->assertEquals('devin', $o->name);
 	}
@@ -435,7 +436,7 @@ class DBTest extends Tipsy_Test {
 	public function testResourceSerialize() {
 		$o = ClassResourceTest::q('select * from test_user limit 1')->get(0);
 		$o->serialize([
-			name => 'newarray'
+			'name' => 'newarray'
 		]);
 		$this->assertEquals('newarray', $o->name);
 	}
@@ -443,7 +444,7 @@ class DBTest extends Tipsy_Test {
 	public function testResourceSerializeObject() {
 		$o = ClassResourceTest::q('select * from test_user limit 1')->get(0);
 		$o->serialize((object)[
-			name => 'newobject'
+			'name' => 'newobject'
 		]);
 		$this->assertEquals('newobject', $o->name);
 	}

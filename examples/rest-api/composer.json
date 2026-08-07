@@ -1,0 +1,14 @@
+{
+	"name": "tipsyphp/rest-api-example",
+	"description": "Tipsy REST API example",
+	"require": {
+		"tipsyphp/tipsy": "*@dev"
+	},
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../../"
+		}
+	],
+	"minimum-stability": "dev"
+}

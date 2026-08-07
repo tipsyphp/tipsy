@@ -4,13 +4,14 @@ class LoginServiceMiddleware extends \Tipsy\Middleware {
 	function __construct() {
 		echo 'SERVICECONSTRUCT';
 	}
-	function run($test = null) {
+	function run(mixed $test = null): mixed {
 		echo 'SERVICERUN'.$test['test'];
+		return null;
 	}
 }
 
 class MiddlewareClassFailure extends \Tipsy\Middleware {
-	function run($test = null) {
+	function run(mixed $test = null): mixed {
 		return false;
 	}
 }
@@ -21,7 +22,8 @@ class MiddlewareClassDefault extends \Tipsy\Middleware {
 
 class MiddlewareTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
 	}
@@ -52,10 +54,10 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->ob();
 
 		$this->tip->service('Tipsy\Service/LoginServiceTipsy', [
-			run => function() {
+			'run' => function() {
 				echo 'HI';
 			},
-			test => function() {
+			'test' => function() {
 				return 'HELLO';
 			}
 		]);
@@ -81,10 +83,10 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->ob();
 
 		$this->tip->middleware('Tipsy\Service/LoginServiceTipsy', [
-			run => function() {
+			'run' => function() {
 				echo 'HI';
 			},
-			test => function() {
+			'test' => function() {
 				return 'HELLO';
 			}
 		]);
@@ -109,7 +111,7 @@ class MiddlewareTest extends Tipsy_Test {
 		$_REQUEST['__url'] = '';
 
 		$this->tip->service('Tipsy\Service/MiddlewareException', [
-			run => function() {
+			'run' => function() {
 				return false;
 			}
 		]);
@@ -169,13 +171,13 @@ class MiddlewareTest extends Tipsy_Test {
 	public function testMiddlewareClosure() {
 		$this->ob();
 		$this->tip->service('Service', [
-			test => function() {
+			'test' => function() {
 				echo 'CLOSURE';
 			}
 		]);
 		$this->tip->middleware('Closure', function($Service) {
 			return [
-				run => function() use ($Service) {
+				'run' => function() use ($Service) {
 					$Service->test();
 				}
 			];
@@ -191,14 +193,14 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->ob();
 
 		$this->tip->middleware('Tipsy\Service/FirstService', [
-			test => function() {
+			'test' => function() {
 				return 'HELLO';
 			}
 		]);
 
 		$this->tip->middleware('Tipsy\Service/SecondService', function($FirstService) {
 			return [
-				test => function() use ($FirstService) {
+				'test' => function() use ($FirstService) {
 					return $FirstService->test();
 				}
 			];
@@ -216,7 +218,7 @@ class MiddlewareTest extends Tipsy_Test {
 		$this->tip->router()->otherwise(function() {});
 		$this->tip->start();
 		$this->tip->middleware('Promise', [
-			run => function() {
+			'run' => function() {
 				echo 'PROMISE';
 			}
 		]);

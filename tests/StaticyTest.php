@@ -12,7 +12,8 @@ class ClassStaticTest extends \Tipsy\Resource {
 
 class StaticyTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->useOb = true; // for debug use
 	}
 	

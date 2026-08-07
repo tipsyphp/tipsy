@@ -1,0 +1,14 @@
+{
+	"name": "tipsyphp/middleware-example",
+	"description": "Tipsy middleware example",
+	"require": {
+		"tipsyphp/tipsy": "*@dev"
+	},
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../../"
+		}
+	],
+	"minimum-stability": "dev"
+}

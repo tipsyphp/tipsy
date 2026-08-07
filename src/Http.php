@@ -1,74 +1,68 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy;
 
 class Http {
-	public function __call($name, $args) {
+	public function __call(string $name, array $args): Http\Response {
 		if (is_array($args[0])) {
 			$args[0]['method'] = $name;
-		} elseif (count($args) == 3) {
+		} elseif (count($args) === 3) {
 			$args[2]['method'] = $name;
 		} else {
 			$args[2] = ['method' => $name];
 		}
-		return call_user_func_array([$this, 'request'], $args);
+		return $this->request(...$args);
 	}
 
-	public function request() {
-		$fn = func_get_args();
+	public function request(string|array $urlOrArgs = '', mixed $data = null, array $args = []): Http\Response {
+		$url = '';
 
-		if (is_string($fn[0])) {
-			$url = $fn[0];
-		} elseif (is_array($fn[0])) {
-			$args = $fn[0];
-		}
-		if (count($fn) >= 2) {
-			$data = $fn[1];
-		}
-		if (count($fn) == 3) {
-			$args = $fn[2];
+		if (is_string($urlOrArgs)) {
+			$url = $urlOrArgs;
+		} elseif (is_array($urlOrArgs)) {
+			$args = $urlOrArgs;
 		}
 
-		if (!$url && $args['url']) {
+		if (!$url && !empty($args['url'])) {
 			$url = $args['url'];
 		}
 
-		if (!$data && $args['data']) {
+		if (!$data && !empty($args['data'])) {
 			$data = $args['data'];
 		}
 
-		$method = strtolower($args['method'] ? $args['method'] : 'get');
-		$dataType = strtolower($args['type'] == 'json' ? 'json' : 'form');
+		$method = strtolower($args['method'] ?? 'get');
+		$dataType = strtolower(($args['type'] ?? '') === 'json' ? 'json' : 'form');
 
-		if ($dataType == 'json' && $method == 'post') {
+		if ($dataType === 'json' && $method === 'post') {
 			$data = json_encode($data);
 		} elseif (is_array($data)) {
-			if (is_array($data)) {
-				$data = http_build_query($data);
-			}
+			$data = http_build_query($data);
 		}
 
-		if ($method == 'get') {
-			$ch = curl_init($url.'?'.$data);
+		if ($method === 'get' && $data) {
+			$ch = curl_init($url . '?' . $data);
 		} else {
 			$ch = curl_init($url);
 		}
 
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
 
-		if ($method == 'post') {
+		if ($method === 'post' && $data) {
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		}
 
-		if ($method == 'post' && $dataType == 'form') {
+		if ($method === 'post' && $dataType === 'form') {
 			curl_setopt($ch, CURLOPT_POST, true);
-		} elseif ($method == 'get' && $dataType == 'form') {
+		} elseif ($method === 'get' && $dataType === 'form') {
 			curl_setopt($ch, CURLOPT_HTTPGET, true);
 		}
 
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, !empty($args['skipSslVerify']) ? false : true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, !empty($args['skipSslVerify']) ? 0 : 2);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
 		curl_setopt($ch, CURLOPT_HEADER, true);
@@ -77,9 +71,9 @@ class Http {
 			'User-Agent: PHP/Tipsy/Http'
 		];
 
-		if ($dataType == 'json' && $method == 'post') {
+		if ($dataType === 'json' && $method === 'post') {
 			$headers[] = 'Content-Type: application/json';
-			$headers[] = 'Content-Length: ' . strlen($data);
+			$headers[] = 'Content-Length: ' . strlen((string)$data);
 		}
 
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -88,9 +82,10 @@ class Http {
 		$error = curl_error($ch);
 		curl_close($ch);
 
-		while (strpos($body, 'HTTP') === 0) {
-			$sep = strpos($body, "\r\n\r\n") === false ? "\n\n" : "\r\n\r\n";
-			list($head, $body) = explode($sep, $body, 2);
+		$head = '';
+		while (is_string($body) && str_starts_with($body, 'HTTP')) {
+			$sep = str_contains($body, "\r\n\r\n") ? "\r\n\r\n" : "\n\n";
+			[$head, $body] = explode($sep, $body, 2);
 		}
 
 		$heads = [];
@@ -98,28 +93,13 @@ class Http {
 			if ($i === 0) {
 				$heads['http_code'] = $line;
 			} else {
-				list ($key, $value) = explode(': ', $line);
-			}
-			if ($key) {
-				$heads[$key] = $value;
-			}
-        }
-
-		return new Http\Response($error, $body, $heads);
-	}
-
-	/** dont this this is needed anymore
-	private function _parse($headers) {
-		$ret = [];
-		foreach (explode("\n",$headers) as $header) {
-			if (preg_match('/HTTP\//i',$header)) {
-				$header = explode(' ',$header);
-				$this->headers[$header[0]] = $header[1];
-			} else {
-				$header = explode(':',$header, 2);
-				$this->headers[$header[0]] = $header[1];
+				[$key, $value] = array_pad(explode(': ', $line, 2), 2, '');
+				if ($key) {
+					$heads[$key] = $value;
+				}
 			}
 		}
+
+		return new Http\Response($error ?: '', $body ?: '', $heads);
 	}
-	**/
 }

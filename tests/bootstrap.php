@@ -1,34 +1,42 @@
 <?php
 
-error_reporting(E_ALL ^ (E_NOTICE | E_STRICT));
-ini_set('display_errors',true);
-putenv('PHPUNIT=1');
+declare(strict_types=1);
 
-if (trim(`whoami`) == 'arzynik') {
-	ini_set('mysqli.default_socket','/Applications/MAMP/tmp/mysql/mysql.sock');
-}
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+putenv('PHPUNIT=1');
 
 // Autoload files using Composer autoload
 require_once __DIR__ . '/../vendor/autoload.php';
 
-//putenv('DB=pgsql');
+class Tipsy_Test extends PHPUnit\Framework\TestCase {
+	protected bool $useOb = false;
+	protected ?Tipsy\Tipsy $tip = null;
 
-class Tipsy_Test extends PHPUnit_Framework_TestCase {
-	public function setupDb($tipsy) {
-		$tipsy->config('tests/config.db.'.(getenv('TRAVIS') ? 'travis' : 'local').'.'.(getenv('DB') ? getenv('DB') : 'mysql' ).'.ini');
+	protected function setUp(): void {
+		$_REQUEST = [];
+		$_GET = [];
+		$_POST = [];
+		$_SERVER['REQUEST_URI'] = '';
+		$_SERVER['SCRIPT_NAME'] = '';
+	}
 
-		if (getenv('DB') == 'pgsql') {
-			$this->tip->service('Db', 'Tipsy\Db\MysqlToPgsql');
+	public function setupDb(Tipsy\Tipsy $tipsy): void {
+		$tipsy->config('tests/config.db.' . (getenv('TRAVIS') || getenv('CI') ? 'travis' : 'local') . '.' . (getenv('DB') ?: 'mysql') . '.ini');
+
+		if (getenv('DB') === 'pgsql') {
+			$this->tip->service('Db', 'Tipsy\\Db\\MysqlToPgsql');
 		}
 	}
 
-	public function ob($start = true) {
+	public function ob(bool $start = true): ?string {
 		if (!$this->useOb) {
-			return;
+			return null;
 		}
 		if ($start) {
 			ob_clean();
 			ob_start();
+			return null;
 		} else {
 			$check = ob_get_contents();
 			if (!$this->useOb) {
@@ -37,7 +45,7 @@ class Tipsy_Test extends PHPUnit_Framework_TestCase {
 				ob_end_clean();
 			}
 
-			return $check;
+			return $check ?: null;
 		}
 	}
 }

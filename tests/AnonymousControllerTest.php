@@ -1,8 +1,9 @@
 <?php
 
-class RouterPHP7 extends Tipsy_Test {
+class AnonymousControllerTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true;
 	}
@@ -14,8 +15,9 @@ class RouterPHP7 extends Tipsy_Test {
 
 		$this->tip->router()
 			->when('router/library', new class() extends Tipsy\Controller {
-				public function init($args = null) {
+				public function init(array $args = []): mixed {
 					echo 'ANONY';
+					return null;
 				}
 			});
 		$this->tip->start();

@@ -3,7 +3,8 @@
 
 class DBUrlTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true; // for debug use
 
@@ -15,7 +16,7 @@ class DBUrlTest extends Tipsy_Test {
 		// rebuild
 		$this->tip = new Tipsy\Tipsy;
 		$this->tip->config('tests/config.ini');
-		$this->tip->config([db => [url => $url]]);
+		$this->tip->config(['db' => ['url' => $url]]);
 	}
 
 	public function testDbUrl() {

@@ -1,8 +1,9 @@
 <?php
 
-class ServicePHP7 extends Tipsy_Test {
+class AnonymousServiceTest extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 		$this->useOb = true;
 	}
@@ -31,8 +32,9 @@ class ServicePHP7 extends Tipsy_Test {
 		$this->ob();
 
 		$this->tip->middleware(new class() extends \Tipsy\Middleware {
-			public function run($args = null) {
+			public function run(mixed $args = null): mixed {
 				echo 'MIDDLEWARE';
+				return null;
 			}
 		});
 

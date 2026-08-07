@@ -1,53 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy;
 
 class Resource extends Model {
-	private $_table;
-	private $_id_var;
-	private $_fields;
-	private $_db;
-	private $_tipsy;
-	private $_baseConfig;
-	private $_service;
 
-	public function __construct($args = []) {
+	public function __construct(mixed $args = []) {
+		if (!is_array($args)) {
+			if ($args !== null && $args !== '') {
+				$this->load($args);
+			}
+			return;
+		}
 
 		$this->_baseConfig = $args;
 
-		if ($args['_tipsy']) {
+		if (isset($args['_tipsy'])) {
 			$this->_tipsy = $args['_tipsy'];
 			unset($args['_tipsy']);
 		}
-		if ($args['_service']) {
+		if (isset($args['_service'])) {
 			$this->_service = $args['_service'];
 			unset($args['_service']);
 		}
-		/*
-		foreach ($args as $key=>$arg) {
-			echo $key."\n";
-		}
-		echo "\n\n";
 
-		if (!$args) {
-
-			// auto table name and id
-			$args = [
-				'id' => '',
-				'table' => ''
-			];
-		}
-		*/
-
-		if ($args['_id']) {
+		if (isset($args['_id'])) {
 			$this->idVar($args['_id']);
 			unset($args['_id']);
 		}
-		if ($args['_table']) {
+		if (isset($args['_table'])) {
 			$this->table($args['_table']);
 			unset($args['_table']);
 		}
-		if ($args['_fields']) {
+		if (isset($args['_fields'])) {
 			$this->__fields = $args['_fields'];
 			unset($args['_fields']);
 		}
@@ -61,82 +47,38 @@ class Resource extends Model {
 	/**
 	 * Retrieve a field list from the db
 	 *
-	 * Will populate $this->fields based on he columns in the db for the
+	 * Will populate $this->fields based on the columns in the db for the
 	 * current objects table.
 	 *
 	 * @return array
 	 */
-	public function fields() {
+	public function fields(): array {
 		if ($fields = $this->db()->fields($this->table())) {
 			$this->_fields = $fields;
 		} else {
 
 			$fields = [];
-			switch ($this->db()->driver()) {
-				case 'mysql':
-					$q = 'SHOW COLUMNS FROM `'.$this->table().'`';
-					break;
-
-				case 'sqlite':
-					$q = 'PRAGMA table_info("'.$this->table().'")';
-					break;
-
-				case 'pgsql':
-					$q = 'SELECT column_name as Field, data_type as Type, is_nullable as Null, column_default as Default FROM information_schema.columns WHERE table_name = \''.$this->table().'\'';
-					break;
-			}
+			$q = match ($this->db()->driver()) {
+				'mysql' => 'SHOW COLUMNS FROM `' . $this->table() . '`',
+				'sqlite' => 'PRAGMA table_info("' . $this->table() . '")',
+				'pgsql' => 'SELECT column_name as Field, data_type as Type, is_nullable as Null, column_default as Default FROM information_schema.columns WHERE table_name = \'' . $this->table() . '\'',
+				default => throw new Exception('Unsupported database driver: ' . ($this->db()->driver() ?? 'unknown')),
+			};
 
 			try {
 
 				$rows = $this->db()->get($q);
 				if (!count($rows)) {
 					$this->createTable();
-					} else {
+				} else {
 
 					foreach ($rows as $row) {
-
-						switch ($this->db()->driver()) {
-							case 'sqlite':
-								$fields[$row->name] = (object)[
-									'field' => $row->name,
-									'type' => $row->type,
-									'null' => $row->notnull ? false : true
-								];
-								break;
-
-							case 'mysql':
-								$fields[$row->Field] = (object)[
-									'field' => $row->Field,
-									'type' => $row->Type,
-									'null' => $row->Null == 'YES' ? true : false,
-									'auto' => $row->Extra == 'auto_increment' ? true : false
-								];
-
-								if ($fields[$row->Field]->type == 'tinyint(1)' || $fields[$row->Field]->type == 'tinyint(1) unsigned') {
-									$fields[$row->Field]->type = 'boolean';
-								} elseif (strpos($fields[$row->Field]->type, 'int') !== false) {
-									$fields[$row->Field]->type = 'int';
-								}
-
-								break;
-
-							case 'pgsql':
-								$fields[$row->field] = (object)[
-									'field' => $row->field,
-									'type' => $row->type,
-									'null' => $row->null == 'YES' ? true : false,
-									'auto' => $row->default && preg_match('/^nextval\(/',$row->default) ? true : false
-								];
-
-								if ($fields[$row->field]->type == 'integer') {
-									$fields[$row->field]->type = 'int';
-								}
-
-								if ($fields[$row->field]->auto && $fields[$row->field]->field == $this->idVar()) {
-									$fields[$row->field]->sequence = preg_replace('/^nextval\(\'(.*)\'.*\)$/i','\\1', $row->default);
-								}
-								break;
-						}
+						$fields = match ($this->db()->driver()) {
+							'sqlite' => $this->_parseSqliteField($row, $fields),
+							'mysql' => $this->_parseMysqlField($row, $fields),
+							'pgsql' => $this->_parsePgsqlField($row, $fields),
+							default => $fields,
+						};
 					}
 				}
 
@@ -151,83 +93,113 @@ class Resource extends Model {
 		return $this->_fields;
 	}
 
-	public function get($id = null) {
+	private function _parseSqliteField(object $row, array $fields): array {
+		$fields[$row->name] = (object)[
+			'field' => $row->name,
+			'type' => $row->type,
+			'null' => $row->notnull ? false : true
+		];
+		return $fields;
+	}
+
+	private function _parseMysqlField(object $row, array $fields): array {
+		$fields[$row->Field] = (object)[
+			'field' => $row->Field,
+			'type' => $row->Type,
+			'null' => $row->Null === 'YES',
+			'auto' => $row->Extra === 'auto_increment'
+		];
+
+		if ($fields[$row->Field]->type === 'tinyint(1)' || $fields[$row->Field]->type === 'tinyint(1) unsigned') {
+			$fields[$row->Field]->type = 'boolean';
+		} elseif (str_contains($fields[$row->Field]->type, 'int')) {
+			$fields[$row->Field]->type = 'int';
+		}
+
+		return $fields;
+	}
+
+	private function _parsePgsqlField(object $row, array $fields): array {
+		$fields[$row->field] = (object)[
+			'field' => $row->field,
+			'type' => $row->type,
+			'null' => $row->null === 'YES',
+			'auto' => !empty($row->default) && preg_match('/^nextval\(/', $row->default) === 1
+		];
+
+		if ($fields[$row->field]->type === 'integer') {
+			$fields[$row->field]->type = 'int';
+		}
+
+		if ($fields[$row->field]->auto && $fields[$row->field]->field === $this->idVar()) {
+			$fields[$row->field]->sequence = preg_replace('/^nextval\(\'(.*?)\'.*\)$/i', '\\1', $row->default);
+		}
+		return $fields;
+	}
+
+	public function get(int|string|null $id = null): static {
 		return $this;
 	}
 
-	public function createTable() {
+	public function createTable(): void {
 		if (!$this->__fields) {
-			throw new Exception('Could not create table "'.$this->table().'"');
+			throw new Exception('Could not create table "' . $this->table() . '"');
 		}
 
-		$q = 'create table `'.$this->table().'` (';
+		$q = 'create table `' . $this->table() . '` (';
 		foreach ($this->__fields as $k => $field) {
-			$q .= ' `'.$k.'` '.$field->name.' ';
+			$q .= ' `' . $k . '` ' . $field->name . ' ';
 
-			if ($field->default === null) {
-				$default = 'NULL';
-			} elseif ($field->default === true) {
-				$default = 'true';
-			} elseif ($field->default === false) {
-				$default = 'false';
-			} elseif (is_int($field->default)) {
-				$default = $field->default;
-			} else {
-				$default = "'".$field->default."'";
-			}
+			$default = match (true) {
+				$field->default === null => 'NULL',
+				$field->default === true => 'true',
+				$field->default === false => 'false',
+				is_int($field->default) => (string)$field->default,
+				default => "'" . $field->default . "'",
+			};
 
-			switch ($field->type) {
-				case 'int':
-					if ($this->db()->driver() == 'pgsql') {
-						$int = $field->auto ? 'serial' : 'integer'
-							.($field->null ? '' : ' NOT NULL ');
-					} else {
-						$int = 'int('.($field->length ? $field->length : 11).')'
-							.($field->unsigned ? 'unsigned' : '')
-							.($field->null ? '' : ' NOT NULL ')
-							.($field->auto ? ' AUTO_INCREMENT ' : '')
-							.($field->default ? ' DEFAULT '.$default : '');
-					}
-					$q .= $int.' ';
-					break;
-
-				case 'char':
-					$q .= 'varchar('.($field->length ? $field->length : 255).') '
-						  .($field->null ? '' : ' NOT NULL ')
-						  .($field->default ? ' DEFAULT '.$default : '');
-					break;
-
-				case 'bool':
-					if ($this->db()->driver() == 'pgsql') {
-						$bool = 'bool NOT NULL ';
-					} else {
-						$bool = 'tinyint(1) NOT NULL ';
-					}
-					$q .= $bool.' '
-						  .($field->default ? ' DEFAULT '.$default : '');
-					break;
-			}
+			$q .= match ($field->type) {
+				'int' => $this->_createIntColumn($field, $default),
+				'char' => 'varchar(' . ($field->length ?: 255) . ') '
+					. ($field->null ? '' : ' NOT NULL ')
+					. ($field->default ? ' DEFAULT ' . $default : ''),
+				'bool' => ($this->db()->driver() === 'pgsql' ? 'bool NOT NULL ' : 'tinyint(1) NOT NULL ')
+					. ' ' . ($field->default ? ' DEFAULT ' . $default : ''),
+				default => '',
+			};
 			$q .= ',';
 		}
 
-		$q .= 'PRIMARY KEY  (`'.$this->idVar().'`))';
+		$q .= 'PRIMARY KEY  (`' . $this->idVar() . '`))';
 
 		$this->db()->query($q);
 	}
 
-	public function dropTable() {
-		$this->db()->query('DROP TABLE IF EXISTS `'.$this->table().'`');
+	private function _createIntColumn(object $field, string $default): string {
+		if ($this->db()->driver() === 'pgsql') {
+			return ($field->auto ? 'serial' : 'integer')
+				. ($field->null ? '' : ' NOT NULL ');
+		}
+		return 'int(' . ($field->length ?: 11) . ')'
+			. ($field->unsigned ? 'unsigned' : '')
+			. ($field->null ? '' : ' NOT NULL ')
+			. ($field->auto ? ' AUTO_INCREMENT ' : '')
+			. ($field->default ? ' DEFAULT ' . $default : '');
 	}
 
-	public static function __create_static($args = []) {
-		$name = get_called_class();
+	public function dropTable(): void {
+		$this->db()->query('DROP TABLE IF EXISTS `' . $this->table() . '`');
+	}
+
+	public static function __create_static(array $args = []): static {
+		$name = static::class;
 		$args['_tipsy'] = Tipsy::app();
 		$obj = new $name($args);
 		$obj->save();
 		return $obj;
 	}
 
-	public function __create($args = []) {
+	public function __create(array $args = []): static {
 		$object = clone $this;
 		$object->tipsy($this->tipsy());
 		$object->load($args);
@@ -235,7 +207,7 @@ class Resource extends Model {
 		return $object;
 	}
 
-	public function dbId() {
+	public function dbId(): mixed {
 		return $this->{$this->idVar()};
 	}
 
@@ -246,18 +218,20 @@ class Resource extends Model {
 	 * as public properties. Passing in an int id will load the object with the
 	 * table and key associated with the object.
 	 *
-	 * @param $id object|int
+	 * @param $id object|array|int|string|null
 	 */
-	public function load($id = null) {
+	public function load(object|array|int|string|null $id = null): static {
 		// fill the object with blank properties based on the fields of that table
 		$fields = $this->fields();
 		foreach ($fields as $key => $field) {
-			$this->{$key} = $this->{$key} ? $this->{$key} : '';
+			$this->{$key} = $this->{$key} ?: '';
 		}
 
 		if (!$id && $this->dbId()) {
 			$id = $this->dbId();
 		}
+
+		$node = null;
 
 		if (is_object($id)) {
 			$node = $id;
@@ -266,33 +240,27 @@ class Resource extends Model {
 			$node = (object)$id;
 
 		} elseif ($id) {
-			if (!$node) {
-				$node = (object)$this->db()->get('select * from `' . $this->table() . '` where `'.$this->idVar().'` = ? limit 1', [$id])[0];
-			}
+			$result = $this->db()->get('select * from `' . $this->table() . '` where `' . $this->idVar() . '` = ? limit 1', [$id]);
+			$node = !empty($result[0]) ? (object)$result[0] : null;
 		}
 
 		if (!$node) {
-			$node = new Model;
+			$node = new Model();
 		}
 
-		if (isset($node)) {
-			foreach(get_object_vars($node) as $var => $value) {
-				$this->$var = $value;
-			}
+		foreach (get_object_vars($node) as $var => $value) {
+			$this->$var = $value;
 		}
 
 		foreach ($this->fields() as $field) {
-			switch ($field->type) {
-				case 'int':
-					$this->{$field->field} = (int)$this->{$field->field};
-					break;
-				case 'boolean':
-					$this->{$field->field} = $this->{$field->field} ? true : false;
-					break;
-			}
+			match ($field->type) {
+				'int' => $this->{$field->field} = (int)$this->{$field->field},
+				'boolean' => $this->{$field->field} = (bool)$this->{$field->field},
+				default => null,
+			};
 		}
 
-		if ($this->tipsy() && $this->tipsy()->config()['tipsy']['factory'] !== false) {
+		if ($this->tipsy() && ($this->tipsy()->config()['tipsy']['factory'] ?? null) !== false) {
 			$this->tipsy()->factory($this);
 		}
 
@@ -301,25 +269,23 @@ class Resource extends Model {
 
 
 	/**
-	 * Saves an entry in the db. if there is no curerent id it will add one
+	 * Saves an entry in the db. if there is no current id it will add one
 	 */
-	public function save($insert = null) {
-		if (is_null($insert)) {
+	public function save(?bool $insert = null): static {
+		if ($insert === null) {
 			$insert = $this->dbId() ? false : true;
 		}
 
-		if ($insert) {
-			$query = 'INSERT INTO `'.$this->table().'`';
-		} else {
-			$query = 'UPDATE `'.$this->table().'`';
-		}
+		$query = $insert
+			? 'INSERT INTO `' . $this->table() . '`'
+			: 'UPDATE `' . $this->table() . '`';
 
 		$fields = $this->fields();
-
 		$numset = 0;
+		$fs = [];
 
 		foreach ($fields as $field) {
-			if ($field->auto === true && $insert && $field->field == $this->idVar()) {
+			if ($field->auto === true && $insert && $field->field === $this->idVar()) {
 				continue;
 			}
 
@@ -329,41 +295,24 @@ class Resource extends Model {
 				$this->{$field->field} = '';
 			}
 
-			switch ($field->type) {
-				case 'boolean':
-					$this->{$field->field} = $this->{$field->field} ? true : false;
-					if ($this->db()->driver() == 'mysql') {
-						$this->{$field->field} = $this->{$field->field} ? 1 : 0;
-					}
-					break;
-
-				case 'int':
-					$this->{$field->field} = intval($this->{$field->field});
-					break;
-
-				case 'datetime':
-					if ($this->{$field->field} == '0000-00-00 00:00:00' && $field->null) {
-						$this->{$field->field} = null;
-					}
-					break;
-
-				case 'date':
-					if ($this->{$field->field} == '0000-00-00' && $field->null) {
-						$this->{$field->field} = null;
-					}
-					break;
-			}
+			match ($field->type) {
+				'boolean' => $this->_prepareBoolField($field),
+				'int' => $this->{$field->field} = intval($this->{$field->field}),
+				'datetime' => $this->_prepareDatetimeField($field),
+				'date' => $this->_prepareDateField($field),
+				default => null,
+			};
 
 			$this->{$field->field} = (!$this->{$field->field} && $field->null) ? null : $this->{$field->field};
 
 			$query .= !$numset ? ($insert ? '(' : ' SET ') : ',';
 			if ($insert) {
-				$query .= ' `'.$field->field.'` ';
+				$query .= ' `' . $field->field . '` ';
 			} else {
-				if ($field->field != $this->idVar()) {
-					$query .= ' `'.$field->field.'`=:'.$field->field;
+				if ($field->field !== $this->idVar()) {
+					$query .= ' `' . $field->field . '`=:' . $field->field;
 				} else {
-					// should proabably be cleaned up a bit
+					// should probably be cleaned up a bit
 					$query = substr($query, 0, -5);
 					$numset--;
 				}
@@ -385,54 +334,83 @@ class Resource extends Model {
 				}
 
 				$query .= !$numset ? '' : ',';
-				$query .= ' :'.$field->field;
+				$query .= ' :' . $field->field;
 				$numset++;
 			}
 
 			$query .= ')';
 		} else {
-			$query .= ' WHERE '.$this->idVar().'=:id';
+			$query .= ' WHERE ' . $this->idVar() . '=:id';
 			$fs['id'] = $this->{$this->idVar()};
 		}
 
-		$stmt = $this->db()->query($query, $fs);
+		$this->db()->query($query, $fs);
 
 		if ($insert) {
-			$this->{$this->idVar()} = $this->db()->db()->lastInsertId($fields[$this->idVar()]->sequence ? $fields[$this->idVar()]->sequence : null);
+			$this->{$this->idVar()} = $this->db()->db()->lastInsertId(
+				isset($fields[$this->idVar()]->sequence) ? $fields[$this->idVar()]->sequence : null
+			);
+		}
+
+		// Keep boolean properties as bools after MySQL 0/1 binding
+		foreach ($fields as $field) {
+			if ($field->type === 'boolean') {
+				$this->{$field->field} = (bool)$this->{$field->field};
+			}
 		}
 
 		return $this;
+	}
+
+	private function _prepareBoolField(object $field): void {
+		$this->{$field->field} = (bool)$this->{$field->field};
+		if ($this->db()->driver() === 'mysql') {
+			$this->{$field->field} = $this->{$field->field} ? 1 : 0;
+		}
+	}
+
+	private function _prepareDatetimeField(object $field): void {
+		if ($this->{$field->field} === '0000-00-00 00:00:00' && $field->null) {
+			$this->{$field->field} = null;
+		}
+	}
+
+	private function _prepareDateField(object $field): void {
+		if ($this->{$field->field} === '0000-00-00' && $field->null) {
+			$this->{$field->field} = null;
+		}
 	}
 
 
 	/**
 	 * Delete a row in a table
 	 */
-	public function delete() {
+	public function delete(): static {
 		if ($this->dbId()) {
-			$this->db()->query('DELETE FROM `'.$this->table().'` WHERE `'.$this->idVar().'` = ?', [$this->dbId()]);
+			$this->db()->query('DELETE FROM `' . $this->table() . '` WHERE `' . $this->idVar() . '` = ?', [$this->dbId()]);
 		} else {
 			throw new Exception('Cannot delete. No ID was given.');
 		}
 		return $this;
 	}
 
-	public function strip() {
+	public function strip(): static {
 		$fieldsMeta = $this->fields();
+		$fieldNames = [];
 		foreach ($fieldsMeta as $field) {
-			$fields[] = $field->Field;
+			$fieldNames[] = $field->field ?? $field->Field ?? '';
 		}
 
 		$vars = get_object_vars($this);
 		foreach ($vars as $key => $var) {
-			if (!in_array($key, $fields) && $key{0} != '_') {
+			if (!in_array($key, $fieldNames, true) && isset($key[0]) && $key[0] !== '_') {
 				unset($this->$key);
 			}
 		}
 		return $this;
 	}
 
-	public function serialize($array) {
+	public function serialize(array|object $array): static {
 		if (!is_array($array)) {
 			$array = get_object_vars($array);
 		}
@@ -444,8 +422,8 @@ class Resource extends Model {
 		return $this;
 	}
 
-	public function idVar($id_var = null) {
-		if (is_null($id_var)) {
+	public function idVar(?string $id_var = null): static|string|null {
+		if ($id_var === null) {
 			return $this->_id_var;
 		} else {
 			$this->_id_var = $id_var;
@@ -453,8 +431,8 @@ class Resource extends Model {
 		}
 	}
 
-	public function table($table = null) {
-		if (is_null($table)) {
+	public function table(?string $table = null): static|string|null {
+		if ($table === null) {
 			return $this->_table;
 		} else {
 			$this->_table = $table;
@@ -462,83 +440,85 @@ class Resource extends Model {
 		}
 	}
 
-	public function __o($args) {
-		$classname = get_called_class();
+	public function __o(mixed ...$args): mixed {
+		$classname = static::class;
+		$items = [];
 
-		foreach (func_get_args() as $arg) {
+		foreach ($args as $arg) {
 			if (is_array($arg)) {
 				foreach ($arg as $item) {
-					$items[] = $this->tipsy()->factory($classname,$item);
+					$items[] = $this->tipsy()->factory($classname, $item);
 				}
 			} else {
-				$items[] = $this->tipsy()->factory($classname,$arg);
+				$items[] = $this->tipsy()->factory($classname, $arg);
 			}
 		}
 		foreach ($items as $item) {
 			$item->tipsy($this->tipsy());
-			echo get_called_class($item);
 		}
 
-		if (count($items) == 1) {
+		if (count($items) === 1) {
 			return array_pop($items);
 		} else {
 			return new Looper($items);
 		}
 	}
 
-	public static function __o_static() {
-		$classname = get_called_class();
+	public static function __o_static(): mixed {
+		$classname = static::class;
+		$items = [];
 
 		foreach (func_get_args() as $arg) {
 			if (is_array($arg)) {
 				foreach ($arg as $item) {
-					$items[] = Tipsy::factory($classname,$item);
+					$items[] = Tipsy::factory($classname, $item);
 				}
 			} else {
-				$items[] = Tipsy::factory($classname,$arg);
+				$items[] = Tipsy::factory($classname, $arg);
 			}
 		}
 		foreach ($items as $item) {
 			$item->tipsy(Tipsy::app());
 		}
 
-		if (count($items) == 1) {
+		if (count($items) === 1) {
 			return array_pop($items);
 		} else {
 			return new Looper($items);
 		}
 	}
 
-	public static function __q_static() {
-		return forward_static_call_array([get_called_class(), '__query_static'], func_get_args());
+	public static function __q_static(): mixed {
+		return forward_static_call_array([static::class, '__query_static'], func_get_args());
 	}
 
-	public static function __query_static() {
-		$name = get_called_class();
+	public static function __query_static(): mixed {
+		$name = static::class;
 		$class = new $name();
 		$class->tipsy(Tipsy::app());
 		$class->service($name);
 		return (new \ReflectionMethod($class, '__query'))->invokeArgs($class, func_get_args());
 	}
 
-	public function __q($query) {
+	public function __q(string $query): mixed {
 		return (new \ReflectionMethod($this, '__query'))->invokeArgs($this, func_get_args());
 	}
 
-	public function __query($query) {
+	public function __query(string $query): mixed {
 
 		$args = [];
 
-		if (func_num_args() == 2 && is_array(func_get_arg(1))) {
+		if (func_num_args() === 2 && is_array(func_get_arg(1))) {
 			$args = func_get_arg(1);
 		} elseif (func_num_args() > 1) {
-			for ($i = 1; $i < func_num_args(); $i++){
+			for ($i = 1; $i < func_num_args(); $i++) {
 				$args[] = func_get_arg($i);
 			}
 		}
 
 		$res = $this->db()->query($query, $args);
 
+		$items = [];
 		while ($row = $res->fetch(\PDO::FETCH_ASSOC)) {
 			if ($this->tipsy()->services($this->service())) {
 				$items[] = $this->tipsy()->service($this->service(), $row);
@@ -552,23 +532,22 @@ class Resource extends Model {
 		return new Looper($items);
 	}
 
-	public function tipsy($tipsy = null) {
-		if (!is_null($tipsy)) {
+	public function tipsy(?App $tipsy = null): ?App {
+		if ($tipsy !== null) {
 			$this->_tipsy = $tipsy;
 		}
 		return $this->_tipsy;
 	}
 
-	public function db() {
-		if ($this && $this->tipsy() && $this->tipsy()->db()) {
+	public function db(): Db {
+		if ($this->tipsy()?->db()) {
 			return $this->tipsy()->db();
-		} else {
-			return Tipsy::db();
 		}
+		return Tipsy::db();
 	}
 
-	public function service($service = null) {
-		if (!is_null($service)) {
+	public function service(?string $service = null): ?string {
+		if ($service !== null) {
 			$this->_service = $service;
 		}
 		return $this->_service;

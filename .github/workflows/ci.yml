@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.3', '8.4']
+        db: ['mysql', 'pgsql']
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: tipsy
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: tipsy
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pdo, pdo_mysql, pdo_pgsql, pdo_sqlite
+          coverage: xdebug
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Start built-in server
+        run: php -c tests/php.ini -S 127.0.0.1:8000 -t tests/web > /tmp/tipsy-php-server.log 2>&1 &
+
+      - name: Run tests
+        env:
+          DB: ${{ matrix.db }}
+        run: php -c tests/php.ini vendor/bin/phpunit --configuration tests/phpunit.xml
+
+      - name: Upload coverage
+        if: matrix.php-version == '8.3' && matrix.db == 'mysql'
+        uses: codecov/codecov-action@v4
+        with:
+          files: build/logs/clover.xml

@@ -31,7 +31,8 @@ class UserTwo extends \Tipsy\Resource {
 
 class Issue0025Test extends Tipsy_Test {
 
-	public function setUp() {
+	public function setUp(): void {
+		parent::setUp();
 		$this->tip = new Tipsy\Tipsy;
 
 		$this->tip->config('tests/config.ini');

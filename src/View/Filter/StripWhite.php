@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tipsy\View\Filter;
 
 class StripWhite extends \Tipsy\View\Filter {
-	public static function filter($content, $arguments = [] ) {
+	public static function filter(string $content, array $arguments = []): string {
 		$find = [
 			'/^(\s?)(.*?)(\s?)$/',
 			'/\t|\n|\r/',
@@ -14,6 +16,6 @@ class StripWhite extends \Tipsy\View\Filter {
 			'',
 			''
 		];
-		return preg_replace($find, $replace, $content);
+		return preg_replace($find, $replace, $content) ?? $content;
 	}
 }
