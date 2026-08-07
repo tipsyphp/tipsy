@@ -11,6 +11,7 @@ class Db extends Model {
 
 	public function __construct(array|null $config = null) {
 		if (isset($config['_tipsy'])) {
+			$this->tipsy($config['_tipsy']);
 			return;
 		}
 		if ($config !== null) {
@@ -74,10 +75,15 @@ class Db extends Model {
 		}
 
 		if (empty($args['dsn'])) {
-			$args['dsn'] = $args['driver'] . ':host=' . $args['host']
-				. (!empty($args['port']) ? ';port=' . $args['port'] : '')
-				. ';dbname=' . $args['database']
-				. (!empty($args['charset']) ? ';charset=' . $args['charset'] : '');
+			if ($args['driver'] === 'sqlite') {
+				$path = $args['path'] ?? $args['database'] ?? ':memory:';
+				$args['dsn'] = 'sqlite:' . $path;
+			} else {
+				$args['dsn'] = $args['driver'] . ':host=' . ($args['host'] ?? '127.0.0.1')
+					. (!empty($args['port']) ? ';port=' . $args['port'] : '')
+					. ';dbname=' . ($args['database'] ?? '')
+					. (!empty($args['charset']) ? ';charset=' . $args['charset'] : '');
+			}
 		}
 
 		$db = new \PDO($args['dsn'], $args['user'] ?? '', $args['pass'] ?? '', $options);

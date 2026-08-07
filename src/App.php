@@ -176,8 +176,16 @@ class App {
 				$instance = $this->_services[$service]['reflection']->newInstance();
 			}
 
+			if (method_exists($instance, 'tipsy')) {
+				$instance->tipsy($this);
+			}
+
 			if (is_array($this->_services[$service]['config'])) {
 				foreach ($this->_services[$service]['config'] as $name => $config) {
+					// Skip internal service metadata (_service, _static, _tipsy, _controller, …)
+					if (is_string($name) && str_starts_with($name, '_')) {
+						continue;
+					}
 					if (is_callable($config) && method_exists($instance, 'addMethod')) {
 						$instance->addMethod($name, $config);
 					} else {
